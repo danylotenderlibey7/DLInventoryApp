@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35818.85 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLInventoryApp", "DLInventoryApp\DLInventoryApp.csproj", "{E0DD2CE1-7637-4504-96B7-E54A67F0748C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E0DD2CE1-7637-4504-96B7-E54A67F0748C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0DD2CE1-7637-4504-96B7-E54A67F0748C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0DD2CE1-7637-4504-96B7-E54A67F0748C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0DD2CE1-7637-4504-96B7-E54A67F0748C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7651C72-8128-4B23-A5C4-19BC0D5096E0}
+	EndGlobalSection
+EndGlobal
