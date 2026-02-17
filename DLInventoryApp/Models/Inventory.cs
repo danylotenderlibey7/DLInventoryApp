@@ -21,7 +21,7 @@ namespace DLInventoryApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         [Timestamp]
-        public byte[] Version { get; set; } = Array.Empty<byte>();
+        public byte[]? Version { get; set; }
         public List<Item> Items { get; set; } = new();
     }
 }

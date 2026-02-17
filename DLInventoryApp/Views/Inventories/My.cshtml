@@ -1,6 +1,7 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories
 @model IEnumerable<MyInventoryRowVm>
 <h2>My Inventories</h2>
+<a asp-action="Create">Create</a>
 @if (!Model.Any())
 {
     <p>No inventories yet.</p>
@@ -21,11 +22,19 @@ else
             @foreach (var inv in Model)
             {
                 <tr>
-                    <td>@inv.Title</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@inv.Id">
+                            @inv.Title
+                        </a>
+                    </td>
                     <td>
                         @(inv.CategoryName ?? "-")
                     </td>
-                    <td>@inv.ItemsCount</td>
+                    <td>
+                        <a asp-action="Items" asp-route-id="@inv.Id">
+                            @inv.ItemsCount
+                        </a>
+                    </td>
                     <td>
                         @(inv.IsPublic ? "Public" : "Private")
                     </td>

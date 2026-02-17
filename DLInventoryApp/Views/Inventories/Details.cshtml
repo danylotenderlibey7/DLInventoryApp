@@ -1,0 +1,10 @@
+﻿@using DLInventoryApp.ViewModels.Inventories
+@model InventoryDetailsVm
+<h2>@Model.Title</h2>
+<div>
+    <p>@Model.Title</p>
+    <p>@Model.Description</p>
+    <p>@(Model.CategoryName ?? "-")</p>
+    <p>@(Model.IsPublic ? "Public" : "Private")</p>
+    <p>@(Model.UpdatedAt ?? Model.CreatedAt)</p>
+</div>

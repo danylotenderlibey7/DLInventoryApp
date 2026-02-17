@@ -1,6 +1,7 @@
 ﻿using DLInventoryApp.Data;
 using DLInventoryApp.Models;
 using DLInventoryApp.ViewModels.Inventories;
+using DLInventoryApp.ViewModels.Items;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,83 @@ namespace DLInventoryApp.Controllers
                 .ToListAsync();
 
             return View(list);
+        }
+        public IActionResult Create()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateInventoryVm vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+            var userId = _userManager.GetUserId(User);
+            var entity = new Inventory
+            {
+                Title = vm.Title,
+                Description = vm.Description,
+                IsPublic = vm.IsPublic,
+                CategoryId = vm.CategoryId,
+                OwnerId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Inventories.Add(entity);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(My));
+        }
+        [Authorize]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var vm = await _context.Inventories
+                .Where(inv => inv.Id == id && inv.OwnerId == userId)
+                .Select(inv => new InventoryDetailsVm
+                {
+                    Id = inv.Id,
+                    Title = inv.Title,
+                    Description = inv.Description,
+                    IsPublic = inv.IsPublic,
+                    CategoryName = inv.Category != null ? inv.Category.Name : null,
+                    ItemsCount = inv.Items.Count(),
+                    CreatedAt = inv.CreatedAt,
+                    UpdatedAt = inv.UpdatedAt
+                }).SingleOrDefaultAsync();
+            if (vm == null)
+                return NotFound();
+            return View(vm);
+        }
+        [Authorize]
+        [HttpGet("Inventories/{id:guid}/Items")]
+        public async Task<IActionResult> Items(Guid id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var title = await _context.Inventories
+                .Where(inv => inv.Id == id && inv.OwnerId == userId)
+                .Select(inv => inv.Title)
+                .SingleOrDefaultAsync(); 
+            if (title == null)
+                return NotFound();
+            var items = await _context.Items
+                .Where(it => it.InventoryId == id)
+                .Select(it => new InventoryItemRowVm
+                {
+                    Id = it.Id,
+                    CustomId = it.CustomId,
+                    CreatedAt = it.CreatedAt,
+                    UpdatedAt = it.UpdatedAt
+                })
+                .OrderByDescending(vm => vm.UpdatedAt ?? vm.CreatedAt)
+                .ToListAsync();
+            var vm = new InventoryItemsVm
+            {
+                InventoryId = id,
+                InventoryTitle = title,
+                Items = items
+            };
+            return View(vm);
         }
     }
 }

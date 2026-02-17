@@ -1,0 +1,26 @@
+﻿@using DLInventoryApp.ViewModels.Inventories
+@model CreateInventoryVm
+
+<h2>Create Inventory</h2>
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+
+    <div>
+        <label asp-for="Title"></label>
+        <input asp-for="Title" />
+        <span asp-validation-for="Title"></span>
+    </div>
+
+    <div>
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+    </div>
+
+    <div>
+        <input asp-for="IsPublic" type="checkbox" />
+        <label asp-for="IsPublic"></label>
+    </div>
+
+    <button type="submit">Save</button>
+</form>

@@ -1,0 +1,39 @@
+﻿@using DLInventoryApp.ViewModels.Items
+@model InventoryItemsVm
+<h2>Items of @Model.InventoryTitle}</h2>
+@* <a asp-action="Create">Create</a> *@
+@if (!Model.Items.Any())
+{
+    <p>No items yet.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>CustomId</th>
+                <th>Created</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var it in Model.Items)
+            {
+                <tr>
+                    <td>
+                        @it.CustomId
+                        @* <a asp-action="Details" asp-route-id="@it.Id">
+                            @it.CustomId
+                        </a> *@
+                    </td>
+                    <td>
+                        @it.CreatedAt
+                    </td>
+                    <td>
+                        @(it.UpdatedAt ?? it.CreatedAt)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
