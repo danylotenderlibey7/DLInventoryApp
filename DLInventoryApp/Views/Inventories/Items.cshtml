@@ -1,17 +1,27 @@
 ﻿@using DLInventoryApp.ViewModels.Items
 @model InventoryItemsVm
-<h2>Items of @Model.InventoryTitle}</h2>
-@* <a asp-action="Create">Create</a> *@
+
+<h2>Items of @Model.InventoryTitle</h2>
+
+<div style="margin-bottom:15px;">
+    <a asp-controller="Items"
+       asp-action="Create"
+       asp-route-inventoryId="@Model.InventoryId"
+       class="btn btn-primary">
+        Create Item
+    </a>
+</div>
+
 @if (!Model.Items.Any())
 {
     <p>No items yet.</p>
 }
 else
 {
-    <table>
+    <table class="table table-bordered">
         <thead>
             <tr>
-                <th>CustomId</th>
+                <th>Custom ID</th>
                 <th>Created</th>
                 <th>Last Updated</th>
             </tr>
@@ -20,18 +30,9 @@ else
             @foreach (var it in Model.Items)
             {
                 <tr>
-                    <td>
-                        @it.CustomId
-                        @* <a asp-action="Details" asp-route-id="@it.Id">
-                            @it.CustomId
-                        </a> *@
-                    </td>
-                    <td>
-                        @it.CreatedAt
-                    </td>
-                    <td>
-                        @(it.UpdatedAt ?? it.CreatedAt)
-                    </td>
+                    <td>@it.CustomId</td>
+                    <td>@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
                 </tr>
             }
         </tbody>

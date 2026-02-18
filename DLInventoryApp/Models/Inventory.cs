@@ -23,5 +23,6 @@ namespace DLInventoryApp.Models
         [Timestamp]
         public byte[]? Version { get; set; }
         public List<Item> Items { get; set; } = new();
+        public List<CustomField> CustomFields { get; set; } = new();
     }
 }

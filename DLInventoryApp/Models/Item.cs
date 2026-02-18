@@ -17,5 +17,6 @@ namespace DLInventoryApp.Models
         public DateTime? UpdatedAt { get; set; }
         [Timestamp]
         public byte[]? Version { get; set; }
+        public List<ItemFieldValue> FieldValues { get; set; } = new();
     }
 }
