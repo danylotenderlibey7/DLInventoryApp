@@ -83,6 +83,5 @@ namespace DLInventoryApp.Controllers
             }
             return RedirectToAction("Items", "Inventories", new { id = inventoryId });
         }
-
     }
 }
