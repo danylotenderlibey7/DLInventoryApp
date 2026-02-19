@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using DLInventoryApp.Data;
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
+using DLInventoryApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -14,6 +15,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ICustomIdGenerator, CustomIdGenerator>();
+builder.Services.AddScoped<IAccessService, AccessService>();
 
 var app = builder.Build();
 
@@ -36,7 +38,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    //pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Inventories}/{action=My}/{id?}");
 app.MapRazorPages();
 
 app.Run();

@@ -1,0 +1,83 @@
+﻿@model DLInventoryApp.ViewModels.Items.InventoryItemsVm
+
+<h2>Items of @Model.InventoryTitle</h2>
+
+<div style="margin-bottom:15px;">
+    <a asp-controller="Items"
+       asp-action="Create"
+       asp-route-inventoryId="@Model.InventoryId"
+       class="btn btn-primary">
+        Create Item
+    </a>
+    <a asp-controller="CustomFields"
+       asp-action="Index"
+       asp-route-inventoryId="@Model.InventoryId">
+        Manage Fields
+    </a>
+</div>
+
+@if (!Model.Items.Any())
+{
+    <p>No items yet.</p>
+}
+else
+{
+    <form asp-action="Delete"
+      asp-controller="Items"
+      asp-route-inventoryId="@Model.InventoryId"
+      method="post">
+
+    <button type="submit"> Delete Selected </button>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Custom ID</th>
+
+                @foreach (var col in Model.Columns)
+                {
+                    <th>@col.Name</th>
+                }
+
+                <th>Created</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var it in Model.Items)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" name="itemIds" value="@it.Id" />
+                    </td>
+                    <td>
+                        <a asp-action="Edit"
+                           asp-route-inventoryId="@Model.InventoryId"
+                           asp-route-itemId="@it.Id">
+                            @it.CustomId
+                        </a>
+                    </td>
+
+                    @if (it.Cells != null && it.Cells.Count > 0)
+                    {
+                        foreach (var cell in it.Cells)
+                        {
+                            <td>@cell</td>
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < Model.Columns.Count; i++)
+                        {
+                            <td></td>
+                        }
+                    }
+
+                    <td>@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td>@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </form>
+}

@@ -1,5 +1,6 @@
 ﻿using DLInventoryApp.Data;
 using DLInventoryApp.Models;
+using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.Inventories;
 using DLInventoryApp.ViewModels.Items;
 using Microsoft.AspNetCore.Authorization;
@@ -83,36 +84,6 @@ namespace DLInventoryApp.Controllers
                 }).SingleOrDefaultAsync();
             if (vm == null)
                 return NotFound();
-            return View(vm);
-        }
-        [Authorize]
-        [HttpGet("Inventories/{id:guid}/Items")]
-        public async Task<IActionResult> Items(Guid id)
-        {
-            var userId = _userManager.GetUserId(User);
-            var title = await _context.Inventories
-                .Where(inv => inv.Id == id && inv.OwnerId == userId)
-                .Select(inv => inv.Title)
-                .SingleOrDefaultAsync(); 
-            if (title == null)
-                return NotFound();
-            var items = await _context.Items
-                .Where(it => it.InventoryId == id)
-                .Select(it => new InventoryItemRowVm
-                {
-                    Id = it.Id,
-                    CustomId = it.CustomId,
-                    CreatedAt = it.CreatedAt,
-                    UpdatedAt = it.UpdatedAt
-                })
-                .OrderByDescending(vm => vm.UpdatedAt ?? vm.CreatedAt)
-                .ToListAsync();
-            var vm = new InventoryItemsVm
-            {
-                InventoryId = id,
-                InventoryTitle = title,
-                Items = items
-            };
             return View(vm);
         }
     }

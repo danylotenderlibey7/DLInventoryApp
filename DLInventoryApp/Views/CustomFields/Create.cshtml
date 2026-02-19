@@ -1,0 +1,46 @@
+﻿@using DLInventoryApp.ViewModels.CustomFields
+@using DLInventoryApp.Models
+@model CreateCustomFieldVm
+
+<h2>Create field for @Model.InventoryTitle</h2>
+
+<form asp-action="Create" method="post">
+
+    <input type="hidden" asp-for="InventoryId" />
+
+    <div>
+        <label>Name</label>
+        <input asp-for="Name" />
+        <span asp-validation-for="Name"></span>
+    </div>
+
+    <div>
+        <label>Type</label>
+        <select asp-for="Type">
+            @foreach (var type in Enum.GetValues(typeof(CustomFieldType)))
+            {
+                <option value="@type">@type</option>
+            }
+        </select>
+        <span asp-validation-for="Type"></span>
+    </div>
+
+    <div>
+        <label>
+            <input asp-for="IsRequired" />
+            Required
+        </label>
+    </div>
+
+    <div>
+        <label>
+            <input asp-for="IsUnique" />
+            Unique
+        </label>
+    </div>
+
+    <div>
+        <button type="submit">Create</button>
+    </div>
+
+</form>

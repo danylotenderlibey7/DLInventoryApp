@@ -13,6 +13,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Item> Items => Set<Item>();
     public DbSet<CustomField> CustomFields => Set<CustomField>();
     public DbSet<ItemFieldValue> ItemFieldValues => Set<ItemFieldValue>();
+    public DbSet<InventoryWriteAccess> InventoryWriteAccesses => Set<InventoryWriteAccess>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -50,6 +51,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(fv => fv.CustomField)
             .WithMany(f => f.FieldValues)
             .HasForeignKey(fv => fv.CustomFieldId)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<InventoryWriteAccess>(entity =>
+        {
+            entity.HasKey(ia => new { ia.InventoryId, ia.UserId });
+            entity.HasOne(ia => ia.Inventory)
+            .WithMany(ia => ia.WriteAccesses)
+            .HasForeignKey(ia => ia.InventoryId)
+            .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(ia => ia.User)
+            .WithMany()
+            .HasForeignKey(ia => ia.UserId)
             .OnDelete(DeleteBehavior.Cascade);
         });
     }

@@ -14,8 +14,8 @@ namespace DLInventoryApp.Models
         [MaxLength(1000)]
         public string Description { get; set; } = "";
         public bool IsPublic { get; set; } = false;
-        public int? CategoryId { get; set; }
-        public Category? Category { get; set; }
+        public int? CategoryId { get; set; } = null!;
+        public Category? Category { get; set; } = null!;
         [MaxLength(2048)]
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -24,5 +24,6 @@ namespace DLInventoryApp.Models
         public byte[]? Version { get; set; }
         public List<Item> Items { get; set; } = new();
         public List<CustomField> CustomFields { get; set; } = new();
+        public ICollection<InventoryWriteAccess> WriteAccesses { get; set; } = new List<InventoryWriteAccess>();
     }
 }

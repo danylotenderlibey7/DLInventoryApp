@@ -1,0 +1,44 @@
+﻿@using DLInventoryApp.ViewModels.CustomFields
+@model InventoryFieldsVm
+@using System.Linq
+
+<h2>Fields of @Model.InventoryTitle</h2>
+
+<div>
+    <a asp-controller="CustomFields"
+       asp-action="Create"
+       asp-route-inventoryId="@Model.InventoryId">
+        Create Field
+    </a>
+</div>
+
+@if (!Model.Fields.Any())
+{
+    <p>No fields yet.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Order</th>
+                <th>Required</th>
+                <th>Unique</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var f in Model.Fields)
+            {
+                <tr>
+                    <td>@f.Name</td>
+                    <td>@f.Type</td>
+                    <td>@f.Order</td>
+                    <td>@f.IsRequired</td>
+                    <td>@f.IsUnique</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

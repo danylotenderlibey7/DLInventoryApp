@@ -1,5 +1,6 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories
 @model IEnumerable<MyInventoryRowVm>
+@using System.Linq
 <h2>My Inventories</h2>
 <a asp-action="Create">Create</a>
 @if (!Model.Any())
@@ -31,7 +32,9 @@ else
                         @(inv.CategoryName ?? "-")
                     </td>
                     <td>
-                        <a asp-action="Items" asp-route-id="@inv.Id">
+                        <a asp-controller="Items"
+                           asp-action="Index"
+                           asp-route-inventoryId="@inv.Id">
                             @inv.ItemsCount
                         </a>
                     </td>
