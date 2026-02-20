@@ -1,0 +1,52 @@
+﻿@using DLInventoryApp.ViewModels.Inventories
+@model IEnumerable<MyInventoryRowVm>
+@using System.Linq
+
+<h2>All Inventories</h2>
+
+@if (!Model.Any())
+{
+    <p>No inventories yet.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Items</th>
+                <th>Visibility</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inv in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@inv.Id">
+                            @inv.Title
+                        </a>
+                    </td>
+                    <td>
+                        @(inv.CategoryName ?? "-")
+                    </td>
+                    <td>
+                        <a asp-controller="Items"
+                           asp-action="Index"
+                           asp-route-inventoryId="@inv.Id">
+                            @inv.ItemsCount
+                        </a>
+                    </td>
+                    <td>
+                        @(inv.IsPublic ? "Public" : "Private")
+                    </td>
+                    <td>
+                        @(inv.UpdatedAt ?? inv.CreatedAt)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -26,10 +26,15 @@ namespace DLInventoryApp.Controllers
             _customIdGenerator = customIdGenerator;
             _accessService = accessService;
         }
+        [AllowAnonymous]
         public async Task<IActionResult> Index(Guid inventoryId)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null) return Challenge();
+            bool canWrite = false;
+            if (userId != null)
+            {
+                canWrite = await _accessService.CanWriteInventory(inventoryId, userId);
+            }
             var title = await _context.Inventories
                 .Where(inv => inv.Id == inventoryId)
                 .Select(inv => inv.Title)
@@ -93,7 +98,8 @@ namespace DLInventoryApp.Controllers
                 InventoryId = inventoryId,
                 InventoryTitle = title,
                 Items = items,
-                Columns = cols
+                Columns = cols,
+                CanWrite = canWrite
             };
             return View(vm);
         }
@@ -118,7 +124,8 @@ namespace DLInventoryApp.Controllers
             {
                 InventoryId = inventoryId,
                 InventoryTitle = inv.Title,
-                CustomId = customId
+                CustomId = customId,
+                CanWrite = canWrite,
             };
             var fields = await _context.CustomFields
                 .Where(f => f.InventoryId == inventoryId)
@@ -199,7 +206,8 @@ namespace DLInventoryApp.Controllers
             {
                 InventoryId = inventoryId,
                 ItemId = itemId,
-                CustomId = item.CustomId
+                CustomId = item.CustomId,
+                CanWrite = canWrite
             };
             await FillEditVm(inventoryId, itemId, vm);
             return View(vm);

@@ -1,0 +1,48 @@
+﻿@model DLInventoryApp.ViewModels.Inventories.InventoryAccessVm
+
+<h2>Manage Access for @Model.InventoryTitle</h2>
+
+<div asp-validation-summary="All"></div>
+
+<h3>Users with write access:</h3>
+
+@if (!Model.Users.Any())
+{
+    <p>No users have write access.</p>
+}
+else
+{
+    <ul>
+        @foreach (var user in Model.Users)
+        {
+            <li>
+                @user.Email
+
+                <form asp-action="RemoveAccess"
+                      asp-route-inventoryId="@Model.InventoryId"
+                      method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="userId" value="@user.UserId" />
+                    <button type="submit">Remove</button>
+                </form>
+            </li>
+        }
+    </ul>
+}
+
+<h3>Add user by email:</h3>
+
+<form asp-action="AddAccess"
+      asp-route-inventoryId="@Model.InventoryId"
+      method="post">
+    @Html.AntiForgeryToken()
+
+    <input asp-for="NewUserEmail" />
+    <span asp-validation-for="NewUserEmail"></span>
+
+    <button type="submit">Add</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

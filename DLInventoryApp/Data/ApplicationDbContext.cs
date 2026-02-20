@@ -14,6 +14,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<CustomField> CustomFields => Set<CustomField>();
     public DbSet<ItemFieldValue> ItemFieldValues => Set<ItemFieldValue>();
     public DbSet<InventoryWriteAccess> InventoryWriteAccesses => Set<InventoryWriteAccess>();
+    public DbSet<Tag> Tags => Set<Tag>();
+    public DbSet<InventoryTag> InventoryTags => Set<InventoryTag>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -64,6 +66,24 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(ia => ia.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<Tag>(entity =>
+        {
+            entity.HasIndex(t => t.Name)
+                .IsUnique();
+        });
+        builder.Entity<InventoryTag>(entity =>
+        {
+            entity.HasKey(it => new { it.InventoryId, it.TagId });
+            entity.HasOne(it => it.Inventory)
+                .WithMany(inv => inv.InventoryTags)
+                .HasForeignKey(it => it.InventoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(it => it.Tag)
+                .WithMany(t => t.InventoryTags)
+                .HasForeignKey(it => it.TagId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(it => it.TagId);
         });
     }
 }

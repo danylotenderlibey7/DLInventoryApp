@@ -1,10 +1,12 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories
-@model CreateInventoryVm
+@model EditInventoryVm
 
-<h2>Create Inventory</h2>
+<h2>Edit Inventory</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="InventoryId" />
 
     <div>
         <label asp-for="Title"></label>
@@ -15,12 +17,22 @@
     <div>
         <label asp-for="Description"></label>
         <textarea asp-for="Description"></textarea>
+        <span asp-validation-for="Description"></span>
     </div>
 
     <div>
         <input asp-for="IsPublic" type="checkbox" />
         <label asp-for="IsPublic"></label>
     </div>
+
+    <div>
+        <label asp-for="CategoryId"></label>
+        <input asp-for="CategoryId" />
+        <span asp-validation-for="CategoryId"></span>
+    </div>
+
+    <hr />
+
     <div>
         <label>Tags</label>
 
@@ -32,6 +44,7 @@
         <div id="tagsChips" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
         <div id="tagsHidden"></div>
     </div>
+
     <button type="submit">Save</button>
 </form>
 
@@ -98,6 +111,11 @@
                 }
             });
 
+            const initial = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tags ?? new List<string>()));
+            initial.forEach(t => {
+                const n = normalize(t);
+                if (n) tags.add(n);
+            });
             render();
         })();
     </script>

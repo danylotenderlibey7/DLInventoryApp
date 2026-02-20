@@ -13,14 +13,18 @@ namespace DLInventoryApp.Services
         }
         public async Task<bool> CanWriteInventory(Guid inventoryId, string userId)
         {
-            var ownerId = await _context.Inventories
+            var inventory = await _context.Inventories
                 .Where(inv => inv.Id == inventoryId)
-                .Select(inv => inv.OwnerId)
-                .SingleOrDefaultAsync();
-            if (ownerId == userId) return true;
-            var hasAccess = await _context.InventoryWriteAccesses
+                .Select(inv => new
+                {
+                    inv.OwnerId,
+                    inv.IsPublic
+                }).SingleOrDefaultAsync(); 
+            if (inventory == null) return false;
+            if (inventory.IsPublic) return true; 
+            if (inventory.OwnerId == userId) return true;
+            return await _context.InventoryWriteAccesses
                 .AnyAsync(ia => ia.InventoryId == inventoryId && ia.UserId == userId);
-            return hasAccess;
         }
     }
 }

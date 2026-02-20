@@ -8,6 +8,7 @@ namespace DLInventoryApp.ViewModels.Items
         public Guid InventoryId { get; set; }
         public string InventoryTitle { get; set; } = string.Empty;
         public string CustomId { get; set; } = string.Empty;
-        public List<FieldValueInputVm> Fields { get; set; } = new();
+        public List<FieldValueInputVm> Fields { get; set; } = new(); 
+        public bool CanWrite { get; set; }
     }
 }

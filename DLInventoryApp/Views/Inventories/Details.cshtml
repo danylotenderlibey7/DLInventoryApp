@@ -1,5 +1,6 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories
 @model InventoryDetailsVm
+
 <h2>@Model.Title</h2>
 <div>
     <p>@Model.Title</p>
@@ -8,3 +9,14 @@
     <p>@(Model.IsPublic ? "Public" : "Private")</p>
     <p>@(Model.UpdatedAt ?? Model.CreatedAt)</p>
 </div>
+    <div>
+        <strong>Tags:</strong>
+        @foreach (var tag in Model.Tags)
+        {
+            <span style="padding:4px 8px; margin:4px; background:#eee; border-radius:4px;">
+                @tag
+            </span>
+        }
+    </div>
+<a asp-action="Edit" asp-route-inventoryId="@Model.Id">Edit</a>
+<a asp-action="Access" asp-route-inventoryId="@Model.Id">Manage Access</a>
