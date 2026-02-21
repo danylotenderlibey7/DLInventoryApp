@@ -27,9 +27,17 @@ namespace DLInventoryApp.Controllers
             _accessService = accessService;
         }
         [AllowAnonymous]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? tag)
         {
-            var list = await _context.Inventories
+            var query = _context.Inventories.AsQueryable(); 
+            if (!string.IsNullOrWhiteSpace(tag))
+            {
+                tag = tag.Trim().ToLower();
+                query = query.Where(inv =>
+                    inv.InventoryTags.Any(it => it.Tag.Name == tag)
+                );
+            }
+            var list = await query
                 .Select(inv => new MyInventoryRowVm
                 {
                     Id = inv.Id,
@@ -37,7 +45,10 @@ namespace DLInventoryApp.Controllers
                     CreatedAt = inv.CreatedAt,
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
-                    CategoryName = inv.Category != null ? inv.Category.Name : null
+                    CategoryName = inv.Category != null ? inv.Category.Name : null,
+                    Tags = inv.InventoryTags
+                    .Select(it => it.Tag.Name) 
+                    .ToList()
                 })
                 .OrderByDescending(vm => vm.UpdatedAt ?? vm.CreatedAt)
                 .ToListAsync();
@@ -56,11 +67,13 @@ namespace DLInventoryApp.Controllers
                     CreatedAt = inv.CreatedAt,
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
-                    CategoryName = inv.Category != null ? inv.Category.Name : null
+                    CategoryName = inv.Category != null ? inv.Category.Name : null,
+                    Tags = inv.InventoryTags
+                    .Select(it => it.Tag.Name)
+                    .ToList()
                 })
                 .OrderByDescending(vm => vm.UpdatedAt ?? vm.CreatedAt)
                 .ToListAsync();
-
             return View(list);
         }
         public IActionResult Create()
@@ -104,7 +117,7 @@ namespace DLInventoryApp.Controllers
                     Title=inv.Title,
                     Description = inv.Description,
                     IsPublic = inv.IsPublic,
-                    CategoryId = inv.CategoryId,
+                    //CategoryId = inv.CategoryId,
                     Tags = inv.InventoryTags.Select(it=>it.Tag.Name).ToList()
                 }).SingleOrDefaultAsync();
             if (vm == null) return NotFound();
@@ -126,9 +139,19 @@ namespace DLInventoryApp.Controllers
             entity.Title = vm.Title;
             entity.Description = vm.Description;
             entity.IsPublic = vm.IsPublic;
-            entity.CategoryId = vm.CategoryId;
+            //entity.CategoryId = vm.CategoryId;
             entity.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+            _context.Entry(entity)
+                .Property(x => x.Version).OriginalValue = vm.Version;
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                ModelState.AddModelError("", "The inventory has been updated by someone else. Please refresh the page and apply your changes again.");
+                return View(vm);
+            }
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
             return RedirectToAction(nameof(Details), new { id = entity.Id });
         }

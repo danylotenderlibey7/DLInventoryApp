@@ -15,6 +15,7 @@ else
             <tr>
                 <th>Title</th>
                 <th>Category</th>
+                <th>Tags</th>
                 <th>Items</th>
                 <th>Visibility</th>
                 <th>Last Updated</th>
@@ -29,9 +30,31 @@ else
                             @inv.Title
                         </a>
                     </td>
+
                     <td>
                         @(inv.CategoryName ?? "-")
                     </td>
+
+                    <td>
+                        @if (inv.Tags != null && inv.Tags.Any())
+                        {
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                @foreach (var t in inv.Tags)
+                                {
+                                    <a asp-action="Index"
+                                       asp-route-tag="@t"
+                                       style="padding:2px 8px; background:#eee; border-radius:12px; font-size:12px; text-decoration:none;">
+                                        @t
+                                    </a>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="color:#888;">-</span>
+                        }
+                    </td>
+
                     <td>
                         <a asp-controller="Items"
                            asp-action="Index"
@@ -39,9 +62,11 @@ else
                             @inv.ItemsCount
                         </a>
                     </td>
+
                     <td>
                         @(inv.IsPublic ? "Public" : "Private")
                     </td>
+
                     <td>
                         @(inv.UpdatedAt ?? inv.CreatedAt)
                     </td>

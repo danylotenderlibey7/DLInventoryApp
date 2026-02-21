@@ -6,6 +6,8 @@
         public string CustomId { get; set; } = null!;
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        public List<string?> Cells { get; set; } = new();
+        public List<string?> Cells { get; set; } = new(); 
+        public int LikesCount { get; set; }
+        public bool IsLikedByMe { get; set; }
     }
 }

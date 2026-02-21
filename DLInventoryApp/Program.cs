@@ -17,6 +17,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<ICustomIdGenerator, CustomIdGenerator>();
 builder.Services.AddScoped<IAccessService, AccessService>();
 builder.Services.AddScoped<ITagService, TagService>();
+builder.Services.AddScoped<ILikeService, ItemLikeService>();
 
 var app = builder.Build();
 

@@ -18,5 +18,6 @@ namespace DLInventoryApp.Models
         [Timestamp]
         public byte[]? Version { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
+        public List<ItemLike> Likes { get; set; } = new();
     }
 }

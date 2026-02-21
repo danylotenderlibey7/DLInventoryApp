@@ -7,7 +7,7 @@
     @Html.AntiForgeryToken()
 
     <input type="hidden" asp-for="InventoryId" />
-
+    <input type="hidden" asp-for="Version" />
     <div>
         <label asp-for="Title"></label>
         <input asp-for="Title" />
@@ -24,21 +24,25 @@
         <input asp-for="IsPublic" type="checkbox" />
         <label asp-for="IsPublic"></label>
     </div>
-
+    @* 
     <div>
         <label asp-for="CategoryId"></label>
         <input asp-for="CategoryId" />
         <span asp-validation-for="CategoryId"></span>
     </div>
-
+    *@
     <hr />
 
     <div>
         <label>Tags</label>
 
-        <div style="display:flex; gap:8px; align-items:center;">
-            <input type="text" id="tagInput" placeholder="type tag and press Add" />
+        <div style="display:flex; gap:8px; align-items:center; position:relative; max-width:520px;">
+            <input type="text" id="tagInput" placeholder="type tag and press Add" style="flex:1;" />
             <button type="button" id="addTagBtn">Add</button>
+
+            <div id="tagSuggestList"
+                 style="position:absolute; left:0; right:0; top:42px; background:#fff; border:1px solid #ddd; border-radius:8px; display:none; z-index:10; max-height:180px; overflow:auto;">
+            </div>
         </div>
 
         <div id="tagsChips" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
@@ -55,6 +59,7 @@
             const addBtn = document.getElementById("addTagBtn");
             const chips = document.getElementById("tagsChips");
             const hidden = document.getElementById("tagsHidden");
+            const suggestBox = document.getElementById("tagSuggestList");
 
             const tags = new Set();
 
@@ -95,27 +100,151 @@
                 });
             }
 
+            function closeSuggest() {
+                suggestBox.style.display = "none";
+                suggestBox.innerHTML = "";
+                activeIndex = -1;
+            }
+
+            function highlightActive() {
+                const children = Array.from(suggestBox.children);
+                children.forEach((el, i) => {
+                    el.style.background = (i === activeIndex) ? "#f3f4f6" : "#fff";
+                });
+            }
+
+            function showSuggest(items) {
+                suggestBox.innerHTML = "";
+                if (!items || items.length === 0) {
+                    closeSuggest();
+                    return;
+                }
+
+                items.forEach((name, idx) => {
+                    const row = document.createElement("div");
+                    row.textContent = name;
+                    row.style.padding = "8px 10px";
+                    row.style.cursor = "pointer";
+
+                    row.addEventListener("mouseenter", () => {
+                        activeIndex = idx;
+                        highlightActive();
+                    });
+
+                    row.addEventListener("mousedown", (e) => {
+                        e.preventDefault();
+                        const n = normalize(name);
+                        if (n) tags.add(n);
+                        input.value = "";
+                        render();
+                        closeSuggest();
+                    });
+
+                    suggestBox.appendChild(row);
+                });
+
+                suggestBox.style.display = "block";
+                highlightActive();
+            }
+
+            async function loadSuggest() {
+                const raw = input.value || "";
+                const current = normalize(raw);
+
+                if (!current || current.length < 2) {
+                    closeSuggest();
+                    return;
+                }
+
+                if (current === lastQuery) return;
+                lastQuery = current;
+
+                try {
+                    const resp = await fetch(`/Tags/Suggest?prefix=${encodeURIComponent(current)}`);
+                    if (!resp.ok) { closeSuggest(); return; }
+
+                    const names = await resp.json();
+
+                    const filtered = (names || [])
+                        .map(n => normalize(n))
+                        .filter(n => n && !tags.has(n))
+                        .slice(0, 10);
+
+                    showSuggest(filtered);
+                } catch {
+                    closeSuggest();
+                }
+            }
+
             function addTag() {
                 const t = normalize(input.value);
                 if (!t) return;
                 tags.add(t);
                 input.value = "";
                 render();
+                closeSuggest();
             }
-
             addBtn.addEventListener("click", addTag);
+
             input.addEventListener("keydown", e => {
+                if (suggestBox.style.display === "block") {
+                    if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        activeIndex = Math.min(activeIndex + 1, suggestBox.children.length - 1);
+                        highlightActive();
+                        return;
+                    }
+                    if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        activeIndex = Math.max(activeIndex - 1, 0);
+                        highlightActive();
+                        return;
+                    }
+                    if (e.key === "Escape") {
+                        closeSuggest();
+                        return;
+                    }
+                    if (e.key === "Enter" && activeIndex >= 0) {
+                        e.preventDefault();
+                        const el = suggestBox.children[activeIndex];
+                        if (el) {
+                            const n = normalize(el.textContent);
+                            if (n) tags.add(n);
+                            input.value = "";
+                            render();
+                            closeSuggest();
+                        }
+                        return;
+                    }
+                }
+
                 if (e.key === "Enter") {
                     e.preventDefault();
                     addTag();
                 }
             });
 
+            let timer = null;
+            input.addEventListener("input", () => {
+                clearTimeout(timer);
+                timer = setTimeout(loadSuggest, 150);
+            });
+
+            document.addEventListener("click", (e) => {
+                if (e.target !== input && !suggestBox.contains(e.target)) {
+                    closeSuggest();
+                }
+            });
+
+            let lastQuery = "";
+            let activeIndex = -1;
+
             const initial = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tags ?? new List<string>()));
             initial.forEach(t => {
                 const n = normalize(t);
                 if (n) tags.add(n);
             });
+
             render();
         })();
     </script>

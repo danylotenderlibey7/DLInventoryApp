@@ -9,6 +9,7 @@ namespace DLInventoryApp.ViewModels.Inventories
         public string? Description { get; set; } 
         public bool IsPublic { get; set; } = false;
         public int? CategoryId { get; set; } = null!;
-        public List<string> Tags { get; set; } = new();
+        public List<string> Tags { get; set; } = new(); 
+        public byte[]? Version { get; set; }
     }
 }

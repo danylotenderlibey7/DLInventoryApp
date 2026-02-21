@@ -32,6 +32,23 @@ else
                         @(inv.CategoryName ?? "-")
                     </td>
                     <td>
+                        @if (inv.Tags != null && inv.Tags.Any())
+                        {
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                @foreach (var t in inv.Tags)
+                                {
+                                    <span style="padding:2px 8px; background:#eee; border-radius:12px; font-size:12px;">
+                                        @t
+                                    </span>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <span style="color:#888;">-</span>
+                        }
+                    </td>
+                    <td>
                         <a asp-controller="Items"
                            asp-action="Index"
                            asp-route-inventoryId="@inv.Id">

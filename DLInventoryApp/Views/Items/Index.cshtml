@@ -25,12 +25,14 @@
 }
 else
 {
-    @if (Model.CanWrite)
+    if (Model.CanWrite)
     {
         <form asp-action="Delete"
               asp-controller="Items"
               asp-route-inventoryId="@Model.InventoryId"
               method="post">
+
+            @Html.AntiForgeryToken()
 
             <button type="submit">Delete Selected</button>
 
@@ -47,6 +49,7 @@ else
 
                         <th>Created</th>
                         <th>Last Updated</th>
+                        <th>Likes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,6 +84,21 @@ else
 
                             <td>@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                             <td>@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
+
+                            <td>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <button type="submit"
+                                            formaction="@Url.Action("ToggleLike", "Items", new { inventoryId = Model.InventoryId, itemId = it.Id })"
+                                            formmethod="post">
+                                        @(it.IsLikedByMe ? "Unlike" : "Like")
+                                    </button>
+                                }
+
+                                <span style="margin-left:6px;">
+                                    @it.LikesCount
+                                </span>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -101,6 +119,7 @@ else
 
                     <th>Created</th>
                     <th>Last Updated</th>
+                    <th>Likes</th>
                 </tr>
             </thead>
             <tbody>
@@ -126,6 +145,27 @@ else
 
                         <td>@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
                         <td>@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
+
+                        <td>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <form asp-action="ToggleLike"
+                                      asp-controller="Items"
+                                      asp-route-inventoryId="@Model.InventoryId"
+                                      asp-route-itemId="@it.Id"
+                                      method="post"
+                                      style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit">
+                                        @(it.IsLikedByMe ? "Unlike" : "Like")
+                                    </button>
+                                </form>
+                            }
+
+                            <span style="margin-left:6px;">
+                                @it.LikesCount
+                            </span>
+                        </td>
                     </tr>
                 }
             </tbody>

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace DLInventoryApp.Controllers
 {
@@ -18,13 +19,15 @@ namespace DLInventoryApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ICustomIdGenerator _customIdGenerator;
         private readonly IAccessService _accessService;
+        private readonly ILikeService _likeService;
         public ItemsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
-            ICustomIdGenerator customIdGenerator, IAccessService accessService)
+            ICustomIdGenerator customIdGenerator, IAccessService accessService, ILikeService likeService)
         {
             _context = context;
             _userManager = userManager;
             _customIdGenerator = customIdGenerator;
             _accessService = accessService;
+            _likeService = likeService;
         }
         [AllowAnonymous]
         public async Task<IActionResult> Index(Guid inventoryId)
@@ -39,8 +42,7 @@ namespace DLInventoryApp.Controllers
                 .Where(inv => inv.Id == inventoryId)
                 .Select(inv => inv.Title)
                 .SingleOrDefaultAsync();
-            if (title == null)
-                return NotFound();
+            if (title == null) return NotFound();
             var items = await _context.Items
                 .Where(it => it.InventoryId == inventoryId)
                 .Select(it => new InventoryItemRowVm
@@ -71,24 +73,36 @@ namespace DLInventoryApp.Controllers
                     IsUnique = f.IsUnique,
                     Type = f.Type
                 }).ToListAsync();
+            var counts = await _context.ItemLikes
+                .Where(l => itemIds.Contains(l.ItemId))
+                .GroupBy(l => l.ItemId)
+                .Select(g => new { ItemId = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.ItemId, x => x.Count);
+            HashSet<Guid> likedSet = new();
+            if (userId != null)
+            {
+                var likedList = await _context.ItemLikes
+                    .Where(l => l.UserId == userId && itemIds.Contains(l.ItemId))
+                    .Select(l => l.ItemId)
+                    .ToListAsync();
+                likedSet = likedList.ToHashSet();
+            }
             foreach (var it in items)
             {
+                it.LikesCount = counts.TryGetValue(it.Id, out var c) ? c : 0;
+                it.IsLikedByMe = userId != null && likedSet.Contains(it.Id);
                 it.Cells = new List<string?>();
                 valuesByItem.TryGetValue(it.Id, out var values);
-                foreach (var c in cols)
+                foreach (var ccol in cols)
                 {
-                    var cell = values?.FirstOrDefault(v => v.CustomFieldId == c.Id);
+                    var cell = values?.FirstOrDefault(v => v.CustomFieldId == ccol.Id);
                     string? cellText = null;
                     if (cell != null)
                     {
-                        if (cell.TextValue != null)
-                            cellText = cell.TextValue;
-                        else if (cell.NumberValue != null)
-                            cellText = cell.NumberValue.ToString();
-                        else if (cell.DateValue != null)
-                            cellText = cell.DateValue.Value.ToString("yyyy-MM-dd");
-                        else if (cell.BoolValue != null)
-                            cellText = cell.BoolValue.Value ? "Yes" : "No";
+                        if (cell.TextValue != null) cellText = cell.TextValue;
+                        else if (cell.NumberValue != null) cellText = cell.NumberValue.ToString();
+                        else if (cell.DateValue != null) cellText = cell.DateValue.Value.ToString("yyyy-MM-dd");
+                        else if (cell.BoolValue != null) cellText = cell.BoolValue.Value ? "Yes" : "No";
                     }
                     it.Cells.Add(cellText);
                 }
@@ -312,6 +326,14 @@ namespace DLInventoryApp.Controllers
                 };
             }).ToList();
             vm.InventoryTitle = title ?? "";
+        }
+        [HttpPost("{itemId:guid}/Like")]
+        public async Task<IActionResult> ToggleLike(Guid inventoryId, Guid itemId)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Challenge();
+            await _likeService.ToggleAsync(itemId, userId);
+            return RedirectToAction("Index", new { inventoryId });
         }
     }
 }

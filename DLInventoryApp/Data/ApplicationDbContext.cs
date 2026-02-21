@@ -16,6 +16,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<InventoryWriteAccess> InventoryWriteAccesses => Set<InventoryWriteAccess>();
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<InventoryTag> InventoryTags => Set<InventoryTag>();
+    public DbSet<ItemLike> ItemLikes => Set<ItemLike>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -84,6 +85,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .HasForeignKey(it => it.TagId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(it => it.TagId);
+        });
+        builder.Entity<ItemLike>(entity =>
+        {
+            entity.HasKey(il => new { il.UserId, il.ItemId });
+            entity.HasOne(il => il.Item)
+              .WithMany(i => i.Likes)
+              .HasForeignKey(il => il.ItemId)
+              .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(il => il.User)
+              .WithMany(u => u.LikedItems)
+              .HasForeignKey(il => il.UserId)
+              .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -9,5 +9,6 @@ namespace DLInventoryApp.Models
         [MaxLength(2)]
         public string PreferredLanguage { get; set; } = "en";
         public string PreferredTheme { get; set; } = "light";
+        public List<ItemLike> LikedItems { get; set; } = new();
     }
 }
