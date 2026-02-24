@@ -1,0 +1,332 @@
+﻿@using DLInventoryApp.ViewModels.Discussions
+@model DiscussionIndexVm
+
+<h2>Discussion</h2>
+
+<div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <div style="width:30%; min-width:260px;">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form id="postForm"
+                  asp-action="Create"
+                  asp-route-inventoryId="@Model.InventoryId"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div>
+                    <textarea name="text"
+                              rows="8"
+                              style="width:100%;"
+                              maxlength="2048"
+                              placeholder="Write a comment... (Markdown supported)"></textarea>
+                </div>
+
+                <button type="submit" style="margin-top:10px;">Post</button>
+            </form>
+        }
+        else
+        {
+            <p>You must sign in to post comments.</p>
+        }
+
+        <div style="margin-top:14px; color:#777; font-size:12px; line-height:1.4;">
+            <div><b>Markdown tips</b></div>
+            <div><code>**bold**</code>, <code>*italic*</code></div>
+            <div><code>- list</code></div>
+            <div><code>[link](https://example.com)</code></div>
+        </div>
+    </div>
+
+    <div style="flex:1;" id="posts">
+        @if (Model.Posts == null || !Model.Posts.Any())
+        {
+            <p id="emptyState">No comments yet.</p>
+        }
+        else
+        {
+            foreach (var p in Model.Posts)
+            {
+                <div id="post-@p.Id" style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+                    <div>
+                        <b class="author">@p.AuthorName</b>
+                        <span class="meta" style="color:#777;">— @p.CreatedAt</span>
+
+                        @if (p.UpdatedAt != null)
+                        {
+                            <span class="edited" style="color:#777;">(edited @p.UpdatedAt)</span>
+                        }
+
+                        <span style="float:right;">
+                            @if (p.CanEdit)
+                            {
+                                <button type="button"
+                                        class="editBtn"
+                                        data-post-id="@p.Id"
+                                        style="margin-right:10px;">
+                                    Edit
+                                </button>
+                            }
+
+                            @if (p.CanDelete)
+                            {
+                                <form class="deleteForm"
+                                      asp-action="Delete"
+                                      asp-route-inventoryId="@Model.InventoryId"
+                                      asp-route-postId="@p.Id"
+                                      method="post"
+                                      style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit">Delete</button>
+                                </form>
+                            }
+                        </span>
+                    </div>
+
+                    <div class="postBody" style="margin-top:6px;">
+                        @Html.Raw(p.Html)
+                    </div>
+                    @if (p.CanEdit)
+                    {
+                        <div class="postEditor" style="margin-top:10px; display:none;">
+                            <textarea class="editText" rows="6" style="width:100%;" maxlength="2048">@p.Text</textarea>
+                            <div style="margin-top:8px;">
+                                <button type="button" class="saveEditBtn" data-post-id="@p.Id">Save</button>
+                                <button type="button" class="cancelEditBtn" data-post-id="@p.Id" style="margin-left:8px;">Cancel</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    const inventoryId = "@Model.InventoryId";
+    const postsEl = document.getElementById("posts");
+    const emptyStateEl = document.getElementById("emptyState");
+    const postForm = document.getElementById("postForm");
+
+    function escapeHtml(s) {
+        return (s ?? "").toString().replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function formatDate(d) {
+        try { return new Date(d).toLocaleString(); } catch { return ""; }
+    }
+    function postDomId(id) { return `post-${id}`; }
+
+    function hideEmptyState() {
+        if (emptyStateEl) emptyStateEl.style.display = "none";
+    }
+    function buildPostHtml(dto) {
+        const id = dto.id;
+        const authorName = escapeHtml(dto.authorName);
+        const created = escapeHtml(formatDate(dto.createdAt));
+        const updated = dto.updatedAt ? escapeHtml(formatDate(dto.updatedAt)) : null;
+
+        const bodyHtml = dto.html
+            ? dto.html
+            : `<div style="white-space:pre-wrap;">${escapeHtml(dto.text)}</div>`;
+        return `
+            <div id="${postDomId(id)}" style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+                <div>
+                    <b class="author">${authorName}</b>
+                    <span class="meta" style="color:#777;">— ${created}</span>
+                    ${updated ? `<span class="edited" style="color:#777;">(edited ${updated})</span>` : ``}
+                </div>
+                <div class="postBody" style="margin-top:6px;">
+                    ${bodyHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    function addPost(dto) {
+        hideEmptyState();
+
+        const existing = document.getElementById(postDomId(dto.id));
+        if (existing) return;
+
+        postsEl.insertAdjacentHTML("beforeend", buildPostHtml(dto));
+    }
+
+    function removePost(postId) {
+        const el = document.getElementById(postDomId(postId));
+        if (el) el.remove();
+    }
+    function applyEdit(dto) {
+        const el = document.getElementById(postDomId(dto.id));
+        if (!el) return;
+
+        const bodyEl = el.querySelector(".postBody");
+        if (bodyEl) {
+            if (dto.html) bodyEl.innerHTML = dto.html;
+            else bodyEl.innerHTML = `<div style="white-space:pre-wrap;">${escapeHtml(dto.text)}</div>`;
+        }
+
+        const ta = el.querySelector(".editText");
+        if (ta) ta.value = dto.text ?? "";
+
+        const updatedText = dto.updatedAt ? `(edited ${formatDate(dto.updatedAt)})` : "";
+        let editedEl = el.querySelector(".edited");
+        if (updatedText) {
+            if (!editedEl) {
+                editedEl = document.createElement("span");
+                editedEl.className = "edited";
+                editedEl.style.color = "#777";
+                const header = el.firstElementChild;
+                header.appendChild(document.createTextNode(" "));
+                header.appendChild(editedEl);
+            }
+            editedEl.textContent = updatedText;
+        }
+    }
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/discussion")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("PostAdded", (dto) => addPost(dto));
+    connection.on("PostDeleted", (postId) => removePost(postId));
+    connection.on("PostEdited", (dto) => applyEdit(dto));
+
+    connection.start()
+        .then(() => connection.invoke("JoinInventory", inventoryId))
+        .catch(err => console.error(err));
+
+    if (postForm) {
+        postForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const textarea = postForm.querySelector('textarea[name="text"]');
+            const text = textarea.value;
+            if (!text.trim()) return;
+
+            const token = postForm.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const formData = new FormData();
+            formData.append("text", text);
+
+            const res = await fetch(postForm.action, {
+                method: "POST",
+                body: formData,
+                headers: { "RequestVerificationToken": token }
+            });
+
+            if (!res.ok) {
+                console.error("Create failed:", await res.text());
+                return;
+            }
+
+            textarea.value = "";
+        });
+    }
+
+    document.addEventListener("submit", async (e) => {
+        const f = e.target;
+        if (!f.classList || !f.classList.contains("deleteForm")) return;
+
+        e.preventDefault();
+
+        const tokenEl = f.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenEl ? tokenEl.value : null;
+
+        const res = await fetch(f.action, {
+            method: "POST",
+            headers: token ? { "RequestVerificationToken": token } : {}
+        });
+
+        if (!res.ok) {
+            console.error("Delete failed:", await res.text());
+        }
+    });
+
+    function getPostEl(postId) {
+        return document.getElementById(postDomId(postId));
+    }
+
+    document.addEventListener("click", (e) => {
+        const editBtn = e.target.closest(".editBtn");
+        if (editBtn) {
+            const postId = editBtn.dataset.postId;
+            const postEl = getPostEl(postId);
+            if (!postEl) return;
+
+            const body = postEl.querySelector(".postBody");
+            const editor = postEl.querySelector(".postEditor");
+            if (!body || !editor) return;
+
+            body.style.display = "none";
+            editor.style.display = "block";
+            return;
+        }
+
+        const cancelBtn = e.target.closest(".cancelEditBtn");
+        if (cancelBtn) {
+            const postId = cancelBtn.dataset.postId;
+            const postEl = getPostEl(postId);
+            if (!postEl) return;
+
+            const body = postEl.querySelector(".postBody");
+            const editor = postEl.querySelector(".postEditor");
+            const ta = postEl.querySelector(".editText");
+            if (!body || !editor || !ta) return;
+
+            ta.value = body.innerText;
+
+            editor.style.display = "none";
+            body.style.display = "block";
+            return;
+        }
+    });
+    document.addEventListener("click", async (e) => {
+        const saveBtn = e.target.closest(".saveEditBtn");
+        if (!saveBtn) return;
+
+        const postId = saveBtn.dataset.postId;
+        const postEl = getPostEl(postId);
+        if (!postEl) return;
+
+        const ta = postEl.querySelector(".editText");
+        const text = ta ? ta.value : "";
+        if (!text.trim()) return;
+
+        const tokenFromCreate = postForm
+            ? postForm.querySelector('input[name="__RequestVerificationToken"]').value
+            : null;
+
+        if (!tokenFromCreate) {
+            console.error("No antiforgery token found for edit.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("text", text);
+
+        const url = `/Inventories/${inventoryId}/Discussion/Edit/${postId}`;
+
+        const res = await fetch(url, {
+            method: "POST",
+            body: formData,
+            headers: { "RequestVerificationToken": tokenFromCreate }
+        });
+
+        if (!res.ok) {
+            console.error("Edit failed:", await res.text());
+            return;
+        }
+
+        const body = postEl.querySelector(".postBody");
+        const editor = postEl.querySelector(".postEditor");
+        if (body && editor) {
+            editor.style.display = "none";
+            body.style.display = "block";
+        }
+    });
+</script>

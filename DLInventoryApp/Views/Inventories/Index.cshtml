@@ -19,6 +19,7 @@ else
                 <th>Items</th>
                 <th>Visibility</th>
                 <th>Last Updated</th>
+                <th>Discussion</th>
             </tr>
         </thead>
         <tbody>
@@ -69,6 +70,13 @@ else
 
                     <td>
                         @(inv.UpdatedAt ?? inv.CreatedAt)
+                    </td>
+                    <td>
+                        <a asp-controller="Discussion"
+                           asp-action="Index"
+                           asp-route-inventoryId="@inv.Id">
+                            Discussion
+                        </a>
                     </td>
                 </tr>
             }

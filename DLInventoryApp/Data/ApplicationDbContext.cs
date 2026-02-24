@@ -17,6 +17,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Tag> Tags => Set<Tag>();
     public DbSet<InventoryTag> InventoryTags => Set<InventoryTag>();
     public DbSet<ItemLike> ItemLikes => Set<ItemLike>();
+    public DbSet<DiscussionPost> DiscussionPosts => Set<DiscussionPost>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -110,6 +111,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
               .WithMany(u => u.LikedItems)
               .HasForeignKey(il => il.UserId)
               .OnDelete(DeleteBehavior.Cascade);
+        });
+        builder.Entity<DiscussionPost>(entity =>
+        {
+            entity.HasOne(dp => dp.Inventory)
+              .WithMany(inv => inv.DiscussionPosts)
+              .HasForeignKey(dp => dp.InventoryId)
+              .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(dp => dp.Author)
+              .WithMany()
+              .HasForeignKey(dp => dp.AuthorId)
+              .OnDelete(DeleteBehavior.SetNull);
         });
     }
 }
