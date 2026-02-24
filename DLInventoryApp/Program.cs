@@ -5,6 +5,7 @@ using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using DLInventoryApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
@@ -39,7 +41,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Auth
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
-
+await IdentitySeeder.SeedAsync(app);
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -55,6 +57,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();
+app.UseMiddleware<BlockedUserMiddleware>();
 app.UseAuthorization();
 
 app.MapControllerRoute(

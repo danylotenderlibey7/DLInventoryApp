@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DLInventoryApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260217143550_MakeVersionNullable")]
-    partial class MakeVersionNullable
+    [Migration("20260224121144_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,12 +72,13 @@ namespace DLInventoryApp.Migrations
 
                     b.Property<string>("PreferredLanguage")
                         .IsRequired()
-                        .HasMaxLength(2)
-                        .HasColumnType("character varying(2)");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("PreferredTheme")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -120,6 +121,42 @@ namespace DLInventoryApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.CustomField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("InventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsUnique")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("CustomFields");
                 });
 
             modelBuilder.Entity("DLInventoryApp.Models.Inventory", b =>
@@ -172,6 +209,36 @@ namespace DLInventoryApp.Migrations
                     b.ToTable("Inventories");
                 });
 
+            modelBuilder.Entity("DLInventoryApp.Models.InventoryTag", b =>
+                {
+                    b.Property<Guid>("InventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("InventoryId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("InventoryTags");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.InventoryWriteAccess", b =>
+                {
+                    b.Property<Guid>("InventoryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("InventoryId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("InventoryWriteAccesses");
+                });
+
             modelBuilder.Entity("DLInventoryApp.Models.Item", b =>
                 {
                     b.Property<Guid>("Id")
@@ -209,6 +276,73 @@ namespace DLInventoryApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.ItemFieldValue", b =>
+                {
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("CustomFieldId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool?>("BoolValue")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LinkValue")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<decimal?>("NumberValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("TextValue")
+                        .HasColumnType("text");
+
+                    b.HasKey("ItemId", "CustomFieldId");
+
+                    b.HasIndex("CustomFieldId");
+
+                    b.ToTable("ItemFieldValues");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.ItemLike", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "ItemId");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("ItemLikes");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -347,6 +481,17 @@ namespace DLInventoryApp.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("DLInventoryApp.Models.CustomField", b =>
+                {
+                    b.HasOne("DLInventoryApp.Models.Inventory", "Inventory")
+                        .WithMany("CustomFields")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+                });
+
             modelBuilder.Entity("DLInventoryApp.Models.Inventory", b =>
                 {
                     b.HasOne("DLInventoryApp.Models.Category", "Category")
@@ -362,6 +507,44 @@ namespace DLInventoryApp.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.InventoryTag", b =>
+                {
+                    b.HasOne("DLInventoryApp.Models.Inventory", "Inventory")
+                        .WithMany("InventoryTags")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DLInventoryApp.Models.Tag", "Tag")
+                        .WithMany("InventoryTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.InventoryWriteAccess", b =>
+                {
+                    b.HasOne("DLInventoryApp.Models.Inventory", "Inventory")
+                        .WithMany("WriteAccesses")
+                        .HasForeignKey("InventoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DLInventoryApp.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Inventory");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DLInventoryApp.Models.Item", b =>
@@ -381,6 +564,44 @@ namespace DLInventoryApp.Migrations
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Inventory");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.ItemFieldValue", b =>
+                {
+                    b.HasOne("DLInventoryApp.Models.CustomField", "CustomField")
+                        .WithMany("FieldValues")
+                        .HasForeignKey("CustomFieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DLInventoryApp.Models.Item", "Item")
+                        .WithMany("FieldValues")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CustomField");
+
+                    b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.ItemLike", b =>
+                {
+                    b.HasOne("DLInventoryApp.Models.Item", "Item")
+                        .WithMany("Likes")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DLInventoryApp.Models.ApplicationUser", "User")
+                        .WithMany("LikedItems")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -434,9 +655,37 @@ namespace DLInventoryApp.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DLInventoryApp.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("LikedItems");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.CustomField", b =>
+                {
+                    b.Navigation("FieldValues");
+                });
+
             modelBuilder.Entity("DLInventoryApp.Models.Inventory", b =>
                 {
+                    b.Navigation("CustomFields");
+
+                    b.Navigation("InventoryTags");
+
                     b.Navigation("Items");
+
+                    b.Navigation("WriteAccesses");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.Item", b =>
+                {
+                    b.Navigation("FieldValues");
+
+                    b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("DLInventoryApp.Models.Tag", b =>
+                {
+                    b.Navigation("InventoryTags");
                 });
 #pragma warning restore 612, 618
         }

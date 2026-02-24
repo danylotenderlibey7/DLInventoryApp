@@ -14,8 +14,8 @@ namespace DLInventoryApp.Models
         [MaxLength(1000)]
         public string Description { get; set; } = "";
         public bool IsPublic { get; set; } = false;
-        public int? CategoryId { get; set; } = null!;
-        public Category? Category { get; set; } = null!;
+        public int? CategoryId { get; set; }
+        public Category? Category { get; set; }
         [MaxLength(2048)]
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

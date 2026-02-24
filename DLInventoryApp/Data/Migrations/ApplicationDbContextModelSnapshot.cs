@@ -69,12 +69,13 @@ namespace DLInventoryApp.Migrations
 
                     b.Property<string>("PreferredLanguage")
                         .IsRequired()
-                        .HasMaxLength(2)
-                        .HasColumnType("character varying(2)");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("PreferredTheme")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
@@ -138,7 +139,8 @@ namespace DLInventoryApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("Order")
                         .HasColumnType("integer");
@@ -284,8 +286,9 @@ namespace DLInventoryApp.Migrations
                     b.Property<bool?>("BoolValue")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime?>("DateValue")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("LinkValue")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<decimal?>("NumberValue")
                         .HasColumnType("numeric");
@@ -328,7 +331,8 @@ namespace DLInventoryApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 

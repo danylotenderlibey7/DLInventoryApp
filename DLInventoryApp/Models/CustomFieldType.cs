@@ -2,9 +2,10 @@
 {
     public enum CustomFieldType
     {
-        Text = 0,
-        Number = 1,
-        Date = 2,
-        Boolean = 3
+        SingleLineText = 0,
+        MultiLineText = 1,
+        DocumentLink = 2,
+        Number = 3,
+        Boolean = 4
     }
 }

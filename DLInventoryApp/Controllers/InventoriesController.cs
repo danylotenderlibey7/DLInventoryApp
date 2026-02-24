@@ -89,6 +89,7 @@ namespace DLInventoryApp.Controllers
                 return View(vm);
             }
             var userId = _userManager.GetUserId(User);
+            if (userId == null) Challenge();
             var entity = new Inventory
             {
                 Title = vm.Title,

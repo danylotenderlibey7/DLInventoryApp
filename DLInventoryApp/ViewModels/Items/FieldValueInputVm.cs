@@ -9,7 +9,7 @@ namespace DLInventoryApp.ViewModels.Items
         public CustomFieldType Type { get; set; }
         public string? TextValue { get; set; }
         public decimal? NumberValue { get; set; }
-        public DateTime? DateValue { get; set; }
+        public string? LinkValue { get; set; }
         public bool BoolValue { get; set; }
         public bool IsRequired { get; set; }
     }

@@ -101,7 +101,7 @@ namespace DLInventoryApp.Controllers
                     {
                         if (cell.TextValue != null) cellText = cell.TextValue;
                         else if (cell.NumberValue != null) cellText = cell.NumberValue.ToString();
-                        else if (cell.DateValue != null) cellText = cell.DateValue.Value.ToString("yyyy-MM-dd");
+                        else if (cell.LinkValue != null) cellText = cell.LinkValue;
                         else if (cell.BoolValue != null) cellText = cell.BoolValue.Value ? "Yes" : "No";
                     }
                     it.Cells.Add(cellText);
@@ -188,7 +188,7 @@ namespace DLInventoryApp.Controllers
                     CustomFieldId = f.CustomFieldId,
                     TextValue = f.TextValue,
                     NumberValue = f.NumberValue,
-                    DateValue = f.DateValue,
+                    LinkValue = f.LinkValue,
                     BoolValue = f.BoolValue
                 };
                 _context.ItemFieldValues.Add(value);
@@ -239,11 +239,28 @@ namespace DLInventoryApp.Controllers
             for (int i = 0; i < vm.Fields.Count; i++)
             {
                 var f = vm.Fields[i];
-                if (f.IsRequired && f.Type == CustomFieldType.Text)
+                if (f.IsRequired)
                 {
-                    if (string.IsNullOrWhiteSpace(f.TextValue))
+                    if (f.Type == CustomFieldType.SingleLineText || f.Type == CustomFieldType.MultiLineText)
                     {
-                        ModelState.AddModelError($"Fields[{i}].TextValue", "This field is required.");
+                        if (string.IsNullOrWhiteSpace(f.TextValue))
+                        {
+                            ModelState.AddModelError($"Fields[{i}].TextValue", "This field is required.");
+                        }
+                    }
+                    else if (f.Type == CustomFieldType.DocumentLink)
+                    {
+                        if (string.IsNullOrWhiteSpace(f.LinkValue))
+                        {
+                            ModelState.AddModelError($"Fields[{i}].LinkValue", "This field is required.");
+                        }
+                    }
+                    else if (f.Type == CustomFieldType.Number)
+                    {
+                        if (f.NumberValue == null)
+                        {
+                            ModelState.AddModelError($"Fields[{i}].NumberValue", "This field is required.");
+                        }
                     }
                 }
             }
@@ -275,7 +292,7 @@ namespace DLInventoryApp.Controllers
                 }
                 db.TextValue = f.TextValue;
                 db.NumberValue = f.NumberValue;
-                db.DateValue = f.DateValue;
+                db.LinkValue = f.LinkValue;
                 db.BoolValue = f.BoolValue;
             }
             await _context.SaveChangesAsync();
@@ -320,7 +337,7 @@ namespace DLInventoryApp.Controllers
                     Type = f.Type,
                     TextValue = val?.TextValue,
                     NumberValue = val?.NumberValue,
-                    DateValue = val?.DateValue,
+                    LinkValue = val?.LinkValue,
                     BoolValue = val?.BoolValue ?? false,
                     IsRequired = f.IsRequired
                 };

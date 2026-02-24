@@ -21,24 +21,26 @@ method="post">
         {
             <div class="mt-3">
                 <div><strong>@Model.Fields[i].Name</strong></div>
-
-                @if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Text)
+                @if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.SingleLineText)
                 {
                     <input asp-for="Fields[@i].TextValue" class="form-control" />
+                }
+                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.MultiLineText)
+                {
+                    <textarea asp-for="Fields[@i].TextValue" class="form-control"></textarea>
+                }
+                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.DocumentLink)
+                {
+                    <input asp-for="Fields[@i].LinkValue" class="form-control" />
                 }
                 else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Number)
                 {
                     <input asp-for="Fields[@i].NumberValue" type="number" class="form-control" />
                 }
-                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Date)
-                {
-                    <input asp-for="Fields[@i].DateValue" type="date" class="form-control" />
-                }
                 else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Boolean)
                 {
                     <input asp-for="Fields[@i].BoolValue" type="checkbox" />
                 }
-
                 <input type="hidden" asp-for="Fields[@i].CustomFieldId" />
                 <input type="hidden" asp-for="Fields[@i].Type" />
                 <input type="hidden" asp-for="Fields[@i].Name" />

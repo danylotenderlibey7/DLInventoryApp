@@ -23,6 +23,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<Category>()
             .HasIndex(c => c.Name)
             .IsUnique();
+        builder.Entity<Inventory>(entity =>
+        {
+            entity
+            .HasOne(inv => inv.Owner)
+            .WithMany()
+            .HasForeignKey(inv => inv.OwnerId)
+            .OnDelete(DeleteBehavior.Cascade);
+        });
         builder.Entity<Item>(entity =>
         {
             entity
@@ -33,6 +41,11 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity
             .HasIndex(i => new { i.InventoryId, i.CustomId })
             .IsUnique();
+            entity
+            .HasOne(i => i.CreatedBy)
+            .WithMany()
+            .HasForeignKey(i => i.CreatedById)
+            .OnDelete(DeleteBehavior.Cascade);
         });
         builder.Entity<CustomField>(entity =>
         {
