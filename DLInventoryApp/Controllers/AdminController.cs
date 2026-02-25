@@ -1,5 +1,6 @@
 ﻿using DLInventoryApp.Data;
 using DLInventoryApp.Models;
+using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -14,10 +15,25 @@ namespace DLInventoryApp.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
-        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        private readonly ISearchService _search;
+        public AdminController(UserManager<ApplicationUser> userManager, 
+            ApplicationDbContext context, ISearchService search)
         {
             _userManager = userManager;
             _context = context;
+            _search = search;
+        }
+        public async Task<IActionResult> TestSearch(string query)
+        {
+            var result = await _search.SearchAsync(query);
+            return Json(new
+            {
+                query = result.Query,
+                inventories = result.Inventories.Count,
+                items = result.Items.Count,
+                sampleInventory = result.Inventories.Take(2),
+                sampleItem = result.Items.Take(2)
+            });
         }
         public async Task<IActionResult> Users()
         {
@@ -134,5 +150,6 @@ namespace DLInventoryApp.Controllers
             }
             return RedirectToAction("Users");
         }
+        
     }
 }

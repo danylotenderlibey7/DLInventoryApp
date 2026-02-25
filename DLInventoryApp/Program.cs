@@ -39,6 +39,7 @@ builder.Services.AddScoped<ICustomIdGenerator, CustomIdGenerator>();
 builder.Services.AddScoped<IAccessService, AccessService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ILikeService, ItemLikeService>();
+builder.Services.AddScoped<ISearchService, LuceneSearchService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Authentication:Brevo"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<IMarkdownService, MarkdownService>();

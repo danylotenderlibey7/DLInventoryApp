@@ -1,0 +1,69 @@
+﻿@model DLInventoryApp.ViewModels.Search.SearchResultVm
+
+@{
+    ViewData["Title"] = "Search";
+}
+
+<h1>Search</h1>
+
+@if (string.IsNullOrWhiteSpace(Model.Query))
+{
+    <p>Enter a query in the search box.</p>
+    return;
+}
+
+<p>Query: <strong>@Model.Query</strong></p>
+
+<hr />
+
+<h2>Inventories (@Model.Inventories.Count)</h2>
+
+@if (Model.Inventories.Count == 0)
+{
+    <p>No inventories found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var inv in Model.Inventories)
+        {
+            <li>
+                <div>
+                    <a asp-controller="Inventories" asp-action="Details" asp-route-id="@inv.Id">
+                        @inv.Title
+                    </a>
+                </div>
+                <div>@inv.Snippet</div>
+            </li>
+        }
+    </ul>
+}
+
+<hr />
+
+<h2>Items (@Model.Items.Count)</h2>
+
+@if (Model.Items.Count == 0)
+{
+    <p>No items found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var item in Model.Items)
+        {
+            <li>
+                <div>
+                    <a asp-controller="Items"
+                       asp-action="Details"
+                       asp-route-inventoryId="@item.InventoryId"
+                       asp-route-itemId="@item.Id">
+                        @item.CustomId
+                    </a>
+                    <span> — in inventory: @item.InventoryTitle</span>
+                </div>
+                <div>@item.Snippet</div>
+            </li>
+        }
+    </ul>
+}

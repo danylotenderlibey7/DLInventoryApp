@@ -18,13 +18,15 @@ namespace DLInventoryApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAccessService _accessService;
         private readonly ITagService _tagService;
+        private readonly ISearchService _searchService;
         public InventoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
-            ITagService tagService, IAccessService accessService)
+            ITagService tagService, IAccessService accessService, ISearchService searchService)
         {
             _context = context;
             _userManager = userManager;
             _tagService = tagService;
             _accessService = accessService;
+            _searchService = searchService;
         }
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? tag)
@@ -84,12 +86,9 @@ namespace DLInventoryApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateInventoryVm vm)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(vm);
-            }
+            if (!ModelState.IsValid) return View(vm);
             var userId = _userManager.GetUserId(User);
-            if (userId == null) Challenge();
+            if (userId == null) return Challenge();
             var entity = new Inventory
             {
                 Title = vm.Title,
@@ -99,8 +98,10 @@ namespace DLInventoryApp.Controllers
                 OwnerId = userId,
                 CreatedAt = DateTime.UtcNow
             };
-            _context.Inventories.Add(entity); 
+            _context.Inventories.Add(entity);
+            await _context.SaveChangesAsync();
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
+            await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction(nameof(My));
         }
         [HttpGet("Inventories/{inventoryId:guid}/Edit")]

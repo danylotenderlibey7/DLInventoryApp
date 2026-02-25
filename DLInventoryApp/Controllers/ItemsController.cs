@@ -19,15 +19,18 @@ namespace DLInventoryApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ICustomIdGenerator _customIdGenerator;
         private readonly IAccessService _accessService;
-        private readonly ILikeService _likeService;
+        private readonly ILikeService _likeService; 
+        private readonly ISearchService _searchService;
         public ItemsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
-            ICustomIdGenerator customIdGenerator, IAccessService accessService, ILikeService likeService)
+            ICustomIdGenerator customIdGenerator, IAccessService accessService, 
+            ILikeService likeService, ISearchService searchService)
         {
             _context = context;
             _userManager = userManager;
             _customIdGenerator = customIdGenerator;
             _accessService = accessService;
             _likeService = likeService;
+            _searchService = searchService;
         }
         [AllowAnonymous]
         public async Task<IActionResult> Index(Guid inventoryId)
@@ -196,6 +199,7 @@ namespace DLInventoryApp.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await _searchService.IndexItemAsync(item.Id);
             }
             catch (DbUpdateException)
             {
@@ -296,6 +300,7 @@ namespace DLInventoryApp.Controllers
                 db.BoolValue = f.BoolValue;
             }
             await _context.SaveChangesAsync();
+            await _searchService.IndexItemAsync(itemId);
             return RedirectToAction("Edit", new { inventoryId, itemId });
         }
         [HttpPost("Delete")]
@@ -312,6 +317,8 @@ namespace DLInventoryApp.Controllers
                 .ToListAsync();
             _context.Items.RemoveRange(itemsToDelete);
             await _context.SaveChangesAsync();
+            foreach (var it in itemsToDelete)
+                await _searchService.RemoveItemAsync(it.Id);
             return RedirectToAction("Index", new { inventoryId });
         }
         private async Task FillEditVm(Guid inventoryId, Guid itemId, EditItemVm vm)
