@@ -1,7 +1,9 @@
-﻿namespace DLInventoryApp.Services.Interfaces
+﻿using DLInventoryApp.Services.Models;
+
+namespace DLInventoryApp.Services.Interfaces
 {
     public interface ICustomIdGenerator
     {
-        string Generate(string title, IReadOnlyCollection<string> existingIds);
+        Task<CustomIdResult> GenerateAsync(Guid inventoryId);
     }
 }

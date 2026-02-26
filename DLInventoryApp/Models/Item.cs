@@ -19,5 +19,6 @@ namespace DLInventoryApp.Models
         public byte[]? Version { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
         public List<ItemLike> Likes { get; set; } = new();
+        public int? SequenceNumber { get; set; }
     }
 }

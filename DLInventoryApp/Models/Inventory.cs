@@ -27,5 +27,6 @@ namespace DLInventoryApp.Models
         public ICollection<InventoryWriteAccess> WriteAccesses { get; set; } = new List<InventoryWriteAccess>();
         public List<InventoryTag> InventoryTags { get; set; } = new();
         public List<DiscussionPost> DiscussionPosts { get; set; } = new();
+        public List<InventoryCustomIdElement> CustomIdElements { get; set; } = new();
     }
 }

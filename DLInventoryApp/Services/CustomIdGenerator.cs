@@ -1,46 +1,69 @@
-﻿using DLInventoryApp.Services.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DLInventoryApp.Data;
+using DLInventoryApp.Models;
+using DLInventoryApp.Services.Interfaces;
+using DLInventoryApp.Services.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 public class CustomIdGenerator : ICustomIdGenerator
 {
-    public string Generate(string title, IReadOnlyCollection<string> existingCustomIds)
+    private readonly ApplicationDbContext _context;
+    public CustomIdGenerator(ApplicationDbContext context)
     {
-        var prefix = BuildPrefix(title);
-        var max = 0;
-        foreach (var id in existingCustomIds)
+        _context = context;
+    }
+    public async Task<CustomIdResult> GenerateAsync(Guid inventoryId)
+    {
+        var elements = await _context.CustomIdElements
+            .Where(e => e.InventoryId == inventoryId)
+            .OrderBy(e => e.Order)
+            .ToListAsync();
+        if (!elements.Any()) throw new InvalidOperationException("Custom ID template not configured.");
+        var hasSequence = elements.Any(e => e.Type == CustomIdElementType.Sequence);
+        int? nextSequence = null;
+        if (hasSequence)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                continue;
-            var parts = id.Split('-', 2);
-            if (parts.Length != 2)
-                continue;
-            if (!string.Equals(parts[0], prefix, StringComparison.OrdinalIgnoreCase))
-                continue;
-            if (int.TryParse(parts[1], out var n) && n > max)
-                max = n;
+            var maxSequence = await _context.Items
+                .Where(i => i.InventoryId == inventoryId)
+                .MaxAsync(i => (int?)i.SequenceNumber);
+            nextSequence = maxSequence == null ? 1 : maxSequence.Value + 1;
         }
-        var next = max + 1;
-        return $"{prefix}-{next:D3}";
-    }
-    private string BuildPrefix(string title)
-    {
-        title = (title ?? string.Empty).Trim();
-        var words = title
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (words.Length == 0)
-            return "INV"; 
-        var first = TakeUpTo3Letters(words[0]);
-        var last = (words.Length == 1) ? "" : TakeUpTo3Letters(words[words.Length - 1]);
-        var prefix = (first + last).ToUpperInvariant();
-        if (prefix.Length < 3)
-            prefix = prefix.PadRight(3, 'X');
-        return prefix;
-    }
-    private string TakeUpTo3Letters(string s)
-    {
-        s = (s ?? string.Empty).Trim();
-        return s.Length <= 3 ? s : s.Substring(0, 3);
+        var builder = new StringBuilder();
+        foreach (var el in elements)
+        {
+            switch (el.Type)
+            {
+                case CustomIdElementType.FixedText:
+                    builder.Append(el.Text);
+                    break;
+                case CustomIdElementType.Sequence:
+                    builder.Append(nextSequence!.Value.ToString(el.Format ?? "D"));
+                    break;
+                case CustomIdElementType.DateTime:
+                    builder.Append(DateTime.UtcNow.ToString(el.Format ?? "yyyyMMddHHmmss"));
+                    break;
+                case CustomIdElementType.Guid:
+                    builder.Append(Guid.NewGuid().ToString(el.Format ?? "N"));
+                    break;
+                case CustomIdElementType.Random6Digits:
+                    builder.Append(Random.Shared.Next(0, 1_000_000).ToString("D6"));
+                    break;
+                case CustomIdElementType.Random9Digits:
+                    builder.Append(Random.Shared.Next(0, 1_000_000_000).ToString("D9"));
+                    break;
+                case CustomIdElementType.Random20Bit:
+                    builder.Append(Random.Shared.Next(0, 1 << 20));
+                    break;
+                case CustomIdElementType.Random32Bit:
+                    builder.Append(Random.Shared.NextInt64(0, 1L << 32).ToString());
+                    break;
+                default: throw new InvalidOperationException($"Unsupported CustomId element type: {el.Type}");
+            }
+        }
+        return new CustomIdResult
+        {
+            CustomId = builder.ToString(),
+            SequenceNumber = nextSequence
+        };
     }
 }

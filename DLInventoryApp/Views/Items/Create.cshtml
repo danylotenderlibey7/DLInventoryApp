@@ -10,9 +10,13 @@ method="post">
 
     <input type="hidden" asp-for="InventoryId" />
 
-    <div>
-        <label asp-for="CustomId"></label>
-        <input asp-for="CustomId" class="form-control" />
+    <div class="mb-3">
+        <label asp-for="CustomId" class="form-label"></label>
+        <input asp-for="CustomId" class="form-control" readonly />
+        <div class="form-text">
+            Leave empty to auto-generate.
+        </div>
+
         <span asp-validation-for="CustomId" class="text-danger"></span>
     </div>
     @if (Model.Fields != null)

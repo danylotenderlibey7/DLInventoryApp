@@ -110,10 +110,10 @@ namespace DLInventoryApp.Services
             var invTop = searcher.Search(invQuery, inventoriesLimit);
             var itemTop = searcher.Search(itemQuery, itemsLimit);
             var totalHits = invTop.TotalHits + itemTop.TotalHits;
-            if (totalHits < 3)
+            if (totalHits == 0)
             {
-                var fuzzyFields = new[] { "Title", "Description", "Content" };
-                var fuzzy = BuildFuzzyQuery(query, fuzzyFields, boost: 0.2f);
+                var fuzzyFields = new[] { "Description", "Content" };
+                var fuzzy = BuildFuzzyQuery(query, fuzzyFields, boost: 0.15f);
                 expanded.Add(fuzzy, Occur.SHOULD);
                 invQuery = new BooleanQuery
                 {

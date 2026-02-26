@@ -136,12 +136,12 @@ namespace DLInventoryApp.Controllers
                 .Where(it => it.InventoryId == inventoryId)
                 .Select(it => it.CustomId)
                 .ToListAsync();
-            var customId = _customIdGenerator.Generate(inv.Title, ids);
+            //var customId = _customIdGenerator.Generate(inv.Title, ids);
             var vm = new CreateItemVm
             {
                 InventoryId = inventoryId,
                 InventoryTitle = inv.Title,
-                CustomId = customId,
+                //CustomId = customId,
                 CanWrite = canWrite,
             };
             var fields = await _context.CustomFields
@@ -165,22 +165,31 @@ namespace DLInventoryApp.Controllers
             if (userId == null) return Challenge();
             var canWrite = await _accessService.CanWriteInventory(inventoryId, userId);
             if (!canWrite) return NotFound();
-            if (inventoryId != vm.InventoryId)
-                return NotFound();
+            if (inventoryId != vm.InventoryId) return NotFound();
             if (!ModelState.IsValid)
+            {
+                await FillCreateVmAsync(inventoryId, vm);
                 return View(vm);
+            }
             var inv = await _context.Inventories
                 .Where(x => x.Id == inventoryId)
                 .SingleOrDefaultAsync();
-            if (inv == null)
-                return NotFound(); 
+            if (inv == null) return NotFound();
+            int? sequenceNumber = null;
+            if(string.IsNullOrWhiteSpace(vm.CustomId))
+            {
+                var result = await _customIdGenerator.GenerateAsync(inventoryId);
+                vm.CustomId = result.CustomId;
+                sequenceNumber = result.SequenceNumber;
+            }
             var item = new Item
             {
                 Id = Guid.NewGuid(),
                 InventoryId = inventoryId,
                 CustomId = vm.CustomId,
                 CreatedById = userId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                SequenceNumber = sequenceNumber
             };
             _context.Items.Add(item);
             foreach (var f in vm.Fields)
@@ -204,6 +213,7 @@ namespace DLInventoryApp.Controllers
             catch (DbUpdateException)
             {
                 vm.InventoryTitle = inv.Title;
+                await FillCreateVmAsync(inventoryId, vm);
                 ModelState.AddModelError(nameof(vm.CustomId), "Custom ID already exists in this inventory.");
                 return View(vm);
             }
@@ -320,6 +330,26 @@ namespace DLInventoryApp.Controllers
             foreach (var it in itemsToDelete)
                 await _searchService.RemoveItemAsync(it.Id);
             return RedirectToAction("Index", new { inventoryId });
+        }
+        private async Task FillCreateVmAsync(Guid inventoryId, CreateItemVm vm)
+        {
+            if (vm == null) return;
+            var title = await _context.Inventories
+                .Where(inv => inv.Id == inventoryId)
+                .Select(inv => inv.Title)
+                .SingleOrDefaultAsync();
+            var fields = await _context.CustomFields
+                .Where(f => f.InventoryId == inventoryId)
+                .OrderBy(f => f.Order)
+                .ToListAsync();
+            vm.Fields = fields.Select(f => new FieldValueInputVm
+            {
+                CustomFieldId = f.Id,
+                Name = f.Name,
+                Type = f.Type,
+                IsRequired = f.IsRequired
+            }).ToList();
+            vm.InventoryTitle = title ?? "";
         }
         private async Task FillEditVm(Guid inventoryId, Guid itemId, EditItemVm vm)
         {

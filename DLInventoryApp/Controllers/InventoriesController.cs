@@ -98,6 +98,23 @@ namespace DLInventoryApp.Controllers
             };
             _context.Inventories.Add(entity);
             await _context.SaveChangesAsync();
+            _context.CustomIdElements.AddRange(
+                new InventoryCustomIdElement
+                {
+                    InventoryId = entity.Id,
+                    Order = 1,
+                    Type = CustomIdElementType.FixedText,
+                    Text = "INV-"
+                },
+                new InventoryCustomIdElement
+                {
+                    InventoryId = entity.Id,
+                    Order = 2,
+                    Type = CustomIdElementType.Sequence,
+                    Format = "D4"
+                }
+            );
+            await _context.SaveChangesAsync();
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
             await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction(nameof(My));
