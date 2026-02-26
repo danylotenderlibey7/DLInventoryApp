@@ -2,12 +2,10 @@
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.Inventories;
-using DLInventoryApp.ViewModels.Items;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace DLInventoryApp.Controllers
 {
@@ -119,7 +117,7 @@ namespace DLInventoryApp.Controllers
                     Title=inv.Title,
                     Description = inv.Description,
                     IsPublic = inv.IsPublic,
-                    //CategoryId = inv.CategoryId,
+                    CategoryId = inv.CategoryId,
                     Tags = inv.InventoryTags.Select(it=>it.Tag.Name).ToList()
                 }).SingleOrDefaultAsync();
             if (vm == null) return NotFound();
@@ -141,7 +139,7 @@ namespace DLInventoryApp.Controllers
             entity.Title = vm.Title;
             entity.Description = vm.Description;
             entity.IsPublic = vm.IsPublic;
-            //entity.CategoryId = vm.CategoryId;
+            entity.CategoryId = vm.CategoryId;
             entity.UpdatedAt = DateTime.UtcNow;
             _context.Entry(entity)
                 .Property(x => x.Version).OriginalValue = vm.Version;
@@ -155,6 +153,7 @@ namespace DLInventoryApp.Controllers
                 return View(vm);
             }
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
+            await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction(nameof(Details), new { id = entity.Id });
         }
         [AllowAnonymous]

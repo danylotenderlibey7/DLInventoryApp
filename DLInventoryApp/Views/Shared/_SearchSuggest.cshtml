@@ -1,0 +1,95 @@
+﻿@model DLInventoryApp.ViewModels.Search.SearchResultVm
+@using System.Text.RegularExpressions
+
+@functions {
+    public static string HL(string? text, string? query)
+    {
+        if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(query))
+            return text ?? "";
+
+        var result = text;
+
+        foreach (var term in query.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            result = Regex.Replace(
+                result,
+                Regex.Escape(term),
+                m => $"<strong>{m.Value}</strong>",
+                RegexOptions.IgnoreCase
+            );
+        }
+
+        return result;
+    }
+}
+
+@{
+    var invCount = Model.Inventories?.Count ?? 0;
+    var itemCount = Model.Items?.Count ?? 0;
+}
+
+@if (invCount > 0 || itemCount > 0)
+{
+    <div class="p-2 border-bottom small fw-semibold">
+        Inventories [@invCount]
+    </div>
+
+    @if (invCount > 0)
+    {
+        <div class="list-group list-group-flush">
+            @foreach (var inv in Model.Inventories)
+            {
+                <a asp-controller="Inventories"
+                   asp-action="Details"
+                   asp-route-id="@inv.Id"
+                   class="list-group-item list-group-item-action" data-suggest-item="1">
+
+                    <div class="fw-semibold">@Html.Raw(HL(inv.Title, Model.Query))</div>
+
+                    @if (!string.IsNullOrWhiteSpace(inv.Snippet))
+                    {
+                        <small class="text-muted d-block">
+                            @Html.Raw(HL(inv.Snippet, Model.Query))
+                        </small>
+                    }
+                </a>
+            }
+        </div>
+    }
+
+    <div class="p-2 border-top small fw-semibold">
+        Items [@itemCount]
+    </div>
+
+    @if (itemCount > 0)
+    {
+        <div class="list-group list-group-flush">
+            @foreach (var item in Model.Items)
+            {
+                <a asp-controller="Items"
+                   asp-action="Index"
+                   asp-route-inventoryId="@item.InventoryId"
+                   class="list-group-item list-group-item-action" data-suggest-item="1">
+
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-semibold">@Html.Raw(HL(item.CustomId, Model.Query))</span>
+                        <small class="text-muted">@Html.Raw(HL(item.InventoryTitle, Model.Query))</small>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(item.Snippet))
+                    {
+                        <small class="text-muted d-block">
+                            @Html.Raw(HL(item.Snippet, Model.Query))...
+                        </small>
+                    }
+                </a>
+            }
+        </div>
+    }
+}
+else if (!string.IsNullOrWhiteSpace(Model.Query))
+{
+    <div class="p-2 text-muted small">
+        No results found
+    </div>
+}

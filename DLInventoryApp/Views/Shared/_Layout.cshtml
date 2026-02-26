@@ -28,12 +28,20 @@
             </div>
 
             <div>
-                <form asp-controller="Search" asp-action="Index" method="get" class="d-flex gap-2">
-                    <input type="text"
-                           name="query"
-                           placeholder="Search..."
-                           class="form-control form-control-sm"
-                           value="@Context.Request.Query["query"]" />
+                <form asp-controller="Search" asp-action="Index" method="get" class="d-flex gap-2 position-relative" autocomplete="off">
+                    <div class="position-relative" style="width: 420px;">
+                        <input type="text"
+                               id="searchBox"
+                               name="query"
+                               placeholder="Search..."
+                               class="form-control form-control-sm"
+                               value="@Context.Request.Query["query"]"/>
+
+                        <div id="searchSuggest"
+                             class="position-absolute start-0 mt-1 w-100 bg-white border rounded shadow-sm"
+                             style="display:none; z-index: 2000;"></div>
+                    </div>
+
                     <button type="submit" class="btn btn-sm btn-outline-primary">Search</button>
                 </form>
             </div>
@@ -60,3 +68,75 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+<script>
+        (function () {
+      const input = document.getElementById("searchBox");
+      const box = document.getElementById("searchSuggest");
+
+      if (!input || !box) return;
+
+      const MIN_LEN = 2;
+      const DEBOUNCE_MS = 300;
+      let timer = null;
+      let lastQuery = "";
+      let controller = null;
+
+      function hide() {
+        box.style.display = "none";
+        box.innerHTML = "";
+      }
+
+      async function loadSuggest(q) {
+        if (controller) controller.abort();
+        controller = new AbortController();
+
+        const url = `/Search/Suggest?query=${encodeURIComponent(q)}`;
+
+        const resp = await fetch(url, {
+          method: "GET",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          signal: controller.signal
+        });
+
+        if (!resp.ok) {
+          hide();
+          return;
+        }
+
+        const html = await resp.text();
+        box.innerHTML = html.trim();
+
+        if (box.innerHTML.length === 0) {
+          hide();
+        } else {
+          box.style.display = "block";
+        }
+      }
+
+      input.addEventListener("input", function () {
+        const q = (input.value || "").trim();
+
+        if (q.length < MIN_LEN) {
+          lastQuery = "";
+          hide();
+          return;
+        }
+        if (q === lastQuery) return;
+        lastQuery = q;
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          loadSuggest(q).catch(() => {});
+        }, DEBOUNCE_MS);
+      });
+
+      document.addEventListener("click", function (e) {
+        if (e.target === input || box.contains(e.target)) return;
+        hide();
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") hide();
+      });
+    })();
+</script>

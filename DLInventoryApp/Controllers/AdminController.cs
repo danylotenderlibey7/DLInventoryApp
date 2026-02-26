@@ -23,18 +23,6 @@ namespace DLInventoryApp.Controllers
             _context = context;
             _search = search;
         }
-        public async Task<IActionResult> TestSearch(string query)
-        {
-            var result = await _search.SearchAsync(query);
-            return Json(new
-            {
-                query = result.Query,
-                inventories = result.Inventories.Count,
-                items = result.Items.Count,
-                sampleInventory = result.Inventories.Take(2),
-                sampleItem = result.Items.Take(2)
-            });
-        }
         public async Task<IActionResult> Users()
         {
             const string adminRoleName = "Admin";
