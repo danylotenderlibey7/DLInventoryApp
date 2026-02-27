@@ -176,46 +176,62 @@ namespace DLInventoryApp.Controllers
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             int? sequenceNumber = null;
-            if(string.IsNullOrWhiteSpace(vm.CustomId))
+            bool auto = string.IsNullOrWhiteSpace(vm.CustomId);
+            int attempts = auto ? 3 : 1;
+            for (int i = 0; i < attempts; i++)
             {
-                var result = await _customIdGenerator.GenerateAsync(inventoryId);
-                vm.CustomId = result.CustomId;
-                sequenceNumber = result.SequenceNumber;
-            }
-            var item = new Item
-            {
-                Id = Guid.NewGuid(),
-                InventoryId = inventoryId,
-                CustomId = vm.CustomId,
-                CreatedById = userId,
-                CreatedAt = DateTime.UtcNow,
-                SequenceNumber = sequenceNumber
-            };
-            _context.Items.Add(item);
-            foreach (var f in vm.Fields)
-            {
-                var value = new ItemFieldValue
+                sequenceNumber = null;
+                if (auto)
                 {
-                    ItemId = item.Id,
-                    CustomFieldId = f.CustomFieldId,
-                    TextValue = f.TextValue,
-                    NumberValue = f.NumberValue,
-                    LinkValue = f.LinkValue,
-                    BoolValue = f.BoolValue
+                    var result = await _customIdGenerator.GenerateAsync(inventoryId);
+                    vm.CustomId = result.CustomId;
+                    sequenceNumber = result.SequenceNumber;
+                }
+                var item = new Item
+                {
+                    Id = Guid.NewGuid(),
+                    InventoryId = inventoryId,
+                    CustomId = vm.CustomId,
+                    CreatedById = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    SequenceNumber = sequenceNumber
                 };
-                _context.ItemFieldValues.Add(value);
-            }
-            try
-            {
-                await _context.SaveChangesAsync();
-                await _searchService.IndexItemAsync(item.Id);
-            }
-            catch (DbUpdateException)
-            {
-                vm.InventoryTitle = inv.Title;
-                await FillCreateVmAsync(inventoryId, vm);
-                ModelState.AddModelError(nameof(vm.CustomId), "Custom ID already exists in this inventory.");
-                return View(vm);
+                _context.Items.Add(item);
+                foreach (var f in vm.Fields)
+                {
+                    var value = new ItemFieldValue
+                    {
+                        ItemId = item.Id,
+                        CustomFieldId = f.CustomFieldId,
+                        TextValue = f.TextValue,
+                        NumberValue = f.NumberValue,
+                        LinkValue = f.LinkValue,
+                        BoolValue = f.BoolValue
+                    };
+                    _context.ItemFieldValues.Add(value);
+                }
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await _searchService.IndexItemAsync(item.Id);
+                    return RedirectToAction("Index", new { inventoryId });
+                }
+                catch (DbUpdateException ex)
+                {
+                    if (!auto)
+                    {
+                        await FillCreateVmAsync(inventoryId, vm);
+                        ModelState.AddModelError(nameof(vm.CustomId), "Custom ID already exists in this inventory.");
+                        return View(vm);
+                    }
+                    _context.ChangeTracker.Clear();
+                    if (i == attempts - 1)
+                    {
+                        await FillCreateVmAsync(inventoryId, vm);
+                        ModelState.AddModelError(nameof(vm.CustomId), "Failed to generate a unique Custom ID. Try again.");
+                        return View(vm);
+                    }
+                }
             }
             return RedirectToAction("Index", new { inventoryId });
         }

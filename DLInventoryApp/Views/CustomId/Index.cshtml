@@ -1,0 +1,103 @@
+﻿@using DLInventoryApp.ViewModels.CustomId
+@model CustomIdIndexVm
+
+<h2>Custom ID Template</h2>
+
+<p><b>Inventory:</b> @Model.InventoryTitle</p>
+
+<p><b>Example:</b> @Model.Preview</p>
+
+@if (!Model.CanWrite)
+{
+    <p>You have read-only access.</p>
+}
+else
+{
+    <p>
+        <a asp-action="Add" asp-route-inventoryId="@Model.InventoryId">Add element</a>
+    </p>
+}
+
+@if (Model.Elements == null || Model.Elements.Count == 0)
+{
+    <p>No elements configured.</p>
+}
+else
+{
+    <ul id="customIdList">
+        @foreach (var el in Model.Elements)
+        {
+            <li data-id="@el.Id">
+                <span>Order: @el.Order</span>
+                |
+                <span>Type: @el.Type</span>
+                |
+                <span>Text: @(el.Text ?? "-")</span>
+                |
+                <span>Format: @(el.Format ?? "-")</span>
+                |
+                <a asp-action="Edit"
+                   asp-route-inventoryId="@Model.InventoryId"
+                   asp-route-id="@el.Id">Edit</a>
+
+                @if (Model.CanWrite)
+                {
+                    <form asp-action="Delete"
+                          asp-route-inventoryId="@Model.InventoryId"
+                          asp-route-id="@el.Id"
+                          method="post"
+                          style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit">Delete</button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+}
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function () {
+      var list = document.getElementById('customIdList');
+      if (!list) return;
+
+      var canWrite = @Model.CanWrite.ToString().ToLower();
+      if (!canWrite) return;
+
+      var inventoryId = "@Model.InventoryId";
+
+      function getOrderedIds() {
+        var ids = [];
+        list.querySelectorAll('li[data-id]').forEach(function (li) {
+          ids.push(parseInt(li.getAttribute('data-id')));
+        });
+        return ids;
+      }
+
+      Sortable.create(list, {
+        animation: 150,
+        onEnd: async function () {
+          var orderedIds = getOrderedIds();
+
+          try {
+            var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(orderedIds)
+            });
+
+            if (!resp.ok) {
+              alert('Reorder failed');
+              location.reload();
+            } else {
+              location.reload();
+            }
+          } catch (e) {
+            alert('Reorder failed');
+            location.reload();
+          }
+        }
+      });
+    })();
+</script>

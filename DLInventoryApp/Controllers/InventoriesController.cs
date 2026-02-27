@@ -115,6 +115,13 @@ namespace DLInventoryApp.Controllers
                 }
             );
             await _context.SaveChangesAsync();
+            var sequence = new InventorySequence
+            {
+                InventoryId = entity.Id,
+                NextValue = 1
+            };
+            await _context.InventorySequences.AddAsync(sequence);
+            await _context.SaveChangesAsync();
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
             await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction(nameof(My));

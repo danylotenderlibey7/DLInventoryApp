@@ -1,0 +1,38 @@
+﻿@using DLInventoryApp.ViewModels.CustomId
+@using DLInventoryApp.Models
+@model UpsertCustomIdElementVm
+
+<h2>Add Custom ID Element</h2>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <input type="hidden" asp-for="InventoryId" />
+
+    <div>
+        <label>Order</label><br />
+        <input asp-for="Order" />
+        <span asp-validation-for="Order"></span>
+    </div>
+
+    <div>
+        <label>Type</label><br />
+        <select asp-for="Type" asp-items="Html.GetEnumSelectList<CustomIdElementType>()"></select>
+    </div>
+
+    <div>
+        <label>Text</label><br />
+        <input asp-for="Text" />
+    </div>
+
+    <div>
+        <label>Format</label><br />
+        <input asp-for="Format" />
+    </div>
+
+    <button type="submit">Save</button>
+</form>
+
+<p>
+    <a asp-action="Index" asp-route-inventoryId="@Model.InventoryId">Back</a>
+</p>

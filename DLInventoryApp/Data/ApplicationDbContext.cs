@@ -19,6 +19,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<ItemLike> ItemLikes => Set<ItemLike>();
     public DbSet<DiscussionPost> DiscussionPosts => Set<DiscussionPost>();
     public DbSet<InventoryCustomIdElement> CustomIdElements => Set<InventoryCustomIdElement>();
+    public DbSet<InventorySequence> InventorySequences => Set<InventorySequence>();
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -132,6 +133,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => new { e.InventoryId, e.Order }).IsUnique();
+        });
+        builder.Entity<InventorySequence>(entity =>
+            {
+                entity.HasKey(s => s.InventoryId);
+                entity.HasOne(s => s.Inventory)
+                    .WithOne()
+                    .HasForeignKey<InventorySequence>(s => s.InventoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

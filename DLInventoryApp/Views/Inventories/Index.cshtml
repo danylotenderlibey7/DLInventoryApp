@@ -14,6 +14,7 @@ else
         <thead>
             <tr>
                 <th>Title</th>
+                <th>Custom Id</th>
                 <th>Category</th>
                 <th>Tags</th>
                 <th>Items</th>
@@ -31,7 +32,13 @@ else
                             @inv.Title
                         </a>
                     </td>
-
+                    <td>
+                        <a asp-controller="CustomId"
+                           asp-action="Index"
+                           asp-route-inventoryId="@inv.Id">
+                            Custom Id
+                        </a>
+                    </td>
                     <td>
                         @(inv.CategoryName ?? "-")
                     </td>
