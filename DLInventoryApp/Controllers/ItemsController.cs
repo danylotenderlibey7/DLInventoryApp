@@ -176,11 +176,17 @@ namespace DLInventoryApp.Controllers
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             int? sequenceNumber = null;
-            if(string.IsNullOrWhiteSpace(vm.CustomId))
+            if (string.IsNullOrWhiteSpace(vm.CustomId))
             {
                 var result = await _customIdGenerator.GenerateAsync(inventoryId);
                 vm.CustomId = result.CustomId;
                 sequenceNumber = result.SequenceNumber;
+            }
+            else if (!await _customIdGenerator.MatchesTemplateAsync(inventoryId, vm.CustomId))
+            {
+                await FillCreateVmAsync(inventoryId, vm);
+                ModelState.AddModelError(nameof(vm.CustomId), "Custom ID does not match this inventory template.");
+                return View(vm);
             }
             var item = new Item
             {
@@ -287,6 +293,12 @@ namespace DLInventoryApp.Controllers
                 .Where(it => it.Id == itemId && it.InventoryId == inventoryId)
                 .SingleOrDefaultAsync();
             if (item == null) return NotFound();
+            if (!await _customIdGenerator.MatchesTemplateAsync(inventoryId, vm.CustomId))
+            {
+                ModelState.AddModelError(nameof(vm.CustomId), "Custom ID does not match this inventory template.");
+                await FillEditVm(inventoryId, itemId, vm);
+                return View(vm);
+            }
             item.CustomId = vm.CustomId;
             var dbValues = await _context.ItemFieldValues
                 .Where(v => v.ItemId == itemId)

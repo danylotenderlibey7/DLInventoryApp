@@ -12,9 +12,9 @@ method="post">
 
     <div class="mb-3">
         <label asp-for="CustomId" class="form-label"></label>
-        <input asp-for="CustomId" class="form-control" readonly />
+        <input asp-for="CustomId" class="form-control" placeholder="Leave empty to auto-generate" />
         <div class="form-text">
-            Leave empty to auto-generate.
+            You can override generated ID, but it must match the inventory template.
         </div>
 
         <span asp-validation-for="CustomId" class="text-danger"></span>
