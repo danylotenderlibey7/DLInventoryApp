@@ -135,23 +135,49 @@ namespace DLInventoryApp.Controllers
                 .Select(x => new { x.Id, x.OwnerId })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
-            var isAdmin = User.IsInRole("Admin");
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
-            if (!canManage) return Forbid();
+            if (!canManage)  return Forbid();
+            var defaultType = CustomFieldType.SingleLineText;
+
+            var sameTypeCount = await _context.CustomFields
+                .CountAsync(f => f.InventoryId == inventoryId && f.Type == defaultType);
+            if (sameTypeCount >= 3)
+            {
+                return BadRequest(new { error = "You can create up to 3 fields of this type in one inventory." });
+            }
             var maxOrder = await _context.CustomFields
                 .Where(f => f.InventoryId == inventoryId)
-                .MaxAsync(f => (int?)f.Order) ?? 0;
+                .MaxAsync(f => (int?)f.Order) ?? -1;
+            var existingNames = await _context.CustomFields
+                .Where(f => f.InventoryId == inventoryId)
+                .Select(f => f.Name)
+                .ToListAsync();
+            const string baseName = "New field";
+            var newName = baseName;
+            var suffix = 2;
+            while (existingNames.Contains(newName))
+            {
+                newName = $"{baseName} {suffix}";
+                suffix++;
+            }
             var field = new CustomField
             {
                 InventoryId = inventoryId,
-                Name = "New field",
-                Type = CustomFieldType.SingleLineText,
+                Name = newName,
+                Type = defaultType,
                 Order = maxOrder + 1,
                 IsRequired = false,
                 IsUnique = false
             };
             _context.CustomFields.Add(field);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest(new { error = "Could not create field. Field name must be unique." });
+            }
             return Ok(new
             {
                 ok = true,
@@ -177,23 +203,43 @@ namespace DLInventoryApp.Controllers
                 .Select(x => new { x.Id, x.OwnerId })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
-            var isAdmin = User.IsInRole("Admin");
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
             var field = await _context.CustomFields
                 .Where(f => f.InventoryId == inventoryId && f.Id == fieldId)
                 .SingleOrDefaultAsync();
             if (field == null) return NotFound();
-            var name = (dto.Name ?? "").Trim();
+            var name = (dto.Name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
+            {
                 return BadRequest(new { error = "Name is required." });
-            if (name.Length > 100)
-                return BadRequest(new { error = "Name is too long (max 100)." });
+            }
+            if (!Enum.IsDefined(typeof(CustomFieldType), dto.Type))
+            {
+                return BadRequest(new { error = "Invalid field type." });
+            }
+            var newType = (CustomFieldType)dto.Type;
+            if (newType != field.Type)
+            {
+                var sameTypeCount = await _context.CustomFields
+                    .CountAsync(f => f.InventoryId == inventoryId && f.Type == newType && f.Id != fieldId);
+                if (sameTypeCount >= 3)
+                {
+                    return BadRequest(new { error = "You can create up to 3 fields of this type in one inventory." });
+                }
+            }
             field.Name = name;
-            field.Type = (CustomFieldType)dto.Type;
+            field.Type = newType;
             field.IsRequired = dto.IsRequired;
             field.IsUnique = dto.IsUnique;
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return BadRequest(new { error = "Field name already exists in this inventory." });
+            }
             return Ok(new { ok = true });
         }
         [HttpPost("Reorder")]

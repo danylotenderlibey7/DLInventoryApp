@@ -11,116 +11,116 @@
 </form>
 
 <div class="chat-feed">
+    <div class="duo-layout fields-layout"
+         id="fieldsRoot"
+         data-can-write="@(canManage ? "1" : "0")"
+         data-inventory-id="@vm.InventoryId">
 
-<div class="duo-layout" id="fieldsRoot" data-can-write="@(canManage ? "1" : "0")" data-inventory-id="@vm.InventoryId">
-    <div class="duo-top">
-        <div class="duo-preview-line">
-            <span class="duo-preview-label">Custom fields:</span>
-            <span id="fieldsCount" class="duo-preview-value">@vm.Fields.Count</span>
-        </div>
-        <div class="duo-subline">
-            Manage the schema for items in this inventory. Drag fields to reorder. Drag into delete zone to remove.
-        </div>
-    </div>
+        <div class="duo-grid fields-grid">
+            <div class="duo-left fields-left">
+                <div class="card-elements fields-card">
+                    <div class="card-elements-head">
+                        <div class="card-elements-title">Fields</div>
 
-    <div class="duo-grid">
-        <div class="duo-left">
-            <div class="card-elements">
-                <div class="card-elements-head">
-                    <div class="card-elements-title">Fields</div>
+                        @if (canManage)
+                        {
+                            <button id="fieldsAddBtn"
+                                    type="button"
+                                    class="app-btn app-btn-primary app-btn-icon"
+                                    title="Add field"
+                                    aria-label="Add field">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        }
+                    </div>
 
-                    @if (canManage)
+                    @if (!canManage)
                     {
-                        <button id="fieldsAddBtn" type="button" class="chat-btn chat-btn-accent btn-add">
-                            Add field
-                        </button>
+                        <div class="note-block fields-readonly-note">You have read-only access.</div>
                     }
-                </div>
 
-                @if (!canManage)
-                {
-                    <div class="note-block" style="margin-bottom:10px;">You have read-only access.</div>
-                }
-                <div id="fieldsState" class="save-text" style="margin: 0 12px 10px;"></div>
+                    <div id="fieldsState" class="save-text fields-state"></div>
 
-                <div id="fieldsScroll" class="elements-scroll">
-                    @if (vm.Fields == null || vm.Fields.Count == 0)
-                    {
-                        <div class="empty-block" style="margin:10px;">
-                            No fields yet.
-                        </div>
+                    <div id="fieldsScroll" class="elements-scroll fields-scroll">
+                        @if (vm.Fields == null || vm.Fields.Count == 0)
+                        {
+                            <div class="empty-block fields-empty">
+                                No fields yet.
+                            </div>
 
-                        <ul id="fieldsList" class="elements-list" style="display:none;"></ul>
-                    }
-                    else
-                    {
-                        <ul id="fieldsList" class="elements-list">
-                            @foreach (var f in vm.Fields.OrderBy(x => x.Order))
-                            {
-                                <li class="elements-item" data-id="@f.Id" data-row-id="@f.Id">
-                                    <div class="drag-handle" title="Drag">↕</div>
+                            <ul id="fieldsList" class="elements-list" style="display:none;"></ul>
+                        }
+                        else
+                        {
+                            <ul id="fieldsList" class="elements-list">
+                                @foreach (var f in vm.Fields.OrderBy(x => x.Order))
+                                {
+                                    <li class="elements-item field-row"
+                                        data-id="@f.Id"
+                                        data-row-id="@f.Id">
 
-                                    <div class="item-main">
-                                        <div class="item-line" style="grid-template-columns: 280px 1fr;">
-                                            <input class="input-field"
-                                                   data-field="name"
-                                                   value="@f.Name"
-                                                   placeholder="Field name"
-                                            @(canManage ? "" : "disabled") />
+                                        <div class="drag-handle" title="Drag">↕</div>
 
-                                            <select class="select-field"
-                                                    data-field="type"
-                                            @(canManage ? "" : "disabled")>
-                                                @foreach (CustomFieldType t in Enum.GetValues(typeof(CustomFieldType)))
-                                                {
-                                                    <option value="@((int)t)" selected="@(t == f.Type)">@t</option>
-                                                }
-                                            </select>
-                                        </div>
-                                        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:10px;">
-                                            <label class="fields3-flag" style="margin:0;">
-                                                <input type="checkbox"
-                                                       data-field="required"
-                                                @(f.IsRequired ? "checked" : "")
+                                        <div class="item-main field-main">
+                                            <div class="item-line field-line">
+                                                <input class="input-field"
+                                                       data-field="name"
+                                                       value="@f.Name"
+                                                       placeholder="Field name"
                                                 @(canManage ? "" : "disabled") />
-                                                Required
-                                            </label>
 
-                                            <label class="fields3-flag" style="margin:0;">
-                                                <input type="checkbox"
-                                                       data-field="unique"
-                                                @(f.IsUnique ? "checked" : "")
-                                                @(canManage ? "" : "disabled") />
-                                                Unique
-                                            </label>
+                                                <select class="select-field"
+                                                        data-field="type"
+                                                @(canManage ? "" : "disabled")>
+                                                    @foreach (CustomFieldType t in Enum.GetValues(typeof(CustomFieldType)))
+                                                    {
+                                                        <option value="@((int)t)" selected="@(t == f.Type)">@t</option>
+                                                    }
+                                                </select>
+                                            </div>
 
-                                            <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                                                <div style="font-size:12px; opacity:.8;">Order: <b>@f.Order</b></div>
-                                                <div class="save-text" data-save-state="@f.Id"></div>
+                                            <div class="field-flags">
+                                                <label class="fields3-flag">
+                                                    <input type="checkbox"
+                                                           data-field="required"
+                                                    @(f.IsRequired ? "checked" : "")
+                                                    @(canManage ? "" : "disabled") />
+                                                    Required
+                                                </label>
+
+                                                <label class="fields3-flag">
+                                                    <input type="checkbox"
+                                                           data-field="unique"
+                                                    @(f.IsUnique ? "checked" : "")
+                                                    @(canManage ? "" : "disabled") />
+                                                    Unique
+                                                </label>
+
+                                                <div class="save-text field-save-state" data-save-state="@f.Id"></div>
                                             </div>
                                         </div>
-                                    </div>
-                                </li>
-                            }
-                        </ul>
-                    }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="duo-right fields-right">
+                <div id="fieldsTrash" class="trash-zone">
+                    <div class="trash-head">
+                        <div class="trash-title">Delete</div>
+                        <div class="trash-sub">Drop here to delete</div>
+                    </div>
+
+                    <div id="fieldsTrashDrop" class="trash-drop"></div>
                 </div>
             </div>
         </div>
-        <div class="duo-right">
-            <div id="fieldsTrash" class="trash-zone">
-                <div class="trash-head">
-                    <div class="trash-title">Delete</div>
-                    <div class="trash-sub">Drop here to delete</div>
-                </div>
-
-                <div id="fieldsTrashDrop" class="trash-drop"></div>
-            </div>
-        </div>
-
     </div>
 </div>
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
     (function () {
@@ -137,10 +137,22 @@
         const countEl = document.getElementById("fieldsCount");
 
         function updateCount() {
-          if (!countEl) return;
-          const n = document.querySelectorAll('#fieldsList li[data-id]').length;
-          countEl.textContent = n.toString();
+            if (!countEl) return;
+            const n = document.querySelectorAll('#fieldsList li[data-id]').length;
+            countEl.textContent = n.toString();
+            refreshOrders();
         }
+
+        function refreshOrders() {
+            const rows = document.querySelectorAll('#fieldsList li[data-row-id]');
+            rows.forEach((row, index) => {
+                const orderEl = row.querySelector('.field-order-inline');
+                if (orderEl) {
+                    orderEl.textContent = `[${index + 1}]`;
+                }
+            });
+        }
+
         function getToken() {
             const f = document.getElementById("fieldsAntiForgery");
             if (!f) return "";
@@ -174,16 +186,16 @@
 
             const text = await resp.text();
             let data = null;
-            try { data = JSON.parse(text); } catch {}
+            try { data = JSON.parse(text); } catch { }
 
             if (!resp.ok) {
                 const msg = (data && (data.error || data.title)) ? (data.error || data.title) : `HTTP ${resp.status}`;
                 throw new Error(msg);
             }
+
             return data;
         }
 
-        // ---------- Inline save ----------
         const timers = new Map();
 
         function scheduleSave(rowId) {
@@ -201,7 +213,7 @@
 
             const nameEl = row.querySelector('[data-field="name"]');
             const typeEl = row.querySelector('[data-field="type"]');
-            const reqEl  = row.querySelector('[data-field="required"]');
+            const reqEl = row.querySelector('[data-field="required"]');
             const uniqEl = row.querySelector('[data-field="unique"]');
 
             const dto = {
@@ -243,7 +255,6 @@
             scheduleSave(row.getAttribute("data-row-id"));
         });
 
-        // ---------- Add field ----------
         function escapeHtml(s) {
             return (s ?? "").toString()
                 .replaceAll("&", "&amp;")
@@ -261,7 +272,10 @@
                 { v: @((int)CustomFieldType.Number),         t: "Number"         },
                 { v: @((int)CustomFieldType.Boolean),        t: "Boolean"        }
             ];
-            return opts.map(o => `<option value="${o.v}" ${o.v === selected ? "selected" : ""}>${o.t}</option>`).join("");
+
+            return opts.map(o =>
+                `<option value="${o.v}" ${o.v === selected ? "selected" : ""}>${o.t}</option>`
+            ).join("");
         }
 
         function ensureListVisible() {
@@ -273,38 +287,50 @@
 
         function createRowHtml(field) {
             const li = document.createElement("li");
-            li.className = "elements-item";
+            li.className = "elements-item field-row";
             li.setAttribute("data-id", field.id);
             li.setAttribute("data-row-id", field.id);
 
             li.innerHTML = `
                 <div class="drag-handle" title="Drag">↕</div>
-                <div class="item-main">
-                    <div class="item-line" style="grid-template-columns: 280px 1fr;">
-                        <input class="input-field" data-field="name" value="${escapeHtml(field.name || "")}" placeholder="Field name" ${canWrite ? "" : "disabled"} />
-                        <select class="select-field" data-field="type" ${canWrite ? "" : "disabled"}>${buildTypeOptions(parseInt(field.type,10))}</select>
+
+                <div class="item-main field-main">
+                    <div class="item-line field-line">
+                        <input class="input-field"
+                               data-field="name"
+                               value="${escapeHtml(field.name || "")}"
+                               placeholder="Field name"
+                               ${canWrite ? "" : "disabled"} />
+
+                        <select class="select-field"
+                                data-field="type"
+                                ${canWrite ? "" : "disabled"}>
+                            ${buildTypeOptions(parseInt(field.type, 10))}
+                        </select>
                     </div>
 
-                    <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:10px;">
-                        <label class="fields3-flag" style="margin:0;">
-                            <input type="checkbox" data-field="required" ${field.isRequired ? "checked" : ""} ${canWrite ? "" : "disabled"} />
+                    <div class="field-flags">
+                        <label class="fields3-flag">
+                            <input type="checkbox"
+                                   data-field="required"
+                                   ${field.isRequired ? "checked" : ""}
+                                   ${canWrite ? "" : "disabled"} />
                             Required
                         </label>
 
-                        <label class="fields3-flag" style="margin:0;">
-                            <input type="checkbox" data-field="unique" ${field.isUnique ? "checked" : ""} ${canWrite ? "" : "disabled"} />
+                        <label class="fields3-flag">
+                            <input type="checkbox"
+                                   data-field="unique"
+                                   ${field.isUnique ? "checked" : ""}
+                                   ${canWrite ? "" : "disabled"} />
                             Unique
                         </label>
 
-                        <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <div style="font-size:12px; opacity:.8;">Order: <b>${field.order}</b></div>
-                            <div class="save-text" data-save-state="${field.id}"></div>
-                        </div>
+                        <div class="save-text field-save-state" data-save-state="${field.id}"></div>
                     </div>
-
-                    <div class="hint-text">Drag handle to reorder. Drop into “Delete” zone to remove.</div>
                 </div>
             `;
+
             return li;
         }
 
@@ -313,6 +339,7 @@
                 if (!canWrite) return;
 
                 setState("Adding…", false);
+
                 try {
                     const data = await postJson(`/Inventories/${inventoryId}/Fields/Add`, {});
                     if (!data || !data.field) return;
@@ -324,7 +351,6 @@
 
                     setState("", false);
 
-                    // scroll to bottom
                     const scroll = document.getElementById("fieldsScroll");
                     if (scroll) scroll.scrollTop = scroll.scrollHeight;
                 } catch (e) {
@@ -334,7 +360,6 @@
             });
         }
 
-        // ---------- Drag & drop (reorder + delete) ----------
         let sortableList = null;
         let sortableTrash = null;
 
@@ -347,6 +372,7 @@
 
             try {
                 await postJson(`/Inventories/${inventoryId}/Fields/Reorder`, ids);
+                refreshOrders();
             } catch (e) {
                 console.error(e);
                 setState("Error: " + e.message, true);
@@ -367,7 +393,9 @@
                 animation: 150,
                 handle: ".drag-handle",
                 group: { name: "fieldsGroup", pull: true, put: false },
-                onEnd: function () { persistReorder(); }
+                onEnd: function () {
+                    persistReorder();
+                }
             });
 
             sortableTrash = Sortable.create(trashEl, {
@@ -381,14 +409,15 @@
                     setState("Deleting…", false);
 
                     try {
-                        // IMPORTANT: remove only after server confirms
                         await deleteField(id);
                         li.parentNode && li.parentNode.removeChild(li);
                         updateCount();
                         await persistReorder();
 
                         setState("Deleted", false);
-                        setTimeout(() => { if (stateEl && stateEl.textContent === "Deleted") setState("", false); }, 900);
+                        setTimeout(() => {
+                            if (stateEl && stateEl.textContent === "Deleted") setState("", false);
+                        }, 900);
                     } catch (e) {
                         console.error(e);
                         setState("Error: " + e.message, true);
@@ -399,8 +428,8 @@
         }
 
         initSortables();
+        refreshOrders();
 
-        // read-only: disable DnD
         if (!canWrite) {
             if (sortableList) sortableList.option("disabled", true);
             if (sortableTrash) sortableTrash.option("disabled", true);

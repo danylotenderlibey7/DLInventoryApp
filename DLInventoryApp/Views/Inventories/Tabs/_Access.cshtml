@@ -14,24 +14,6 @@
     <div class="page-subtitle">
         Manage users who have write access to this inventory.
     </div>
-
-    <div class="access-mode-inline">
-        <div class="access-mode-inline-title">Access mode</div>
-
-        <label class="access-mode-inline-check">
-            <input type="checkbox"
-                   id="accessIsPublic"
-            @(Model.IsPublic ? "checked" : null) />
-            <span>Allow all authenticated users to edit items</span>
-        </label>
-
-        <div id="accessModeHint" class="access-mode-inline-hint">
-            @(Model.IsPublic
-                ? "This inventory is public: all authenticated users can add, edit and delete items."
-                : "This inventory is private: only explicitly granted users can edit items.")
-        </div>
-    </div>
-
     <div class="access-main-grid">
         <div class="access-left">
             <div class="access-toolbar">
@@ -39,7 +21,7 @@
 
                 <button id="deleteSelectedAccessBtn"
                         type="button"
-                        class="inv-btn inv-btn-accent access-delete-btn"
+                        class="app-btn app-btn-primary access-delete-btn"
                         disabled
                         title="Delete selected users">
                     <i class="bi bi-trash"></i>

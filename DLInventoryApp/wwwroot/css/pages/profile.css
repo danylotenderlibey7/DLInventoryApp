@@ -105,3 +105,12 @@
         font-size: 20px;
     }
 }
+
+.manage-layout-public {
+    display: block;
+}
+
+    .manage-layout-public .manage-content {
+        width: 100%;
+        max-width: none;
+    }

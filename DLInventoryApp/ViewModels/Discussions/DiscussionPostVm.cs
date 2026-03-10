@@ -1,6 +1,4 @@
-﻿using DLInventoryApp.Models;
-
-namespace DLInventoryApp.ViewModels.Discussions
+﻿namespace DLInventoryApp.ViewModels.Discussions
 {
     public class DiscussionPostVm
     {

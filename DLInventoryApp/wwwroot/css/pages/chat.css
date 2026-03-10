@@ -109,7 +109,7 @@ body[data-theme="dark"] .chat-feed::-webkit-scrollbar-thumb {
         margin: 0;
     }
 
-    .chat-post-actions .inv-btn {
+    .chat-post-actions .app-btn {
         width: 40px;
         height: 40px;
         padding: 0;
@@ -228,3 +228,14 @@ body[data-theme="dark"] .chat-feed::-webkit-scrollbar-thumb {
     border-color: var(--accent);
     color: #fff;
 }
+
+.chat-author-link {
+    font-weight: 800;
+    color: var(--text-main);
+    text-decoration: none;
+}
+
+    .chat-author-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }

@@ -130,6 +130,55 @@
     perspective: none !important;
 }
 
+.inv-table-card {
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    display: flex;
+    flex-direction: column;
+}
+
+body[data-theme="dark"] .inv-table-card {
+    background: rgba(255,255,255,.02);
+}
+
+.inv-table-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px 8px 8px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(138, 59, 54, .85) transparent;
+}
+
+    .inv-table-scroll::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .inv-table-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .inv-table-scroll::-webkit-scrollbar-thumb {
+        background: rgba(138, 59, 54, .85);
+        border-radius: 999px;
+    }
+
+        .inv-table-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(111, 45, 40, .95);
+        }
+
+.inv-table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
 :root {
     --sticky-check-w: 34px;
 }

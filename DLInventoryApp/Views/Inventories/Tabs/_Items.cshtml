@@ -25,7 +25,7 @@
 
                 @if (Model.CanEditItems)
                 {
-                    <a class="inv-btn inv-btn-accent"
+                    <a class="app-btn app-btn-primary"
                        title="New item"
                        asp-controller="Items"
                        asp-action="Create"
@@ -35,7 +35,7 @@
 
                     <button id="editSelectedBtn"
                             type="button"
-                            class="inv-btn inv-btn-accent"
+                            class="app-btn app-btn-primary"
                             title="Edit selected"
                             disabled>
                         <i class="bi bi-pencil"></i>
@@ -43,7 +43,7 @@
 
                     <button id="deleteSelectedBtn"
                             type="submit"
-                            class="inv-btn inv-btn-accent"
+                            class="app-btn app-btn-primary"
                             title="Delete selected"
                             disabled>
                         <i class="bi bi-trash"></i>
@@ -51,7 +51,7 @@
 
                     <button id="toggleLikeSelectedBtn"
                             type="button"
-                            class="inv-btn inv-btn-accent"
+                            class="app-btn app-btn-primary"
                             title="Toggle like"
                             disabled>
                         <i id="toggleLikeIcon" class="bi bi-heart"></i>
@@ -66,48 +66,44 @@
         <div class="inv-table-card">
             <div class="inv-table-scroll">
 
-                <table class="inv-table"
-                       id="itemsTable"
-                       data-inventory-id="@Model.InventoryId"
-                       data-can-write="@(Model.CanEditItems ? "1" : "0")"
-                       data-setlikes-url='@Url.Action("SetLikes", "Items", new { inventoryId = Model.InventoryId })'>
+                @if (Model.Items.Items == null || Model.Items.Items.Count == 0)
+                {
+                    <div class="empty-state">
+                        <div class="empty-title">No items yet</div>
+                        <div class="empty-sub">Create the first item for this inventory.</div>
+                    </div>
+                }
+                else
+                {
+                    <table class="inv-table"
+                           id="itemsTable"
+                           data-inventory-id="@Model.InventoryId"
+                           data-can-write="@(Model.CanEditItems ? "1" : "0")"
+                           data-setlikes-url='@Url.Action("SetLikes", "Items", new { inventoryId = Model.InventoryId })'>
 
-                    <thead>
-                        <tr>
-                            @if (Model.CanEditItems)
-                            {
-                                <th class="col-check" data-col-key="__check">
-                                    <input id="checkAll" type="checkbox" aria-label="Select all items" />
-                                </th>
-                            }
-
-                            <th class="col-id" data-col-key="__customId">Custom ID</th>
-
-                            @foreach (var col in Model.Items.Columns)
-                            {
-                                <th data-col-key="f:@col.Id">
-                                    @col.Name
-                                </th>
-                            }
-
-@*                             <th class="col-muted col-date" data-col-key="__created">Created</th>
-                            <th class="col-muted col-date" data-col-key="__updated">Updated</th> *@
-                            <th class="col-likes" data-col-key="__likes">Likes</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="itemsTbody">
-                        @if (Model.Items.Items == null || Model.Items.Items.Count == 0)
-                        {
+                        <thead>
                             <tr>
-                                <td colspan="999" class="col-muted empty-row">
-                                    No items yet
-                                </td>
+                                @if (Model.CanEditItems)
+                                {
+                                    <th class="col-check" data-col-key="__check">
+                                        <input id="checkAll" type="checkbox" aria-label="Select all items" />
+                                    </th>
+                                }
+
+                                <th class="col-id" data-col-key="__customId">Custom ID</th>
+
+                                @foreach (var col in Model.Items.Columns)
+                                {
+                                    <th data-col-key="f:@col.Id">@col.Name</th>
+                                }
+
+                                <th class="col-likes" data-col-key="__likes">Likes</th>
                             </tr>
-                        }
-                        else
-                        {
-                            foreach (var it in Model.Items.Items)
+                        </thead>
+
+                        <tbody id="itemsTbody">
+
+                            @foreach (var it in Model.Items.Items)
                             {
                                 var editUrl = Url.Action("Edit", "Items", new { inventoryId = Model.InventoryId, itemId = it.Id });
 
@@ -134,25 +130,26 @@
 
                                         <td class="cell-readonly">@display</td>
                                     }
-@* 
-                                    <td class="col-muted col-date">@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                    <td class="col-muted col-date">@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
- *@
+
                                     <td class="col-likes likes-cell"
                                         data-liked="@(it.IsLikedByMe ? "1" : "0")">
-                                        <span class="likes-heart" style="margin-right:6px; @(it.IsLikedByMe ? "" : "display:none;")">
+
+                                        <span class="likes-heart"
+                                              style="margin-right:6px; @(it.IsLikedByMe ? "" : "display:none;")">
                                             <i class="bi bi-heart-fill"></i>
                                         </span>
+
                                         <span class="likes-count">@it.LikesCount</span>
+
                                     </td>
 
                                 </tr>
                             }
-                        }
-                    </tbody>
 
-                </table>
+                        </tbody>
 
+                    </table>
+                }
             </div>
         </div>
 

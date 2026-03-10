@@ -32,7 +32,7 @@
                     {
                             <button id="cidAddBtn"
                                     type="button"
-                                    class="inv-btn inv-btn-accent btn-add"
+                                    class="app-btn app-btn-primary btn-add"
                                     title="Add element"
                                     aria-label="Add element">
                                 <i class="bi bi-plus-lg"></i>
@@ -439,91 +439,3 @@
       initSortables();
     })();
 </script>
-<style>
-    .cid-layout {
-        min-height: 0;
-    }
-
-    .cid-grid {
-        min-height: 0;
-    }
-
-    .cid-left,
-    .cid-right {
-        min-height: 0;
-    }
-
-    .cid-card {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
-    .cid-scroll {
-        --cid-row-h: 108px;
-        --cid-gap: 12px;
-        --cid-pad: 12px;
-        max-height: calc(var(--cid-row-h) * 4 + var(--cid-gap) * 3 + var(--cid-pad) * 2) !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        height: auto !important;
-    }
-
-        .cid-scroll .elements-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--cid-gap);
-        }
-
-    .cid-state {
-        margin-left: 10px;
-        flex: 0 0 auto;
-        min-width: 60px;
-        text-align: right;
-        font-size: 12px;
-        line-height: 1;
-        opacity: 0.75;
-        user-select: none;
-    }
-
-        .cid-state.is-error {
-            color: #b42318;
-            opacity: 1;
-        }
-
-        .cid-state.is-wip {
-            opacity: 0.85;
-        }
-
-        .cid-state.is-ok {
-            opacity: 0.9;
-        }
-    .item-line {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-        .item-line .input-field {
-            flex: 1 1 auto;
-            min-width: 0;
-        }
-
-        .item-line .select-field {
-            flex: 0 0 210px;
-            max-width: 260px;
-        }
-
-    .cid-scroll::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .cid-scroll::-webkit-scrollbar-thumb {
-        background: rgba(0,0,0,.18);
-        border-radius: 10px;
-    }
-
-    body[data-theme="dark"] .cid-scroll::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,.25);
-    }
-</style>

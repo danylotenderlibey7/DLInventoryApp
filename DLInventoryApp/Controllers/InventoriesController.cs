@@ -371,7 +371,7 @@ namespace DLInventoryApp.Controllers
         }
         private static readonly HashSet<string> AllowedTabs = new(StringComparer.OrdinalIgnoreCase)
         {
-            "items", "chat", "settings", "customid", "fields", "access", "stats", "export"
+            "items", "chat", "settings", "customid", "fields", "access"
         };
         [AllowAnonymous]
         public async Task<IActionResult> Details(Guid id, string tab = "items")
@@ -427,10 +427,6 @@ namespace DLInventoryApp.Controllers
                     if (userId == null) return Challenge();
                     if (!canManageInventory) return NotFound();
                     inv.Accesses = await _accessTabBuilder.BuildAsync(id, invBase.Title);
-                    break;
-                case "export":
-                    break;
-                case "stats":
                     break;
             }
             return View(inv);

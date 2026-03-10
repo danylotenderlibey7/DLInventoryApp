@@ -22,6 +22,7 @@ namespace DLInventoryApp.Areas.Identity.Pages.Account.Manage
         public bool IsBlocked { get; set; }
         public int InventoriesCount { get; set; }
         public int ItemsCount { get; set; }
+        public bool IsOwnProfile { get; set; }
         public List<MyInventoryVm> Inventories { get; set; } = new();
         public class MyInventoryVm
         {
@@ -34,10 +35,14 @@ namespace DLInventoryApp.Areas.Identity.Pages.Account.Manage
             public DateTime? UpdatedAt { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync(string? id)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            var currentUser = await _userManager.GetUserAsync(User);
+            ApplicationUser? user;
+            if (!string.IsNullOrWhiteSpace(id)) user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == id);
+            else user = await _userManager.GetUserAsync(User);
+            if (user == null)return NotFound();
+            IsOwnProfile = currentUser != null && currentUser.Id == user.Id;
             Username = user.UserName ?? "User";
             Email = user.Email ?? "No email";
             IsBlocked = user.IsBlocked;

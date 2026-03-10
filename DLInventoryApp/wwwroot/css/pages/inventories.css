@@ -8,6 +8,13 @@
     .inv-table td {
         padding: 18px 20px;
         vertical-align: middle;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .inv-table thead th {
+        white-space: normal;
+        word-break: break-word;
     }
 
     .inv-table th {
@@ -37,6 +44,12 @@
 body[data-theme="dark"] .inv-table-wrap,
 body[data-theme="dark"] .inv-table-card {
     background: rgba(255,255,255,.02);
+}
+
+.empty-row {
+    text-align: left;
+    color: var(--text-muted);
+    padding: 24px 20px !important;
 }
 
 .inv-table-card {
@@ -184,10 +197,10 @@ body[data-theme="dark"] .inv-row:hover {
 }
 
 .col-check {
-    width: 42px;
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
     text-align: center;
-    min-width: 28px;
-    max-width: 42px;
 }
 
     .col-check input,
@@ -198,11 +211,13 @@ body[data-theme="dark"] .inv-row:hover {
     }
 
 .col-id {
-    min-width: 120px;
+    width: 220px;
+    min-width: 220px;
 }
 
 .col-likes {
-    width: 60px;
+    width: 90px;
+    min-width: 90px;
     text-align: center;
 }
 
@@ -411,7 +426,7 @@ body[data-theme="dark"] .inv-tag {
     flex-shrink: 0;
 }
 
-    .inv-page-actions .inv-btn {
+    .inv-page-actions .app-btn {
         width: 40px;
         height: 40px;
         min-width: 40px;
@@ -424,7 +439,7 @@ body[data-theme="dark"] .inv-tag {
         line-height: 1;
     }
 
-        .inv-page-actions .inv-btn i {
+        .inv-page-actions .app-btn i {
             font-size: 16px;
             line-height: 1;
         }
@@ -465,8 +480,8 @@ body[data-theme="dark"] .inv-tag {
     white-space: nowrap;
 }
 
-.inv-page-actions .inv-btn-ghost,
-.inv-page-actions .inv-btn-accent {
+.inv-page-actions .app-btn-ghost,
+.inv-page-actions .app-btn-accent {
     display: inline-flex;
     align-items: center;
     justify-content: center;

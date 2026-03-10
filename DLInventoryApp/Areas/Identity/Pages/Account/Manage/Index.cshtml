@@ -1,4 +1,4 @@
-﻿@page "/profile"
+﻿@page "/profile/{id?}"
 @model IndexModel
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
@@ -6,11 +6,14 @@
 }
 
 <div class="workspace-inner profile-page">
-    <div class="manage-layout">
+    <div class="manage-layout @(Model.IsOwnProfile ? "" : "manage-layout-public")">
 
-        <aside class="manage-sidebar">
-            <partial name="_ManageNav" />
-        </aside>
+        @if (Model.IsOwnProfile)
+        {
+            <aside class="manage-sidebar">
+                <partial name="_ManageNav" />
+            </aside>
+        }
 
         <div class="manage-content">
             <div class="profile-card">
