@@ -45,10 +45,10 @@
 
                 <input asp-for="CustomId"
                        class="inv-settings-input"
-                       placeholder="Will be auto-generated" />
+                       placeholder="@Model.PreviewCustomId" />
 
                 <div class="item-field-hint">
-                    You can keep this value or overwrite it manually.
+                    Leave empty to generate automatically.
                 </div>
 
                 <span asp-validation-for="CustomId" class="text-danger"></span>

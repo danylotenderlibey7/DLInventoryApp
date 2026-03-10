@@ -233,6 +233,29 @@ namespace DLInventoryApp.Services
             writer.Commit();
             return Task.CompletedTask;
         }
+        public Task RemoveInventoryItemsAsync(Guid inventoryId)
+        {
+            using var writer = OpenWriter();
+            writer.DeleteDocuments(new Term("InventoryId", inventoryId.ToString()));
+            writer.Commit();
+            return Task.CompletedTask;
+        }
+        public async Task ReindexInventoryItemsAsync(Guid inventoryId)
+        {
+            using var writer = OpenWriter();
+            writer.DeleteDocuments(new Term("InventoryId", inventoryId.ToString()));
+            var items = await _context.Items
+                .AsNoTracking()
+                .Where(i => i.InventoryId == inventoryId)
+                .Include(i => i.FieldValues)
+                .ThenInclude(fv => fv.CustomField)
+                .ToListAsync();
+            foreach (var item in items)
+            {
+                writer.AddDocument(BuildItemDocument(item));
+            }
+            writer.Commit();
+        }
         public async Task IndexItemAsync(Guid itemId)
         {
             var item = await _context.Items

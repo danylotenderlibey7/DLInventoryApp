@@ -30,7 +30,10 @@ else
         {
             <li>
                 <div>
-                    <a asp-controller="Inventories" asp-action="Details" asp-route-id="@inv.Id">
+                    <a asp-controller="Inventories"
+                       asp-action="Details"
+                       asp-route-id="@inv.Id"
+                       asp-route-tab="items">
                         @inv.Title
                     </a>
                 </div>
@@ -55,10 +58,10 @@ else
         {
             <li>
                 <div>
-                    <a asp-controller="Items"
+                    <a asp-controller="Inventories"
                        asp-action="Details"
-                       asp-route-inventoryId="@item.InventoryId"
-                       asp-route-itemId="@item.Id">
+                       asp-route-id="@item.InventoryId"
+                       asp-route-tab="items">
                         @item.CustomId
                     </a>
                     <span> — in inventory: @item.InventoryTitle</span>

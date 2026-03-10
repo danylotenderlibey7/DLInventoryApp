@@ -18,13 +18,15 @@ namespace DLInventoryApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAccessService _accessService; 
         private readonly ICustomIdGenerator _customIdGenerator;
+        private readonly ISearchService _searchService;
         public CustomIdController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
-            IAccessService accessService, ICustomIdGenerator customIdGenerator)
+            IAccessService accessService, ICustomIdGenerator customIdGenerator, ISearchService searchService)
         {
             _context = context;
             _userManager = userManager;
             _accessService = accessService;
             _customIdGenerator = customIdGenerator;
+            _searchService = searchService;
         }
         public async Task<IActionResult> Index(Guid inventoryId)
         {
@@ -88,7 +90,8 @@ namespace DLInventoryApp.Controllers
             };
             _context.CustomIdElements.Add(entity);
             await _context.SaveChangesAsync();
-            await NormalizeOrdersAsync(inventoryId);
+            await NormalizeOrdersAsync(inventoryId); 
+            await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
             try { preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId; }
             catch { preview = "(no template)"; }
@@ -119,10 +122,17 @@ namespace DLInventoryApp.Controllers
             if (entity == null) return NotFound();
             _context.CustomIdElements.Remove(entity);
             await _context.SaveChangesAsync();
-            await NormalizeOrdersAsync(inventoryId);
+            await NormalizeOrdersAsync(inventoryId); 
+            await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
-            try { preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId; }
-            catch { preview = "(no template)"; }
+            try 
+            { 
+                preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId; 
+            }
+            catch 
+            { 
+                preview = "(no template)"; 
+            }
             return Ok(new { ok = true, preview });
         }
         [HttpPost("Reorder")]
@@ -168,10 +178,17 @@ namespace DLInventoryApp.Controllers
             entity.Type = dto.Type;
             entity.Text = string.IsNullOrWhiteSpace(dto.Text) ? null : dto.Text.Trim();
             entity.Format = string.IsNullOrWhiteSpace(dto.Format) ? null : dto.Format.Trim();
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); 
+            await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
-            try { preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId; }
-            catch { preview = "(no template)"; }
+            try
+            {
+                preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId;
+            }
+            catch
+            {
+                preview = "(no template)";
+            }
             return Ok(new { ok = true, preview });
         }
         [HttpGet("Preview")]

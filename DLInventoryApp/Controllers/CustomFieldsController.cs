@@ -3,7 +3,6 @@ using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.CustomFields;
 using DLInventoryApp.ViewModels.CustomFields.Dtos;
-using DLInventoryApp.ViewModels.Items;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -115,7 +114,8 @@ namespace DLInventoryApp.Controllers
             _context.CustomFields.Add(field);
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); 
+                await _searchService.ReindexInventoryItemsAsync(inventoryId);
             }
             catch (DbUpdateException)
             {
@@ -172,7 +172,8 @@ namespace DLInventoryApp.Controllers
             _context.CustomFields.Add(field);
             try
             {
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); 
+                await _searchService.ReindexInventoryItemsAsync(inventoryId);
             }
             catch (DbUpdateException)
             {
@@ -235,6 +236,7 @@ namespace DLInventoryApp.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                await _searchService.ReindexInventoryItemsAsync(inventoryId);
             }
             catch (DbUpdateException)
             {
@@ -253,7 +255,6 @@ namespace DLInventoryApp.Controllers
                 .Select(x => new { x.Id, x.OwnerId })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
-            var isAdmin = User.IsInRole("Admin");
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
             var fields = await _context.CustomFields
@@ -285,7 +286,6 @@ namespace DLInventoryApp.Controllers
                 .Select(x => new { x.Id, x.OwnerId })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
-            var isAdmin = User.IsInRole("Admin");
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
             var field = await _context.CustomFields
@@ -294,6 +294,7 @@ namespace DLInventoryApp.Controllers
             if (field == null) return NotFound();
             _context.CustomFields.Remove(field);
             await _context.SaveChangesAsync();
+            await _searchService.ReindexInventoryItemsAsync(inventoryId);
             return Ok(new { ok = true });
         }
     }

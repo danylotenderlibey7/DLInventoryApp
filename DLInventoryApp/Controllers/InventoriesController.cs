@@ -365,8 +365,14 @@ namespace DLInventoryApp.Controllers
             if (inventories.Count == 0) return RedirectToAction(nameof(My));
             _context.Inventories.RemoveRange(inventories);
             await _context.SaveChangesAsync();
+            await _context.Tags
+                .Where(t => !t.InventoryTags.Any())
+                .ExecuteDeleteAsync();
             foreach (var inv in inventories)
+            {
                 await _searchService.RemoveInventoryAsync(inv.Id);
+                await _searchService.RemoveInventoryItemsAsync(inv.Id);
+            }
             return RedirectToAction(nameof(My));
         }
         private static readonly HashSet<string> AllowedTabs = new(StringComparer.OrdinalIgnoreCase)

@@ -8,6 +8,8 @@ namespace DLInventoryApp.Services.Interfaces
         Task ReindexAllAsync();
         Task IndexInventoryAsync(Guid inventoryId);
         Task RemoveInventoryAsync(Guid inventoryId);
+        Task RemoveInventoryItemsAsync(Guid inventoryId);
+        Task ReindexInventoryItemsAsync(Guid inventoryId);
         Task IndexItemAsync(Guid itemId);
         Task RemoveItemAsync(Guid itemId);
     }

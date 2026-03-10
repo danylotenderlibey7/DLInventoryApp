@@ -2,16 +2,12 @@
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.Services.Models;
-using DLInventoryApp.Services.Tabs;
-using DLInventoryApp.ViewModels.CustomFields;
 using DLInventoryApp.ViewModels.Items.Inline;
 using DLInventoryApp.ViewModels.Items.Pages;
-using DLInventoryApp.ViewModels.Items.Tabs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Text.Json;
 
 namespace DLInventoryApp.Controllers
@@ -24,17 +20,14 @@ namespace DLInventoryApp.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ICustomIdGenerator _customIdGenerator;
         private readonly IAccessService _accessService;
-        private readonly ILikeService _likeService; 
         private readonly ISearchService _searchService;
         public ItemsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, 
-            ICustomIdGenerator customIdGenerator, IAccessService accessService, 
-            ILikeService likeService, ISearchService searchService)
+            ICustomIdGenerator customIdGenerator, IAccessService accessService, ISearchService searchService)
         {
             _context = context;
             _userManager = userManager;
             _customIdGenerator = customIdGenerator;
             _accessService = accessService;
-            _likeService = likeService;
             _searchService = searchService;
         }
         [HttpGet("Create")]
@@ -47,12 +40,7 @@ namespace DLInventoryApp.Controllers
             var inv = await _context.Inventories
                 .Where(inv => inv.Id == inventoryId)
                 .SingleOrDefaultAsync();
-            if (inv == null)
-                return NotFound();
-            var ids = await _context.Items
-                .Where(it => it.InventoryId == inventoryId)
-                .Select(it => it.CustomId)
-                .ToListAsync();
+            if (inv == null) return NotFound();
             CustomIdResult? preview = null;
             try
             {
@@ -66,7 +54,8 @@ namespace DLInventoryApp.Controllers
             {
                 InventoryId = inventoryId,
                 InventoryTitle = inv.Title,
-                CustomId = preview?.CustomId,
+                CustomId = null,
+                PreviewCustomId = preview?.CustomId,
                 CanEditItem = canEditItems,
             };
             var fields = await _context.CustomFields
@@ -386,7 +375,8 @@ namespace DLInventoryApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(Guid inventoryId, List<Guid> itemIds)
         {
-            if (itemIds == null || itemIds.Count == 0) return RedirectToAction("Index", new { inventoryId });
+            if (itemIds == null || itemIds.Count == 0) 
+                return RedirectToAction("Details", "Inventories", new { id = inventoryId, tab = "items" });
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Challenge();
             var canEditItems = await _accessService.CanEditItems(inventoryId, userId);
@@ -507,144 +497,6 @@ namespace DLInventoryApp.Controllers
                     likesCount = countMap.TryGetValue(id, out var c) ? c : 0
                 })
             });
-        }
-        [HttpPost("{itemId:guid}/Cell")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateCell(Guid inventoryId, Guid itemId, [FromBody] UpdateCellDto dto)
-        {
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Challenge();
-            var canEditItems = await _accessService.CanEditItems(inventoryId, userId);
-            if (!canEditItems) return NotFound();
-            var field = await _context.CustomFields
-                .Where(f => f.InventoryId == inventoryId && f.Id == dto.CustomFieldId)
-                .SingleOrDefaultAsync();
-            if (field == null)
-                return BadRequest(new { ok = false, error = "Field not found." });
-            var item = await _context.Items
-                .Where(it => it.InventoryId == inventoryId && it.Id == itemId)
-                .SingleOrDefaultAsync();
-            if (item == null) return NotFound();
-            _context.Entry(item)
-                .Property(x => x.Version).OriginalValue = dto.Version;
-            var val = await _context.ItemFieldValues
-                .Where(v => v.ItemId == itemId && v.CustomFieldId == field.Id)
-                .SingleOrDefaultAsync();
-            if (val == null)
-            {
-                val = new ItemFieldValue
-                {
-                    ItemId = itemId,
-                    CustomFieldId = field.Id
-                };
-                _context.ItemFieldValues.Add(val);
-            }
-            string? text = null;
-            decimal? number = null;
-            string? link = null;
-            bool? boolean = null;
-            try
-            {
-                switch (field.Type)
-                {
-                    case CustomFieldType.SingleLineText:
-                    case CustomFieldType.MultiLineText:
-                        text = (dto.Value?.ToString() ?? "").Trim();
-                        if (field.IsRequired && string.IsNullOrWhiteSpace(text))
-                            return BadRequest(new { ok = false, error = "This field is required." });
-                        break;
-                    case CustomFieldType.DocumentLink:
-                        link = (dto.Value?.ToString() ?? "").Trim();
-                        if (field.IsRequired && string.IsNullOrWhiteSpace(link))
-                            return BadRequest(new { ok = false, error = "This field is required." });
-                        break;
-                    case CustomFieldType.Number:
-                        var s = (dto.Value?.ToString() ?? "").Trim();
-                        if (field.IsRequired && string.IsNullOrWhiteSpace(s))
-                            return BadRequest(new { ok = false, error = "This field is required." });
-                        if (!string.IsNullOrWhiteSpace(s))
-                        {
-                            if (!decimal.TryParse(s, System.Globalization.NumberStyles.Any,
-                                System.Globalization.CultureInfo.InvariantCulture, out var parsed))
-                            {
-                                if (!decimal.TryParse(s, out parsed))
-                                    return BadRequest(new { ok = false, error = "Invalid number." });
-                            }
-                            number = parsed;
-                        }
-                        break;
-                    case CustomFieldType.Boolean:
-                        if (dto.Value is bool b) boolean = b;
-                        else
-                        {
-                            var bs = (dto.Value?.ToString() ?? "").Trim().ToLower();
-                            boolean = (bs == "true" || bs == "1" || bs == "yes");
-                        }
-                        break;
-                }
-            }
-            catch
-            {
-                return BadRequest(new { ok = false, error = "Invalid value." });
-            }
-            if (field.IsUnique)
-            {
-                var q = _context.ItemFieldValues
-                    .Where(v => v.CustomFieldId == field.Id && v.Item.InventoryId == inventoryId && v.ItemId != itemId);
-
-                bool exists = field.Type switch
-                {
-                    CustomFieldType.SingleLineText or CustomFieldType.MultiLineText => await q.AnyAsync(v => v.TextValue == text),
-                    CustomFieldType.DocumentLink => await q.AnyAsync(v => v.LinkValue == link),
-                    CustomFieldType.Number => await q.AnyAsync(v => v.NumberValue == number),
-                    CustomFieldType.Boolean => await q.AnyAsync(v => v.BoolValue == boolean),
-                    _ => false
-                };
-                if (exists)
-                    return BadRequest(new { ok = false, error = "Value must be unique." });
-            }
-            val.TextValue = null;
-            val.NumberValue = null;
-            val.LinkValue = null;
-            val.BoolValue = null;
-            switch (field.Type)
-            {
-                case CustomFieldType.SingleLineText:
-                case CustomFieldType.MultiLineText:
-                    val.TextValue = text;
-                    break;
-                case CustomFieldType.DocumentLink:
-                    val.LinkValue = link;
-                    break;
-                case CustomFieldType.Number:
-                    val.NumberValue = number;
-                    break;
-                case CustomFieldType.Boolean:
-                    val.BoolValue = boolean ?? false;
-                    break;
-            }
-            item.UpdatedAt = DateTime.UtcNow;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Conflict(new
-                {
-                    ok = false,
-                    error = "Item was modified by another user. Reload the page."
-                });
-            }
-            await _searchService.IndexItemAsync(itemId);
-            string display = field.Type switch
-            {
-                CustomFieldType.Boolean => (val.BoolValue == true ? "Yes" : "No"),
-                CustomFieldType.Number => (val.NumberValue?.ToString() ?? ""),
-                CustomFieldType.DocumentLink => (val.LinkValue ?? ""),
-                _ => (val.TextValue ?? "")
-            };
-            return Ok(new { ok = true, display, version = Convert.ToBase64String(item.Version) });
         }
     }
 }
