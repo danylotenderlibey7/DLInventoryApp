@@ -1,0 +1,230 @@
+﻿.chat-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-height: 0;
+}
+
+.chat-feed {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding-right: 6px;
+}
+
+    .chat-feed::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .chat-feed::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,.12);
+        border-radius: 999px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+    }
+
+body[data-theme="dark"] .chat-feed::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,.22);
+}
+
+.chat-empty {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    color: var(--text-muted);
+}
+
+.chat-post {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 12px;
+    padding: 12px 14px;
+    margin: 0 0 12px 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+    .chat-post:last-child {
+        margin-bottom: 0;
+    }
+
+.chat-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(0,0,0,.04);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.chat-post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.chat-post-meta {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-email {
+    font-weight: 800;
+    color: var(--text);
+}
+
+.chat-meta-sep {
+    opacity: .5;
+}
+
+.chat-date,
+.chat-edited {
+    color: var(--text-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.chat-edited {
+    margin-left: 6px;
+}
+
+.chat-post-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+    .chat-post-actions form {
+        margin: 0;
+    }
+
+    .chat-post-actions .inv-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: inline-grid;
+        place-items: center;
+    }
+
+.chat-post-body {
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.chat-message {
+    padding: 2px 0;
+}
+
+.chat-bubble {
+    background: rgba(0,0,0,.03);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 10px 12px;
+}
+
+.chat-post-body,
+.chat-post-body * {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.chat-editor {
+    margin-top: 10px;
+}
+
+    .chat-editor .chat-textarea {
+        background: rgba(0,0,0,.02);
+    }
+
+.chat-composer-card {
+    flex: 0 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+}
+
+.chat-composer-title {
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 10px;
+}
+
+.chat-textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    border-radius: 14px;
+    padding: 10px 12px;
+    outline: none;
+    resize: vertical;
+}
+
+    .chat-textarea:focus {
+        border-color: var(--accent);
+    }
+
+.chat-textarea-small {
+    min-height: 52px;
+    max-height: 140px;
+}
+
+.chat-compose-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+    .chat-compose-row .chat-textarea {
+        flex: 1 1 auto;
+        width: auto;
+        margin: 0;
+    }
+
+.chat-sendbtn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+}
+
+    .chat-sendbtn i {
+        font-size: 18px;
+    }
+
+.chat-muted {
+    color: var(--text-muted);
+}
+
+.chat-btn {
+    border-radius: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.chat-btn-accent {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}

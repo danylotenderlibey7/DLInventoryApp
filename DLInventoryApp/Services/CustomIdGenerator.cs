@@ -36,7 +36,15 @@ public class CustomIdGenerator : ICustomIdGenerator
                         .Where(s => s.InventoryId == inventoryId)
                         .FirstOrDefaultAsync();
                     if (sequence == null)
-                        throw new InvalidOperationException("Sequence not configured for inventory.");
+                    {
+                        sequence = new InventorySequence
+                        {
+                            InventoryId = inventoryId,
+                            NextValue = 1
+                        };
+                        _context.InventorySequences.Add(sequence);
+                        await _context.SaveChangesAsync();
+                    }
                     nextSequence = sequence.NextValue;
                     sequence.NextValue++;
                     await _context.SaveChangesAsync();
@@ -109,9 +117,8 @@ public class CustomIdGenerator : ICustomIdGenerator
             var sequence = await _context.InventorySequences
                 .Where(s => s.InventoryId == inventoryId)
                 .FirstOrDefaultAsync();
-            if (sequence == null)
-                throw new InvalidOperationException("Sequence not configured for inventory.");
-            nextSequence = sequence.NextValue;
+            if (sequence == null) nextSequence = 1;
+            else nextSequence = sequence.NextValue;
         }
         var builder = new StringBuilder();
         foreach (var el in elements)
@@ -159,4 +166,5 @@ public class CustomIdGenerator : ICustomIdGenerator
             SequenceNumber = nextSequence
         };
     }
+
 }

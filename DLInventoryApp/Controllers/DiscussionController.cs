@@ -3,6 +3,7 @@ using DLInventoryApp.Hubs;
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.Discussions;
+using DLInventoryApp.ViewModels.Discussions.Dtos;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

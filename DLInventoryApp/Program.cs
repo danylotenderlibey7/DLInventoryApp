@@ -7,6 +7,7 @@ using DLInventoryApp.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using DLInventoryApp.Middleware;
 using DLInventoryApp.Hubs;
+using DLInventoryApp.Services.Tabs;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -14,7 +15,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+    options.Password.RequiredLength = 1;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredUniqueChars = 0;
+    options.User.RequireUniqueEmail = true;
+})
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddAuthentication()
@@ -36,6 +47,12 @@ builder.Services.AddAuthentication()
 builder.Services.AddControllersWithViews(); 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ICustomIdGenerator, CustomIdGenerator>();
+builder.Services.AddScoped<CustomIdTabBuilder>();
+builder.Services.AddScoped<FieldsTabBuilder>();
+builder.Services.AddScoped<SettingsTabBuilder>();
+builder.Services.AddScoped<AccessTabBuilder>();
+builder.Services.AddScoped<ChatTabBuilder>();
+builder.Services.AddScoped<ItemsTabBuilder>();
 builder.Services.AddScoped<IAccessService, AccessService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ILikeService, ItemLikeService>();
@@ -63,7 +80,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<BlockedUserMiddleware>();
 app.UseAuthorization();
-
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     //pattern: "{controller=Home}/{action=Index}/{id?}");

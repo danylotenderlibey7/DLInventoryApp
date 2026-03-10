@@ -1,47 +1,131 @@
-﻿@using DLInventoryApp.ViewModels.Inventories
+﻿@using DLInventoryApp.ViewModels.Inventories.Pages
 @model CreateInventoryVm
 
-<h2>Create Inventory</h2>
+<form asp-action="Create"
+      method="post"
+      id="inventoryCreateForm"
+      class="item-page-form">
 
-<form asp-action="Create" method="post">
     @Html.AntiForgeryToken()
 
-    <div>
-        <label asp-for="Title"></label>
-        <input asp-for="Title" />
-        <span asp-validation-for="Title"></span>
-    </div>
+    <div class="inv-page-card item-page-scroll">
 
-    <div>
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
-    </div>
-
-    <div>
-        <input asp-for="IsPublic" type="checkbox" />
-        <label asp-for="IsPublic"></label>
-    </div>
-
-    <div>
-        <label>Tags</label>
-
-        <div style="display:flex; gap:8px; align-items:center; position:relative; max-width:520px;">
-            <input type="text" id="tagInput" placeholder="type tag and press Add" style="flex:1;" />
-            <button type="button" id="addTagBtn">Add</button>
-
-            <div id="tagSuggestList"
-                 style="position:absolute; left:0; right:0; top:42px; background:#fff; border:1px solid #ddd; border-radius:8px; display:none; z-index:10; max-height:180px; overflow:auto;">
+        <div class="inv-page-head">
+            <div>
+                <div class="inv-page-title">Create inventory</div>
+                <div class="inv-page-subtitle">
+                    Set basic info now. You can configure custom IDs, fields and access after saving.
+                </div>
             </div>
+
+            <div class="inv-page-actions">
+                <a asp-action="Index"
+                   class="app-btn app-btn-ghost app-btn-icon"
+                   title="Back"
+                   aria-label="Back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+
+                <button type="submit"
+                        class="app-btn app-btn-accent app-btn-icon"
+                        title="Create"
+                        aria-label="Create">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+
         </div>
 
-        <div id="tagsChips" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
-        <div id="tagsHidden"></div>
-    </div>
+        <div class="inv-settings-grid">
 
-    <button type="submit">Save</button>
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Title</div>
+                <div class="inv-settings-field">
+                    <input asp-for="Title"
+                           class="inv-settings-input"
+                           placeholder="e.g. Office IT" />
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Description</div>
+                <div class="inv-settings-field">
+                    <textarea asp-for="Description"
+                              class="inv-settings-textarea"
+                              rows="6"
+                              placeholder="Markdown supported..."></textarea>
+                </div>
+            </div>
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Category</div>
+                <div class="inv-settings-field">
+                    <select asp-for="CategoryId"
+                            class="inv-settings-input">
+                        <option value="">Select category...</option>
+
+                        @foreach (var c in Model.Categories)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Public</div>
+                <div class="inv-settings-field">
+                    <label class="create-inv-bool-line">
+                        <input asp-for="IsPublic" type="checkbox" />
+                        <span class="inv-muted">
+                            If public, all authenticated users can add items.
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Tags</div>
+
+                <div class="inv-settings-field inv-settings-tags-field">
+                    <div class="tag-input-wrap position-relative">
+                        <div class="create-inv-tag-row">
+                            <input type="text"
+                                   id="tagInput"
+                                   class="inv-settings-input"
+                                   placeholder="Type tag and press Add" />
+
+                            <button type="button"
+                                    id="addTagBtn"
+                                    class="app-btn app-btn-accent app-btn-icon"
+                                    title="Add tag"
+                                    aria-label="Add tag">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+
+                        <div id="tagSuggestList"
+                             class="tag-suggest shadow-sm"
+                             style="display:none;"></div>
+                    </div>
+
+                    <div id="tagsChips" class="tags-chips mt-2"></div>
+                    <div id="tagsHidden"></div>
+
+                    <div class="inv-settings-save">
+                        Start typing to see tag suggestions. Press Enter to add quickly.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
 </form>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
             const input = document.getElementById("tagInput");
@@ -52,6 +136,10 @@
 
             const tags = new Set();
 
+            let timer = null;
+            let lastQuery = "";
+            let activeIndex = -1;
+
             function normalize(v) {
                 return (v || "").trim().toLowerCase();
             }
@@ -60,33 +148,33 @@
                 chips.innerHTML = "";
                 hidden.innerHTML = "";
 
-                tags.forEach(t => {
-                    const chip = document.createElement("span");
-                    chip.textContent = t;
-                    chip.style.padding = "4px 8px";
-                    chip.style.background = "#eee";
-                    chip.style.borderRadius = "14px";
-                    chip.style.display = "inline-flex";
-                    chip.style.gap = "6px";
-                    chip.style.alignItems = "center";
+                Array.from(tags)
+                    .map(normalize)
+                    .filter(Boolean)
+                    .sort()
+                    .forEach(t => {
+                        const chip = document.createElement("span");
+                        chip.className = "tag-chip";
+                        chip.textContent = t;
 
-                    const x = document.createElement("button");
-                    x.type = "button";
-                    x.textContent = "×";
-                    x.style.border = "none";
-                    x.style.background = "transparent";
-                    x.style.cursor = "pointer";
-                    x.onclick = () => { tags.delete(t); render(); };
+                        const x = document.createElement("button");
+                        x.type = "button";
+                        x.className = "tag-chip-x";
+                        x.textContent = "×";
+                        x.onclick = () => {
+                            tags.delete(t);
+                            render();
+                        };
 
-                    chip.appendChild(x);
-                    chips.appendChild(chip);
+                        chip.appendChild(x);
+                        chips.appendChild(chip);
 
-                    const h = document.createElement("input");
-                    h.type = "hidden";
-                    h.name = "Tags";
-                    h.value = t;
-                    hidden.appendChild(h);
-                });
+                        const h = document.createElement("input");
+                        h.type = "hidden";
+                        h.name = "Tags";
+                        h.value = t;
+                        hidden.appendChild(h);
+                    });
             }
 
             function closeSuggest() {
@@ -98,12 +186,13 @@
             function highlightActive() {
                 const children = Array.from(suggestBox.children);
                 children.forEach((el, i) => {
-                    el.style.background = (i === activeIndex) ? "#f3f4f6" : "#fff";
+                    el.classList.toggle("active", i === activeIndex);
                 });
             }
 
             function showSuggest(items) {
                 suggestBox.innerHTML = "";
+
                 if (!items || items.length === 0) {
                     closeSuggest();
                     return;
@@ -111,9 +200,8 @@
 
                 items.forEach((name, idx) => {
                     const row = document.createElement("div");
+                    row.className = "tag-suggest-item";
                     row.textContent = name;
-                    row.style.padding = "8px 10px";
-                    row.style.cursor = "pointer";
 
                     row.addEventListener("mouseenter", () => {
                         activeIndex = idx;
@@ -122,8 +210,10 @@
 
                     row.addEventListener("mousedown", (e) => {
                         e.preventDefault();
+
                         const n = normalize(name);
                         if (n) tags.add(n);
+
                         input.value = "";
                         render();
                         closeSuggest();
@@ -150,7 +240,10 @@
 
                 try {
                     const resp = await fetch(`/Tags/Suggest?prefix=${encodeURIComponent(current)}`);
-                    if (!resp.ok) { closeSuggest(); return; }
+                    if (!resp.ok) {
+                        closeSuggest();
+                        return;
+                    }
 
                     const names = await resp.json();
 
@@ -168,15 +261,16 @@
             function addTag() {
                 const t = normalize(input.value);
                 if (!t) return;
+
                 tags.add(t);
                 input.value = "";
                 render();
                 closeSuggest();
             }
 
-            addBtn.addEventListener("click", addTag);
+            addBtn?.addEventListener("click", addTag);
 
-            input.addEventListener("keydown", e => {
+            input?.addEventListener("keydown", e => {
                 if (suggestBox.style.display === "block") {
                     if (e.key === "ArrowDown") {
                         e.preventDefault();
@@ -184,22 +278,27 @@
                         highlightActive();
                         return;
                     }
+
                     if (e.key === "ArrowUp") {
                         e.preventDefault();
                         activeIndex = Math.max(activeIndex - 1, 0);
                         highlightActive();
                         return;
                     }
+
                     if (e.key === "Escape") {
                         closeSuggest();
                         return;
                     }
+
                     if (e.key === "Enter" && activeIndex >= 0) {
                         e.preventDefault();
+
                         const el = suggestBox.children[activeIndex];
                         if (el) {
                             const n = normalize(el.textContent);
                             if (n) tags.add(n);
+
                             input.value = "";
                             render();
                             closeSuggest();
@@ -214,8 +313,7 @@
                 }
             });
 
-            let timer = null;
-            input.addEventListener("input", () => {
+            input?.addEventListener("input", () => {
                 clearTimeout(timer);
                 timer = setTimeout(loadSuggest, 150);
             });
@@ -225,9 +323,6 @@
                     closeSuggest();
                 }
             });
-
-            let lastQuery = "";
-            let activeIndex = -1;
 
             render();
         })();

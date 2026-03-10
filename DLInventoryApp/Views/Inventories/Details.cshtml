@@ -1,22 +1,49 @@
-﻿@using DLInventoryApp.ViewModels.Inventories
-@model InventoryDetailsVm
+﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
 
-<h2>@Model.Title</h2>
-<div>
-    <p>@Model.Title</p>
-    <p>@Model.Description</p>
-    <p>@(Model.CategoryName ?? "-")</p>
-    <p>@(Model.IsPublic ? "Public" : "Private")</p>
-    <p>@(Model.UpdatedAt ?? Model.CreatedAt)</p>
+<div class="page-header">
+        <h1 class="page-title">@Model.Title</h1>
+        <p class="page-subtitle">All changes saved</p>
 </div>
-    <div>
-        <strong>Tags:</strong>
-        @foreach (var tag in Model.Tags)
-        {
-            <span style="padding:4px 8px; margin:4px; background:#eee; border-radius:4px;">
-                @tag
-            </span>
-        }
-    </div>
-<a asp-action="Edit" asp-route-inventoryId="@Model.Id">Edit</a>
-<a asp-action="Access" asp-route-inventoryId="@Model.Id">Manage Access</a>
+
+<partial name="Tabs/_TabsBar" model="Model" />
+
+<div class="tab-body">
+    @switch (Model.ActiveTab)
+    {
+        case "items":
+            <partial name="Tabs/_Items" model="Model" />
+            break;
+
+        case "chat":
+            <partial name="Tabs/_Chat" model="Model.Discussion" />
+            break;
+
+        case "settings":
+            <partial name="Tabs/_Settings" model="Model.Settings" />
+            break;
+
+        case "customid":
+            <partial name="Tabs/_CustomId" model="Model.CustomId" />
+            break;
+
+        case "fields":
+            <partial name="Tabs/_Fields" model="Model.Fields" />
+            break;
+
+        case "access":
+            <partial name="Tabs/_Access" model="Model.Accesses" />
+            break;
+
+        case "stats":
+            <partial name="Tabs/_Stats" model="Model" />
+            break;
+
+        case "export":
+            <partial name="Tabs/_Export" model="Model" />
+            break;
+
+        default:
+            <partial name="Tabs/_Items" model="Model" />
+            break;
+    }
+</div>

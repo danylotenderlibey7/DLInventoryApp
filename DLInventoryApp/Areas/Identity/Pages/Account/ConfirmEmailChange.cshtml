@@ -1,0 +1,75 @@
+﻿@page
+@model ConfirmEmailModel
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Confirm email";
+}
+
+<div class="workspace-inner auth-wide-page">
+    <section class="auth-wide-card">
+        <div class="auth-wide-grid">
+
+            <div class="auth-side">
+
+                <h1 class="auth-side-title">Email confirmation</h1>
+
+                <p class="auth-side-text">
+                    Your email verification is being processed.
+                    Once confirmed, your account will be fully activated.
+                </p>
+
+                <div class="auth-side-actions">
+
+                    <a class="auth-action-card" asp-page="./Login">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <div>
+                            <div class="auth-action-title">Go to login</div>
+                            <div class="auth-action-text">Sign in to your account.</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card" asp-page="./Register">
+                        <i class="bi bi-person-plus"></i>
+                        <div>
+                            <div class="auth-action-title">Create another account</div>
+                            <div class="auth-action-text">Register a new user account.</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card" asp-page="./ResendEmailConfirmation">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <div class="auth-action-title">Resend confirmation</div>
+                            <div class="auth-action-text">Send the confirmation email again.</div>
+                        </div>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="auth-form-side">
+
+                <div class="auth-form-head">
+                    <h2 class="auth-form-title">Confirmation result</h2>
+                    <p class="auth-form-subtitle">
+                        Your email confirmation status
+                    </p>
+                </div>
+
+                <div class="auth-validation">
+                    @Model.StatusMessage
+                </div>
+
+                <div style="margin-top:20px;">
+                    <a asp-page="./Login" class="inv-btn inv-btn-accent auth-submit">
+                        Log in
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+</div>

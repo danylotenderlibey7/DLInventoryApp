@@ -1,54 +1,123 @@
-﻿@model DLInventoryApp.ViewModels.Items.EditItemVm
+﻿@using DLInventoryApp.ViewModels.Items.Pages
+@using DLInventoryApp.Models
+@model EditItemVm
 
-<h2>Edit Item for @Model.InventoryTitle</h2>
 <form asp-action="Edit"
-      asp-route-inventoryId="@Model.InventoryId"
       asp-route-itemId="@Model.ItemId"
-      method="post">
+      asp-route-inventoryId="@Model.InventoryId"
+      method="post"
+      id="itemEditForm"
+      class="item-page-form">
 
     @Html.AntiForgeryToken()
 
-    <input type="hidden" asp-for="InventoryId" />
     <input type="hidden" asp-for="ItemId" />
+    <input type="hidden" asp-for="InventoryId" />
+    <input type="hidden" asp-for="Version" />
 
-    <div>
-        <label asp-for="CustomId"></label>
-        <input asp-for="CustomId" class="form-control" />
-        <span asp-validation-for="CustomId" class="text-danger"></span>
-    </div>
-    @if (Model.Fields != null)
-    {
-        @for (int i = 0; i < Model.Fields.Count; i++)
+    <div class="inv-page-card item-page-scroll">
+
+        <div class="inv-page-head">
+            <div>
+                <div class="inv-page-title">Edit item</div>
+                <div class="inv-page-subtitle">@Model.InventoryTitle</div>
+            </div>
+
+            <div class="inv-page-actions">
+                <a asp-controller="Inventories"
+                   asp-action="Details"
+                   asp-route-id="@Model.InventoryId"
+                   asp-route-tab="items"
+                   class="inv-btn inv-btn-ghost"
+                   title="Back"
+                   aria-label="Back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+
+                <button class="inv-btn inv-btn-accent"
+                        type="submit"
+                        title="Save"
+                        aria-label="Save">
+                    <i class="bi bi-check-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="item-basic-grid">
+            <div class="item-basic-field item-basic-field-full">
+                <label asp-for="CustomId" class="inv-settings-label">Custom ID</label>
+
+                <input asp-for="CustomId"
+                       class="inv-settings-input"
+                       placeholder="Will be auto-generated" />
+
+                <div class="item-field-hint">
+                    You can keep this value or overwrite it manually.
+                </div>
+
+                <span asp-validation-for="CustomId" class="text-danger"></span>
+            </div>
+        </div>
+
+        @if (Model.Fields != null && Model.Fields.Count > 0)
         {
-            <div class="mt-3">
-                <div><strong>@Model.Fields[i].Name</strong></div>
-                @if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.SingleLineText)
+            <div class="item-section-divider"></div>
+
+            <div class="item-section-head">
+                <div class="item-section-title">Item fields</div>
+                <div class="item-section-note">
+                    Update the fields configured for this inventory.
+                </div>
+            </div>
+
+            <div class="item-custom-grid">
+                @for (int i = 0; i < Model.Fields.Count; i++)
                 {
-                    <input asp-for="Fields[@i].TextValue" class="form-control" />
+                    <div class="item-basic-field">
+                        <label class="inv-settings-label">
+                            @Model.Fields[i].Name
+                        </label>
+
+                        @if (Model.Fields[i].Type == CustomFieldType.SingleLineText)
+                        {
+                            <input asp-for="Fields[@i].TextValue"
+                                   class="inv-settings-input" />
+                        }
+                        else if (Model.Fields[i].Type == CustomFieldType.MultiLineText)
+                        {
+                            <textarea asp-for="Fields[@i].TextValue"
+                                      class="inv-settings-textarea"
+                                      rows="5"></textarea>
+                        }
+                        else if (Model.Fields[i].Type == CustomFieldType.DocumentLink)
+                        {
+                            <input asp-for="Fields[@i].LinkValue"
+                                   class="inv-settings-input"
+                                   placeholder="https://..." />
+                        }
+                        else if (Model.Fields[i].Type == CustomFieldType.Number)
+                        {
+                            <input asp-for="Fields[@i].NumberValue"
+                                   type="number"
+                                   class="inv-settings-input" />
+                        }
+                        else if (Model.Fields[i].Type == CustomFieldType.Boolean)
+                        {
+                            <label class="item-bool-line">
+                                <input asp-for="Fields[@i].BoolValue" type="checkbox" />
+                                <span class="inv-muted">Enabled</span>
+                            </label>
+                        }
+
+                        <input type="hidden" asp-for="Fields[@i].CustomFieldId" />
+                        <input type="hidden" asp-for="Fields[@i].Type" />
+                        <input type="hidden" asp-for="Fields[@i].Name" />
+                        <input type="hidden" asp-for="Fields[@i].IsRequired" />
+                    </div>
                 }
-                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.MultiLineText)
-                {
-                    <textarea asp-for="Fields[@i].TextValue" class="form-control"></textarea>
-                }
-                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.DocumentLink)
-                {
-                    <input asp-for="Fields[@i].LinkValue" class="form-control" />
-                }
-                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Number)
-                {
-                    <input asp-for="Fields[@i].NumberValue" type="number" class="form-control" />
-                }
-                else if (Model.Fields[i].Type == DLInventoryApp.Models.CustomFieldType.Boolean)
-                {
-                    <input asp-for="Fields[@i].BoolValue" type="checkbox" />
-                }
-                <input type="hidden" asp-for="Fields[@i].CustomFieldId" />
-                <input type="hidden" asp-for="Fields[@i].Type" />
-                <input type="hidden" asp-for="Fields[@i].Name" />
             </div>
         }
-    }
-    <button type="submit">Save</button>
+    </div>
 </form>
 
 @section Scripts {

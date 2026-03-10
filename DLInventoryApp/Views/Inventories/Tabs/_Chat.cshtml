@@ -1,0 +1,543 @@
+﻿@using DLInventoryApp.ViewModels.Discussions
+@model DiscussionIndexVm
+
+@if (Model == null)
+{
+    return;
+}
+
+<div class="chat-wrap">
+    <div class="chat-feed" id="chatFeed">
+        <div id="posts">
+            @if (Model.Posts == null || !Model.Posts.Any())
+            {
+                <div class="chat-empty" id="emptyState">No comments yet.</div>
+            }
+            else
+            {
+                foreach (var p in Model.Posts)
+                {
+                    var authorEmail = string.IsNullOrWhiteSpace(p.AuthorName) ? "unknown" : p.AuthorName.Trim();
+                    var authorInitial = string.IsNullOrWhiteSpace(authorEmail) ? "?" : authorEmail.Substring(0, 1).ToUpper();
+
+                    <div id="post-@p.Id" class="chat-post" data-text="@p.Text">
+                        <div class="chat-avatar" aria-hidden="true">@authorInitial</div>
+
+                        <div class="chat-content">
+                            <div class="chat-post-header">
+                                <div class="chat-post-meta">
+                                    <span class="chat-email">@authorEmail</span>
+                                    <span class="chat-meta-sep">—</span>
+
+                                    <span class="chat-date js-rel-time" data-iso="@p.CreatedAt.ToString("o")">
+                                        @p.CreatedAt
+                                    </span>
+
+                                    @if (p.UpdatedAt != null)
+                                    {
+                                        <span class="chat-edited">
+                                            (edited <span class="js-rel-time" data-iso="@p.UpdatedAt.Value.ToString("o")">@p.UpdatedAt</span>)
+                                        </span>
+                                    }
+                                </div>
+
+                                <div class="chat-post-actions">
+                                    @if (p.CanEdit)
+                                    {
+                                        <button type="button"
+                                                class="inv-btn inv-btn-accent editBtn"
+                                                title="Edit"
+                                                aria-label="Edit"
+                                                data-post-id="@p.Id">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    }
+
+                                    @if (p.CanDelete)
+                                    {
+                                        <form class="deleteForm"
+                                              asp-controller="Discussion"
+                                              asp-action="Delete"
+                                              asp-route-inventoryId="@Model.InventoryId"
+                                              asp-route-postId="@p.Id"
+                                              method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="inv-btn inv-btn-accent"
+                                                    title="Delete"
+                                                    aria-label="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="chat-post-body postBody">
+                                <div class="chat-message">
+                                    <div class="chat-bubble">
+                                        @Html.Raw(p.Html)
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (p.CanEdit)
+                            {
+                                <div class="chat-editor postEditor" style="display:none;">
+                                    <textarea class="chat-textarea editText" rows="4" maxlength="2048">@p.Text</textarea>
+
+                                    <div class="chat-post-actions" style="margin-top:10px;">
+                                        <button type="button"
+                                                class="inv-btn inv-btn-accent saveEditBtn"
+                                                title="Save"
+                                                aria-label="Save"
+                                                data-post-id="@p.Id">
+                                            <i class="bi bi-check2"></i>
+                                        </button>
+
+                                        <button type="button"
+                                                class="inv-btn inv-btn-accent cancelEditBtn"
+                                                title="Cancel"
+                                                aria-label="Cancel"
+                                                data-post-id="@p.Id">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <div class="chat-composer-card">
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form id="postForm"
+                  asp-controller="Discussion"
+                  asp-action="Create"
+                  asp-route-inventoryId="@Model.InventoryId"
+                  method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="chat-composer-title">Write a comment</div>
+
+                <div class="chat-compose-row">
+                    <textarea class="chat-textarea chat-textarea-small"
+                              name="text"
+                              rows="2"
+                              maxlength="2048"
+                              placeholder="Write a comment... (Markdown supported)"></textarea>
+
+                    <button type="submit"
+                            class="inv-btn inv-btn-accent chat-sendbtn"
+                            title="Send"
+                            aria-label="Send">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="chat-composer-title">Write a comment</div>
+            <div class="chat-muted">You must sign in to post comments.</div>
+        }
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+<script>
+    (function () {
+      const inventoryId = "@Model.InventoryId";
+      const postsEl = document.getElementById("posts");
+      const feedEl = document.getElementById("chatFeed");
+      const emptyStateEl = document.getElementById("emptyState");
+      const postForm = document.getElementById("postForm");
+
+      const currentUserId = "@(User.Identity?.IsAuthenticated == true ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value : "")";
+      const isAdmin = "@(User.Identity?.IsAuthenticated == true && User.IsInRole("Admin") ? "1" : "0")";
+
+      function escapeHtml(s) {
+        return (s ?? "").toString().replace(/[&<>"']/g, c =>
+          ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+      }
+
+      function getAntiforgeryToken() {
+        const tokenEl = postForm ? postForm.querySelector('input[name="__RequestVerificationToken"]') : null;
+        return tokenEl ? tokenEl.value : "";
+      }
+
+      function scrollFeedToBottom() {
+        if (!feedEl) return;
+        setTimeout(() => { feedEl.scrollTop = feedEl.scrollHeight; }, 0);
+      }
+
+      function hideEmptyState() {
+        if (emptyStateEl) emptyStateEl.style.display = "none";
+      }
+
+      function computeCanEdit(dto) {
+        return currentUserId && dto.authorId && dto.authorId === currentUserId;
+      }
+
+      function computeCanDelete(dto) {
+        if (!currentUserId) return false;
+        if (isAdmin === "1") return true;
+        return dto.authorId && dto.authorId === currentUserId;
+      }
+
+      function postDomId(id) { return `post-${id}`; }
+
+      function relTimeFromIso(iso) {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        const diffMs = Date.now() - d.getTime();
+        const diffSec = Math.floor(diffMs / 1000);
+
+        if (diffSec < 10) return "just now";
+        if (diffSec < 60) return `${diffSec}s ago`;
+
+        const diffMin = Math.floor(diffSec / 60);
+        if (diffMin < 60) return `${diffMin} min ago`;
+
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return `${diffHr} h ago`;
+
+        const diffDay = Math.floor(diffHr / 24);
+        if (diffDay === 1) return "yesterday";
+        if (diffDay < 7) return `${diffDay} d ago`;
+
+        return d.toLocaleString();
+      }
+
+      function refreshRelativeTimes() {
+        document.querySelectorAll(".js-rel-time[data-iso]").forEach(el => {
+          const iso = el.getAttribute("data-iso");
+          const txt = relTimeFromIso(iso);
+          if (txt) el.textContent = txt;
+        });
+      }
+
+      function buildPostHtml(dto) {
+        const id = dto.id;
+        const createdIso = escapeHtml(dto.createdAt);
+        const updatedIso = dto.updatedAt ? escapeHtml(dto.updatedAt) : "";
+
+        const canEdit = dto.canEdit !== undefined ? dto.canEdit : computeCanEdit(dto);
+        const canDelete = dto.canDelete !== undefined ? dto.canDelete : computeCanDelete(dto);
+
+        const email = escapeHtml(dto.authorName || "unknown");
+        const initial = (dto.authorName && dto.authorName.trim().length)
+          ? escapeHtml(dto.authorName.trim().substring(0,1).toUpperCase())
+          : "?";
+
+        const bodyHtml = dto.html
+          ? `<div class="chat-message"><div class="chat-bubble">${dto.html}</div></div>`
+          : `<div class="chat-message"><div class="chat-bubble"><div style="white-space:pre-wrap;">${escapeHtml(dto.text)}</div></div></div>`;
+
+        return `
+          <div id="${postDomId(id)}" class="chat-post" data-text="${escapeHtml(dto.text ?? "")}">
+            <div class="chat-avatar" aria-hidden="true">${initial}</div>
+
+            <div class="chat-content">
+              <div class="chat-post-header">
+                <div class="chat-post-meta">
+                  <span class="chat-email">${email}</span>
+                  <span class="chat-meta-sep">—</span>
+                  <span class="chat-date js-rel-time" data-iso="${createdIso}">${createdIso}</span>
+                  ${updatedIso ? `<span class="chat-edited">(edited <span class="js-rel-time" data-iso="${updatedIso}">${updatedIso}</span>)</span>` : ``}
+                </div>
+
+                <div class="chat-post-actions">
+                  ${canEdit ? `
+                    <button type="button" class="inv-btn inv-btn-accent editBtn" title="Edit" aria-label="Edit" data-post-id="${escapeHtml(id)}">
+                      <i class="bi bi-pencil"></i>
+                    </button>` : ``}
+
+                  ${canDelete ? `
+                    <form class="deleteForm" method="post" action="/Inventories/${inventoryId}/Discussion/Delete/${id}">
+                      <input name="__RequestVerificationToken" type="hidden" value="${escapeHtml(getAntiforgeryToken())}" />
+                      <button type="submit" class="inv-btn inv-btn-accent" title="Delete" aria-label="Delete">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>` : ``}
+                </div>
+              </div>
+
+              <div class="chat-post-body postBody">${bodyHtml}</div>
+
+              ${canEdit ? `
+                <div class="chat-editor postEditor" style="display:none;">
+                  <textarea class="chat-textarea editText" rows="4" maxlength="2048">${escapeHtml(dto.text ?? "")}</textarea>
+                  <div class="chat-post-actions" style="margin-top:10px;">
+                    <button type="button" class="inv-btn inv-btn-accent saveEditBtn" title="Save" aria-label="Save" data-post-id="${escapeHtml(id)}">
+                      <i class="bi bi-check2"></i>
+                    </button>
+                    <button type="button" class="inv-btn inv-btn-accent cancelEditBtn" title="Cancel" aria-label="Cancel" data-post-id="${escapeHtml(id)}">
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                </div>` : ``}
+            </div>
+          </div>
+        `;
+      }
+
+      function addPost(dto) {
+        hideEmptyState();
+        const existing = document.getElementById(postDomId(dto.id));
+        if (existing) return;
+
+        postsEl.insertAdjacentHTML("beforeend", buildPostHtml(dto));
+        refreshRelativeTimes();
+        scrollFeedToBottom();
+      }
+
+      function removePost(postId) {
+        const el = document.getElementById(postDomId(postId));
+        if (el) el.remove();
+      }
+
+      function applyEdit(dto) {
+        const el = document.getElementById(postDomId(dto.id));
+        if (!el) return;
+
+        el.dataset.text = dto.text ?? "";
+
+        const bodyEl = el.querySelector(".postBody");
+        if (bodyEl) {
+          if (dto.html) bodyEl.innerHTML = `<div class="chat-message"><div class="chat-bubble">${dto.html}</div></div>`;
+          else bodyEl.innerHTML = `<div class="chat-message"><div class="chat-bubble"><div style="white-space:pre-wrap;">${escapeHtml(dto.text)}</div></div></div>`;
+        }
+
+        const ta = el.querySelector(".editText");
+        if (ta) ta.value = dto.text ?? "";
+
+        refreshRelativeTimes();
+      }
+
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/discussion")
+        .withAutomaticReconnect()
+        .build();
+
+      connection.on("PostAdded", dto => addPost(dto));
+      connection.on("PostDeleted", postId => removePost(postId));
+      connection.on("PostEdited", dto => applyEdit(dto));
+
+      connection.start()
+        .then(() => connection.invoke("JoinInventory", inventoryId))
+        .then(() => { refreshRelativeTimes(); scrollFeedToBottom(); })
+        .catch(err => console.error(err));
+
+      refreshRelativeTimes();
+      setInterval(refreshRelativeTimes, 30000);
+
+      if (postForm) {
+        postForm.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const textarea = postForm.querySelector('textarea[name="text"]');
+          const text = textarea ? textarea.value : "";
+          if (!text.trim()) return;
+
+          const token = getAntiforgeryToken();
+          const formData = new FormData();
+          formData.append("text", text);
+
+          const res = await fetch(postForm.action, {
+            method: "POST",
+            body: formData,
+            headers: token ? { "RequestVerificationToken": token } : {}
+          });
+
+          if (!res.ok) {
+            console.error("Create failed:", await res.text());
+            return;
+          }
+
+          textarea.value = "";
+        });
+      }
+
+      function getPostEl(postId) { return document.getElementById(postDomId(postId)); }
+
+      document.addEventListener("click", (e) => {
+        const editBtn = e.target.closest(".editBtn");
+        if (editBtn) {
+          const postId = editBtn.dataset.postId;
+          const postEl = getPostEl(postId);
+          if (!postEl) return;
+
+          const body = postEl.querySelector(".postBody");
+          const editor = postEl.querySelector(".postEditor");
+          if (!body || !editor) return;
+
+          body.style.display = "none";
+          editor.style.display = "block";
+          return;
+        }
+
+        const cancelBtn = e.target.closest(".cancelEditBtn");
+        if (cancelBtn) {
+          const postId = cancelBtn.dataset.postId;
+          const postEl = getPostEl(postId);
+          if (!postEl) return;
+
+          const body = postEl.querySelector(".postBody");
+          const editor = postEl.querySelector(".postEditor");
+          const ta = postEl.querySelector(".editText");
+          if (!body || !editor || !ta) return;
+
+          ta.value = postEl.dataset.text ?? "";
+          editor.style.display = "none";
+          body.style.display = "block";
+          return;
+        }
+      });
+
+      document.addEventListener("click", async (e) => {
+        const saveBtn = e.target.closest(".saveEditBtn");
+        if (!saveBtn) return;
+
+        const postId = saveBtn.dataset.postId;
+        const postEl = getPostEl(postId);
+        if (!postEl) return;
+
+        const ta = postEl.querySelector(".editText");
+        const text = ta ? ta.value : "";
+        if (!text.trim()) return;
+
+        const token = getAntiforgeryToken();
+        const formData = new FormData();
+        formData.append("text", text);
+
+        const url = `/Inventories/${inventoryId}/Discussion/Edit/${postId}`;
+
+        const res = await fetch(url, {
+          method: "POST",
+          body: formData,
+          headers: token ? { "RequestVerificationToken": token } : {}
+        });
+
+        if (!res.ok) {
+          console.error("Edit failed:", await res.text());
+          return;
+        }
+
+        const body = postEl.querySelector(".postBody");
+        const editor = postEl.querySelector(".postEditor");
+        if (body && editor) {
+          editor.style.display = "none";
+          body.style.display = "block";
+        }
+      });
+
+      document.addEventListener("submit", async (e) => {
+        const f = e.target;
+        if (!f.classList || !f.classList.contains("deleteForm")) return;
+
+        e.preventDefault();
+
+        const tokenEl = f.querySelector('input[name="__RequestVerificationToken"]');
+        const token = tokenEl ? tokenEl.value : getAntiforgeryToken();
+
+        const res = await fetch(f.action, {
+          method: "POST",
+          headers: token ? { "RequestVerificationToken": token } : {}
+        });
+
+        if (!res.ok) console.error("Delete failed:", await res.text());
+      });
+    })();
+</script>
+
+<style>
+    .chat-message {
+        padding: 2px 0;
+    }
+    .chat-bubble {
+        background: rgba(0,0,0,.03);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px 12px;
+    }
+
+    .chat-post-body, .chat-post-body * {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+    .chat-editor {
+        margin-top: 10px;
+    }
+
+        .chat-editor .chat-textarea {
+            background: rgba(0,0,0,.02);
+        }
+    .chat-composer-card {
+        flex: 0 0 auto;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .chat-composer-title {
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: 10px;
+    }
+    .chat-textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        border-radius: 14px;
+        padding: 10px 12px;
+        outline: none;
+        resize: vertical;
+    }
+
+        .chat-textarea:focus {
+            border-color: var(--accent);
+        }
+
+    .chat-textarea-small {
+        min-height: 52px;
+        max-height: 140px;
+    }
+    .chat-compose-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+    }
+
+        .chat-compose-row .chat-textarea {
+            flex: 1 1 auto;
+            width: auto;
+            margin: 0;
+        }
+
+    .chat-sendbtn {
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+    }
+
+        .chat-sendbtn i {
+            font-size: 18px;
+        }
+
+    .chat-muted {
+        color: var(--text-muted);
+    }
+</style>

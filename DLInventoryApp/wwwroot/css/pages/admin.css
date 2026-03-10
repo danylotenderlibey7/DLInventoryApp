@@ -1,0 +1,81 @@
+﻿
+.admin-users-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-users-table-wrap {
+    width: 100%;
+}
+
+.admin-users-table-scroll {
+    max-height: 490px;
+    overflow: auto;
+}
+
+.admin-users-table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+    .admin-users-table th:nth-child(1),
+    .admin-users-table td:nth-child(1) {
+        width: 52px;
+    }
+
+    .admin-users-table th:nth-child(2),
+    .admin-users-table td:nth-child(2) {
+        width: 58%;
+    }
+
+    .admin-users-table th:nth-child(3),
+    .admin-users-table td:nth-child(3),
+    .admin-users-table th:nth-child(4),
+    .admin-users-table td:nth-child(4),
+    .admin-users-table th:nth-child(5),
+    .admin-users-table td:nth-child(5) {
+        width: 14%;
+    }
+
+.admin-user-email {
+    font-size: 15px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.admin-user-row {
+    cursor: default;
+}
+
+.admin-state-icon {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    color: var(--accent);
+    font-size: 15px;
+    line-height: 1;
+}
+
+
+
+@media (max-width: 900px) {
+    .my-table-frame {
+        height: 260px;
+        min-height: 260px;
+        max-height: 260px;
+    }
+
+    .admin-users-table-scroll {
+        max-height: 360px;
+    }
+
+    .admin-users-table {
+        min-width: 760px;
+    }
+}

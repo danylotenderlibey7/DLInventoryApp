@@ -1,65 +1,132 @@
 ﻿@page
 @model RegisterModel
+
 @{
+    Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Register";
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="workspace-inner auth-wide-page">
+    <section class="auth-wide-card">
+        <div class="auth-wide-grid">
 
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
-    </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+            <div class="auth-side">
+                <h1 class="auth-side-title">Create account</h1>
+
+                <p class="auth-side-text">
+                    Register to create inventories and manage your personal page.
+                </p>
+
+                <div class="auth-side-actions">
+                    <a class="auth-action-card"
+                       asp-page="./Login"
+                       asp-route-returnUrl="@Model.ReturnUrl">
+                        <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
+                            <div class="auth-action-title">Already have account</div>
+                            <div class="auth-action-text">Go to login page</div>
                         </div>
+                    </a>
+
+                    <a class="auth-action-card"
+                       asp-page="./ForgotPassword">
+                        <i class="bi bi-key"></i>
+                        <div>
+                            <div class="auth-action-title">Forgot password</div>
+                            <div class="auth-action-text">Reset your access</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card"
+                       asp-page="./ResendEmailConfirmation">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <div class="auth-action-title">Resend confirmation</div>
+                            <div class="auth-action-text">Send confirmation again</div>
+                        </div>
+                    </a>
+                </div>
+
+                @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                {
+                    <div class="auth-divider">
+                        <span>Continue with</span>
+                    </div>
+
+                    <form asp-page="./ExternalLogin"
+                          asp-route-returnUrl="@Model.ReturnUrl"
+                          method="post"
+                          class="auth-provider-list">
+                        @foreach (var provider in Model.ExternalLogins!)
+                        {
+                            var icon = "bi-box-arrow-in-right";
+
+                            if (provider.Name.ToLower().Contains("google")) icon = "bi-google";
+                            if (provider.Name.ToLower().Contains("facebook")) icon = "bi-facebook";
+
+                            <button type="submit"
+                                    name="provider"
+                                    value="@provider.Name"
+                                    class="auth-provider-btn">
+                                <i class="bi @icon"></i>
+                                <span>@provider.DisplayName</span>
+                            </button>
+                        }
                     </form>
                 }
-            }
-        </section>
-    </div>
+            </div>
+
+            <div class="auth-form-side">
+                <div class="auth-form-head">
+                    <h2 class="auth-form-title">Register</h2>
+                    <p class="auth-form-subtitle">Create a new account</p>
+                </div>
+
+                <form method="post"
+                      asp-route-returnUrl="@Model.ReturnUrl"
+                      class="auth-form-block">
+                    <div asp-validation-summary="ModelOnly" class="auth-validation"></div>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.UserName" class="auth-label"></label>
+                        <input asp-for="Input.UserName"
+                               class="auth-input"
+                               placeholder="User name" />
+                        <span asp-validation-for="Input.UserName" class="auth-field-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.Email" class="auth-label"></label>
+                        <input asp-for="Input.Email"
+                               class="auth-input"
+                               placeholder="name@email.com" />
+                        <span asp-validation-for="Input.Email" class="auth-field-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.Password" class="auth-label"></label>
+                        <input asp-for="Input.Password"
+                               class="auth-input"
+                               placeholder="Password" />
+                        <span asp-validation-for="Input.Password" class="auth-field-error"></span>
+                    </div>
+
+                    <div class="auth-field">
+                        <label asp-for="Input.ConfirmPassword" class="auth-label"></label>
+                        <input asp-for="Input.ConfirmPassword"
+                               class="auth-input"
+                               placeholder="Repeat password" />
+                        <span asp-validation-for="Input.ConfirmPassword" class="auth-field-error"></span>
+                    </div>
+
+                    <button type="submit" class="inv-btn inv-btn-accent auth-submit">
+                        Create account
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </section>
 </div>
 
 @section Scripts {

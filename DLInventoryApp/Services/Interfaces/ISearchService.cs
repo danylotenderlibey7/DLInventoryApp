@@ -1,4 +1,4 @@
-﻿using DLInventoryApp.ViewModels.Search;
+﻿using DLInventoryApp.ViewModels.Items.Search;
 
 namespace DLInventoryApp.Services.Interfaces
 {

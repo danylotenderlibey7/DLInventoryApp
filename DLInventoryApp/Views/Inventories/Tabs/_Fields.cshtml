@@ -1,0 +1,409 @@
+﻿@using DLInventoryApp.Models
+@model DLInventoryApp.ViewModels.CustomFields.InventoryFieldsVm
+
+@{
+    var vm = Model;
+    var canManage = vm.CanManage;
+}
+
+<form id="fieldsAntiForgery" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="chat-feed">
+
+<div class="duo-layout" id="fieldsRoot" data-can-write="@(canManage ? "1" : "0")" data-inventory-id="@vm.InventoryId">
+    <div class="duo-top">
+        <div class="duo-preview-line">
+            <span class="duo-preview-label">Custom fields:</span>
+            <span id="fieldsCount" class="duo-preview-value">@vm.Fields.Count</span>
+        </div>
+        <div class="duo-subline">
+            Manage the schema for items in this inventory. Drag fields to reorder. Drag into delete zone to remove.
+        </div>
+    </div>
+
+    <div class="duo-grid">
+        <div class="duo-left">
+            <div class="card-elements">
+                <div class="card-elements-head">
+                    <div class="card-elements-title">Fields</div>
+
+                    @if (canManage)
+                    {
+                        <button id="fieldsAddBtn" type="button" class="chat-btn chat-btn-accent btn-add">
+                            Add field
+                        </button>
+                    }
+                </div>
+
+                @if (!canManage)
+                {
+                    <div class="note-block" style="margin-bottom:10px;">You have read-only access.</div>
+                }
+                <div id="fieldsState" class="save-text" style="margin: 0 12px 10px;"></div>
+
+                <div id="fieldsScroll" class="elements-scroll">
+                    @if (vm.Fields == null || vm.Fields.Count == 0)
+                    {
+                        <div class="empty-block" style="margin:10px;">
+                            No fields yet.
+                        </div>
+
+                        <ul id="fieldsList" class="elements-list" style="display:none;"></ul>
+                    }
+                    else
+                    {
+                        <ul id="fieldsList" class="elements-list">
+                            @foreach (var f in vm.Fields.OrderBy(x => x.Order))
+                            {
+                                <li class="elements-item" data-id="@f.Id" data-row-id="@f.Id">
+                                    <div class="drag-handle" title="Drag">↕</div>
+
+                                    <div class="item-main">
+                                        <div class="item-line" style="grid-template-columns: 280px 1fr;">
+                                            <input class="input-field"
+                                                   data-field="name"
+                                                   value="@f.Name"
+                                                   placeholder="Field name"
+                                            @(canManage ? "" : "disabled") />
+
+                                            <select class="select-field"
+                                                    data-field="type"
+                                            @(canManage ? "" : "disabled")>
+                                                @foreach (CustomFieldType t in Enum.GetValues(typeof(CustomFieldType)))
+                                                {
+                                                    <option value="@((int)t)" selected="@(t == f.Type)">@t</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+                                            <label class="fields3-flag" style="margin:0;">
+                                                <input type="checkbox"
+                                                       data-field="required"
+                                                @(f.IsRequired ? "checked" : "")
+                                                @(canManage ? "" : "disabled") />
+                                                Required
+                                            </label>
+
+                                            <label class="fields3-flag" style="margin:0;">
+                                                <input type="checkbox"
+                                                       data-field="unique"
+                                                @(f.IsUnique ? "checked" : "")
+                                                @(canManage ? "" : "disabled") />
+                                                Unique
+                                            </label>
+
+                                            <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                                <div style="font-size:12px; opacity:.8;">Order: <b>@f.Order</b></div>
+                                                <div class="save-text" data-save-state="@f.Id"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="duo-right">
+            <div id="fieldsTrash" class="trash-zone">
+                <div class="trash-head">
+                    <div class="trash-title">Delete</div>
+                    <div class="trash-sub">Drop here to delete</div>
+                </div>
+
+                <div id="fieldsTrashDrop" class="trash-drop"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function () {
+        const root = document.getElementById("fieldsRoot");
+        if (!root) return;
+
+        const canWrite = root.dataset.canWrite === "1";
+        const inventoryId = root.dataset.inventoryId;
+
+        const addBtn = document.getElementById("fieldsAddBtn");
+        const listEl = document.getElementById("fieldsList");
+        const trashEl = document.getElementById("fieldsTrashDrop");
+        const stateEl = document.getElementById("fieldsState");
+        const countEl = document.getElementById("fieldsCount");
+
+        function updateCount() {
+          if (!countEl) return;
+          const n = document.querySelectorAll('#fieldsList li[data-id]').length;
+          countEl.textContent = n.toString();
+        }
+        function getToken() {
+            const f = document.getElementById("fieldsAntiForgery");
+            if (!f) return "";
+            const t = f.querySelector('input[name="__RequestVerificationToken"]');
+            return t ? t.value : "";
+        }
+
+        function setState(text, isErr) {
+            if (!stateEl) return;
+            stateEl.textContent = text || "";
+            stateEl.classList.toggle("is-error", !!isErr);
+        }
+
+        function setRowState(rowId, text, isErr) {
+            const el = document.querySelector('[data-save-state="' + rowId + '"]');
+            if (!el) return;
+            el.textContent = text || "";
+            el.classList.toggle("is-error", !!isErr);
+        }
+
+        async function postJson(url, body) {
+            const resp = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": getToken()
+                },
+                body: JSON.stringify(body || {})
+            });
+
+            const text = await resp.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch {}
+
+            if (!resp.ok) {
+                const msg = (data && (data.error || data.title)) ? (data.error || data.title) : `HTTP ${resp.status}`;
+                throw new Error(msg);
+            }
+            return data;
+        }
+
+        // ---------- Inline save ----------
+        const timers = new Map();
+
+        function scheduleSave(rowId) {
+            if (!canWrite) return;
+            if (timers.has(rowId)) clearTimeout(timers.get(rowId));
+            timers.set(rowId, setTimeout(() => {
+                timers.delete(rowId);
+                saveRow(rowId);
+            }, 450));
+        }
+
+        async function saveRow(rowId) {
+            const row = document.querySelector('li[data-row-id="' + rowId + '"]');
+            if (!row) return;
+
+            const nameEl = row.querySelector('[data-field="name"]');
+            const typeEl = row.querySelector('[data-field="type"]');
+            const reqEl  = row.querySelector('[data-field="required"]');
+            const uniqEl = row.querySelector('[data-field="unique"]');
+
+            const dto = {
+                name: nameEl ? nameEl.value : "",
+                type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
+                isRequired: reqEl ? !!reqEl.checked : false,
+                isUnique: uniqEl ? !!uniqEl.checked : false
+            };
+
+            setRowState(rowId, "Saving…", false);
+
+            try {
+                await postJson(`/Inventories/${inventoryId}/Fields/${rowId}/InlineUpdate`, dto);
+                setRowState(rowId, "Saved", false);
+            } catch (e) {
+                console.error(e);
+                setRowState(rowId, "Error", true);
+                setState("Error: " + e.message, true);
+            }
+        }
+
+        document.addEventListener("input", function (e) {
+            const field = e.target.closest("[data-field]");
+            if (!field) return;
+
+            const row = e.target.closest('li[data-row-id]');
+            if (!row) return;
+
+            scheduleSave(row.getAttribute("data-row-id"));
+        });
+
+        document.addEventListener("change", function (e) {
+            const field = e.target.closest("[data-field]");
+            if (!field) return;
+
+            const row = e.target.closest('li[data-row-id]');
+            if (!row) return;
+
+            scheduleSave(row.getAttribute("data-row-id"));
+        });
+
+        // ---------- Add field ----------
+        function escapeHtml(s) {
+            return (s ?? "").toString()
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function buildTypeOptions(selected) {
+            const opts = [
+                { v: @((int)CustomFieldType.SingleLineText), t: "SingleLineText" },
+                { v: @((int)CustomFieldType.MultiLineText),  t: "MultiLineText"  },
+                { v: @((int)CustomFieldType.DocumentLink),   t: "DocumentLink"   },
+                { v: @((int)CustomFieldType.Number),         t: "Number"         },
+                { v: @((int)CustomFieldType.Boolean),        t: "Boolean"        }
+            ];
+            return opts.map(o => `<option value="${o.v}" ${o.v === selected ? "selected" : ""}>${o.t}</option>`).join("");
+        }
+
+        function ensureListVisible() {
+            if (!listEl) return;
+            listEl.style.display = "";
+            const empty = document.querySelector("#fieldsScroll .empty-block");
+            if (empty) empty.remove();
+        }
+
+        function createRowHtml(field) {
+            const li = document.createElement("li");
+            li.className = "elements-item";
+            li.setAttribute("data-id", field.id);
+            li.setAttribute("data-row-id", field.id);
+
+            li.innerHTML = `
+                <div class="drag-handle" title="Drag">↕</div>
+                <div class="item-main">
+                    <div class="item-line" style="grid-template-columns: 280px 1fr;">
+                        <input class="input-field" data-field="name" value="${escapeHtml(field.name || "")}" placeholder="Field name" ${canWrite ? "" : "disabled"} />
+                        <select class="select-field" data-field="type" ${canWrite ? "" : "disabled"}>${buildTypeOptions(parseInt(field.type,10))}</select>
+                    </div>
+
+                    <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+                        <label class="fields3-flag" style="margin:0;">
+                            <input type="checkbox" data-field="required" ${field.isRequired ? "checked" : ""} ${canWrite ? "" : "disabled"} />
+                            Required
+                        </label>
+
+                        <label class="fields3-flag" style="margin:0;">
+                            <input type="checkbox" data-field="unique" ${field.isUnique ? "checked" : ""} ${canWrite ? "" : "disabled"} />
+                            Unique
+                        </label>
+
+                        <div style="margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <div style="font-size:12px; opacity:.8;">Order: <b>${field.order}</b></div>
+                            <div class="save-text" data-save-state="${field.id}"></div>
+                        </div>
+                    </div>
+
+                    <div class="hint-text">Drag handle to reorder. Drop into “Delete” zone to remove.</div>
+                </div>
+            `;
+            return li;
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener("click", async function () {
+                if (!canWrite) return;
+
+                setState("Adding…", false);
+                try {
+                    const data = await postJson(`/Inventories/${inventoryId}/Fields/Add`, {});
+                    if (!data || !data.field) return;
+
+                    ensureListVisible();
+                    const row = createRowHtml(data.field);
+                    listEl.appendChild(row);
+                    updateCount();
+
+                    setState("", false);
+
+                    // scroll to bottom
+                    const scroll = document.getElementById("fieldsScroll");
+                    if (scroll) scroll.scrollTop = scroll.scrollHeight;
+                } catch (e) {
+                    console.error(e);
+                    setState("Error: " + e.message, true);
+                }
+            });
+        }
+
+        // ---------- Drag & drop (reorder + delete) ----------
+        let sortableList = null;
+        let sortableTrash = null;
+
+        async function persistReorder() {
+            if (!listEl) return;
+
+            const ids = Array.from(listEl.querySelectorAll('li[data-id]'))
+                .map(li => parseInt(li.getAttribute("data-id"), 10))
+                .filter(n => Number.isFinite(n));
+
+            try {
+                await postJson(`/Inventories/${inventoryId}/Fields/Reorder`, ids);
+            } catch (e) {
+                console.error(e);
+                setState("Error: " + e.message, true);
+            }
+        }
+
+        async function deleteField(id) {
+            await postJson(`/Inventories/${inventoryId}/Fields/${id}/Delete`, {});
+        }
+
+        function initSortables() {
+            if (!listEl || !trashEl) return;
+
+            if (sortableList) sortableList.destroy();
+            if (sortableTrash) sortableTrash.destroy();
+
+            sortableList = Sortable.create(listEl, {
+                animation: 150,
+                handle: ".drag-handle",
+                group: { name: "fieldsGroup", pull: true, put: false },
+                onEnd: function () { persistReorder(); }
+            });
+
+            sortableTrash = Sortable.create(trashEl, {
+                animation: 150,
+                group: { name: "fieldsGroup", pull: false, put: true },
+                onAdd: async function (evt) {
+                    const li = evt.item;
+                    if (!li) return;
+
+                    const id = parseInt(li.getAttribute("data-id"), 10);
+                    setState("Deleting…", false);
+
+                    try {
+                        // IMPORTANT: remove only after server confirms
+                        await deleteField(id);
+                        li.parentNode && li.parentNode.removeChild(li);
+                        updateCount();
+                        await persistReorder();
+
+                        setState("Deleted", false);
+                        setTimeout(() => { if (stateEl && stateEl.textContent === "Deleted") setState("", false); }, 900);
+                    } catch (e) {
+                        console.error(e);
+                        setState("Error: " + e.message, true);
+                        if (listEl) listEl.appendChild(li);
+                    }
+                }
+            });
+        }
+
+        initSortables();
+
+        // read-only: disable DnD
+        if (!canWrite) {
+            if (sortableList) sortableList.option("disabled", true);
+            if (sortableTrash) sortableTrash.option("disabled", true);
+        }
+    })();
+</script>

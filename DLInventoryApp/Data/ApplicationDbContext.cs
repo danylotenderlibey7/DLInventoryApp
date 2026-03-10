@@ -23,9 +23,34 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.Entity<Category>()
+        builder.Entity<Category>(entity =>
+        {
+            entity
             .HasIndex(c => c.Name)
             .IsUnique();
+            entity
+            .HasData(
+                new Category { Id = 1, Name = "Equipment" },
+                new Category { Id = 2, Name = "Furniture" },
+                new Category { Id = 3, Name = "Book" },
+                new Category { Id = 4, Name = "Collectibles" },
+                new Category { Id = 5, Name = "Electronics" },
+                new Category { Id = 6, Name = "Clothing" },
+                new Category { Id = 7, Name = "Tools" },
+                new Category { Id = 8, Name = "Kitchen" },
+                new Category { Id = 9, Name = "Office" },
+                new Category { Id = 10, Name = "Home" },
+                new Category { Id = 11, Name = "Sports" },
+                new Category { Id = 12, Name = "Toys" },
+                new Category { Id = 13, Name = "Garden" },
+                new Category { Id = 14, Name = "Automotive" },
+                new Category { Id = 15, Name = "Health" },
+                new Category { Id = 16, Name = "Beauty" },
+                new Category { Id = 17, Name = "Art" },
+                new Category { Id = 18, Name = "Music" },
+                new Category { Id = 19, Name = "Games" },
+                new Category { Id = 20, Name = "Other" });
+        });
         builder.Entity<Inventory>(entity =>
         {
             entity

@@ -2,6 +2,7 @@
 {
     public interface IAccessService
     {
-        Task<bool> CanWriteInventory(Guid inventoryId, string userId);
+        Task<bool> CanEditItems(Guid inventoryId, string userId);
+        Task<bool> CanManageInventory(Guid inventoryId, string userId);
     }
 }

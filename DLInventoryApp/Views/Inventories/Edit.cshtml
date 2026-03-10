@@ -1,142 +1,243 @@
-﻿@using DLInventoryApp.ViewModels.Inventories
+﻿@using DLInventoryApp.ViewModels.Inventories.Pages
 @model EditInventoryVm
 
-<h2>Edit Inventory</h2>
+<form asp-action="Edit"
+      asp-route-inventoryId="@Model.InventoryId"
+      method="post"
+      id="inventoryEditForm"
+      class="item-page-form">
 
-<form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
 
     <input type="hidden" asp-for="InventoryId" />
     <input type="hidden" asp-for="Version" />
-    <div>
-        <label asp-for="Title"></label>
-        <input asp-for="Title" />
-        <span asp-validation-for="Title"></span>
-    </div>
 
-    <div>
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
-        <span asp-validation-for="Description"></span>
-    </div>
+    <div class="inv-page-card item-page-scroll">
 
-    <div>
-        <input asp-for="IsPublic" type="checkbox" />
-        <label asp-for="IsPublic"></label>
-    </div>
-    @* 
-    <div>
-        <label asp-for="CategoryId"></label>
-        <input asp-for="CategoryId" />
-        <span asp-validation-for="CategoryId"></span>
-    </div>
-    *@
-    <hr />
+        <div class="inv-page-head">
+            <div>
+                <div class="inv-page-title">Edit inventory</div>
+                <div class="inv-page-subtitle">Update inventory settings and metadata</div>
+            </div>
 
-    <div>
-        <label>Tags</label>
+            <div class="inv-page-actions">
+                <a asp-controller="Inventories"
+                   asp-action="Details"
+                   asp-route-id="@Model.InventoryId"
+                   asp-route-tab="settings"
+                   class="inv-btn inv-btn-ghost"
+                   title="Back"
+                   aria-label="Back">
+                    <i class="bi bi-arrow-left"></i>
+                </a>
 
-        <div style="display:flex; gap:8px; align-items:center; position:relative; max-width:520px;">
-            <input type="text" id="tagInput" placeholder="type tag and press Add" style="flex:1;" />
-            <button type="button" id="addTagBtn">Add</button>
-
-            <div id="tagSuggestList"
-                 style="position:absolute; left:0; right:0; top:42px; background:#fff; border:1px solid #ddd; border-radius:8px; display:none; z-index:10; max-height:180px; overflow:auto;">
+                <button class="inv-btn inv-btn-accent"
+                        type="submit"
+                        title="Save"
+                        aria-label="Save">
+                    <i class="bi bi-check-lg"></i>
+                </button>
             </div>
         </div>
 
-        <div id="tagsChips" style="margin-top:10px; display:flex; gap:6px; flex-wrap:wrap;"></div>
-        <div id="tagsHidden"></div>
-    </div>
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <button type="submit">Save</button>
+        <div class="inv-settings-grid">
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Title</div>
+                <div class="inv-settings-field">
+                    <input asp-for="Title"
+                           class="inv-settings-input"
+                           placeholder="Inventory title" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Description</div>
+                <div class="inv-settings-field">
+                    <textarea asp-for="Description"
+                              class="inv-settings-textarea"
+                              rows="6"
+                              placeholder="Markdown supported..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Category</div>
+                <div class="inv-settings-field">
+                    <select asp-for="CategoryId" class="inv-settings-input">
+                        <option value="">Select category...</option>
+
+                        @foreach (var c in Model.Categories)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Public</div>
+                <div class="inv-settings-field">
+                    <label class="inv-check-line">
+                        <input asp-for="IsPublic" type="checkbox" />
+                        <span class="inv-muted">
+                            If public, all authenticated users can add items.
+                        </span>
+                    </label>
+                    <span asp-validation-for="IsPublic" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="inv-settings-row">
+                <div class="inv-settings-label">Tags</div>
+                <div class="inv-settings-field inv-settings-tags-field">
+
+                    <div class="tag-input-wrap position-relative">
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text"
+                                   id="tagInputEdit"
+                                   class="inv-settings-input"
+                                   placeholder="Type tag and press Add" />
+
+                            <button type="button"
+                                    id="addTagBtnEdit"
+                                    class="inv-btn inv-btn-accent"
+                                    title="Add tag"
+                                    aria-label="Add tag">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        </div>
+
+                        <div id="tagSuggestListEdit"
+                             class="tag-suggest shadow-sm"
+                             style="display:none;"></div>
+                    </div>
+
+                    <div id="tagsChipsEdit" class="tags-chips mt-2"></div>
+
+                    @if (Model.Tags != null)
+                    {
+                        for (int i = 0; i < Model.Tags.Count; i++)
+                        {
+                            <input type="hidden" name="Tags[@i]" value="@Model.Tags[i]" />
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
 </form>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
     <script>
         (function () {
-            const input = document.getElementById("tagInput");
-            const addBtn = document.getElementById("addTagBtn");
-            const chips = document.getElementById("tagsChips");
-            const hidden = document.getElementById("tagsHidden");
-            const suggestBox = document.getElementById("tagSuggestList");
+            const form = document.getElementById("inventoryEditForm");
+            if (!form) return;
 
-            const tags = new Set();
+            const tagInput = document.getElementById("tagInputEdit");
+            const addTagBtn = document.getElementById("addTagBtnEdit");
+            const chipsEl = document.getElementById("tagsChipsEdit");
+            const suggestBox = document.getElementById("tagSuggestListEdit");
+
+            const tags = new Set((@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tags ?? new List<string>()))) || []);
 
             function normalize(v) {
                 return (v || "").trim().toLowerCase();
             }
 
-            function render() {
-                chips.innerHTML = "";
-                hidden.innerHTML = "";
-
-                tags.forEach(t => {
-                    const chip = document.createElement("span");
-                    chip.textContent = t;
-                    chip.style.padding = "4px 8px";
-                    chip.style.background = "#eee";
-                    chip.style.borderRadius = "14px";
-                    chip.style.display = "inline-flex";
-                    chip.style.gap = "6px";
-                    chip.style.alignItems = "center";
-
-                    const x = document.createElement("button");
-                    x.type = "button";
-                    x.textContent = "×";
-                    x.style.border = "none";
-                    x.style.background = "transparent";
-                    x.style.cursor = "pointer";
-                    x.onclick = () => { tags.delete(t); render(); };
-
-                    chip.appendChild(x);
-                    chips.appendChild(chip);
-
-                    const h = document.createElement("input");
-                    h.type = "hidden";
-                    h.name = "Tags";
-                    h.value = t;
-                    hidden.appendChild(h);
-                });
-            }
-
             function closeSuggest() {
+                if (!suggestBox) return;
                 suggestBox.style.display = "none";
                 suggestBox.innerHTML = "";
-                activeIndex = -1;
             }
 
-            function highlightActive() {
-                const children = Array.from(suggestBox.children);
-                children.forEach((el, i) => {
-                    el.style.background = (i === activeIndex) ? "#f3f4f6" : "#fff";
-                });
+            function rebuildHiddenInputs() {
+                form.querySelectorAll('input[data-tag-hidden="1"]').forEach(x => x.remove());
+
+                Array.from(tags)
+                    .map(normalize)
+                    .filter(Boolean)
+                    .sort()
+                    .forEach((tag, index) => {
+                        const input = document.createElement("input");
+                        input.type = "hidden";
+                        input.name = `Tags[${index}]`;
+                        input.value = tag;
+                        input.setAttribute("data-tag-hidden", "1");
+                        form.appendChild(input);
+                    });
+            }
+
+            function renderTags() {
+                if (!chipsEl) return;
+                chipsEl.innerHTML = "";
+
+                Array.from(tags)
+                    .map(normalize)
+                    .filter(Boolean)
+                    .sort()
+                    .forEach(t => {
+                        const chip = document.createElement("span");
+                        chip.className = "tag-chip";
+                        chip.textContent = t;
+
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "tag-chip-x";
+                        btn.textContent = "×";
+
+                        btn.onclick = () => {
+                            tags.delete(t);
+                            renderTags();
+                            rebuildHiddenInputs();
+                        };
+
+                        chip.appendChild(btn);
+                        chipsEl.appendChild(chip);
+                    });
+            }
+
+            function addTag() {
+                if (!tagInput) return;
+                const t = normalize(tagInput.value);
+                if (!t) return;
+
+                tags.add(t);
+                tagInput.value = "";
+                renderTags();
+                rebuildHiddenInputs();
+                closeSuggest();
             }
 
             function showSuggest(items) {
+                if (!suggestBox) return;
+
                 suggestBox.innerHTML = "";
                 if (!items || items.length === 0) {
                     closeSuggest();
                     return;
                 }
 
-                items.forEach((name, idx) => {
+                items.forEach(name => {
                     const row = document.createElement("div");
+                    row.className = "tag-suggest-item";
                     row.textContent = name;
-                    row.style.padding = "8px 10px";
-                    row.style.cursor = "pointer";
-
-                    row.addEventListener("mouseenter", () => {
-                        activeIndex = idx;
-                        highlightActive();
-                    });
 
                     row.addEventListener("mousedown", (e) => {
                         e.preventDefault();
                         const n = normalize(name);
                         if (n) tags.add(n);
-                        input.value = "";
-                        render();
+                        if (tagInput) tagInput.value = "";
+                        renderTags();
+                        rebuildHiddenInputs();
                         closeSuggest();
                     });
 
@@ -144,13 +245,14 @@
                 });
 
                 suggestBox.style.display = "block";
-                highlightActive();
             }
 
-            async function loadSuggest() {
-                const raw = input.value || "";
-                const current = normalize(raw);
+            let lastQuery = "";
 
+            async function loadSuggest() {
+                if (!tagInput) return;
+
+                const current = normalize(tagInput.value || "");
                 if (!current || current.length < 2) {
                     closeSuggest();
                     return;
@@ -160,8 +262,14 @@
                 lastQuery = current;
 
                 try {
-                    const resp = await fetch(`/Tags/Suggest?prefix=${encodeURIComponent(current)}`);
-                    if (!resp.ok) { closeSuggest(); return; }
+                    const resp = await fetch(`/Tags/Suggest?prefix=${encodeURIComponent(current)}`, {
+                        credentials: "same-origin"
+                    });
+
+                    if (!resp.ok) {
+                        closeSuggest();
+                        return;
+                    }
 
                     const names = await resp.json();
 
@@ -176,76 +284,33 @@
                 }
             }
 
-            function addTag() {
-                const t = normalize(input.value);
-                if (!t) return;
-                tags.add(t);
-                input.value = "";
-                render();
-                closeSuggest();
+            if (addTagBtn) {
+                addTagBtn.addEventListener("click", addTag);
             }
-            addBtn.addEventListener("click", addTag);
 
-            input.addEventListener("keydown", e => {
-                if (suggestBox.style.display === "block") {
-                    if (e.key === "ArrowDown") {
+            if (tagInput) {
+                tagInput.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") {
                         e.preventDefault();
-                        activeIndex = Math.min(activeIndex + 1, suggestBox.children.length - 1);
-                        highlightActive();
-                        return;
+                        addTag();
                     }
-                    if (e.key === "ArrowUp") {
-                        e.preventDefault();
-                        activeIndex = Math.max(activeIndex - 1, 0);
-                        highlightActive();
-                        return;
-                    }
-                    if (e.key === "Escape") {
-                        closeSuggest();
-                        return;
-                    }
-                    if (e.key === "Enter" && activeIndex >= 0) {
-                        e.preventDefault();
-                        const el = suggestBox.children[activeIndex];
-                        if (el) {
-                            const n = normalize(el.textContent);
-                            if (n) tags.add(n);
-                            input.value = "";
-                            render();
-                            closeSuggest();
-                        }
-                        return;
-                    }
-                }
+                });
 
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    addTag();
-                }
-            });
-
-            let timer = null;
-            input.addEventListener("input", () => {
-                clearTimeout(timer);
-                timer = setTimeout(loadSuggest, 150);
-            });
+                let tmr = null;
+                tagInput.addEventListener("input", () => {
+                    clearTimeout(tmr);
+                    tmr = setTimeout(loadSuggest, 150);
+                });
+            }
 
             document.addEventListener("click", (e) => {
-                if (e.target !== input && !suggestBox.contains(e.target)) {
+                if (tagInput && e.target !== tagInput && suggestBox && !suggestBox.contains(e.target)) {
                     closeSuggest();
                 }
             });
 
-            let lastQuery = "";
-            let activeIndex = -1;
-
-            const initial = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tags ?? new List<string>()));
-            initial.forEach(t => {
-                const n = normalize(t);
-                if (n) tags.add(n);
-            });
-
-            render();
+            renderTags();
+            rebuildHiddenInputs();
         })();
     </script>
 }

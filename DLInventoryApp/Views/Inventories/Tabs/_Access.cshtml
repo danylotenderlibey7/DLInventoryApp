@@ -1,0 +1,460 @@
+﻿@using DLInventoryApp.ViewModels.Inventories.Tabs.Access
+@model InventoryAccessVm
+
+@if (Model == null)
+{
+    <div class="empty-block">No data</div>
+    return;
+}
+
+<form id="accessAntiForgery" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+<div class="access-page">
+    <div class="page-subtitle">
+        Manage users who have write access to this inventory.
+    </div>
+
+    <div class="access-mode-inline">
+        <div class="access-mode-inline-title">Access mode</div>
+
+        <label class="access-mode-inline-check">
+            <input type="checkbox"
+                   id="accessIsPublic"
+            @(Model.IsPublic ? "checked" : null) />
+            <span>Allow all authenticated users to edit items</span>
+        </label>
+
+        <div id="accessModeHint" class="access-mode-inline-hint">
+            @(Model.IsPublic
+                ? "This inventory is public: all authenticated users can add, edit and delete items."
+                : "This inventory is private: only explicitly granted users can edit items.")
+        </div>
+    </div>
+
+    <div class="access-main-grid">
+        <div class="access-left">
+            <div class="access-toolbar">
+                <div class="my-section-title access-section-title">Users with write access</div>
+
+                <button id="deleteSelectedAccessBtn"
+                        type="button"
+                        class="inv-btn inv-btn-accent access-delete-btn"
+                        disabled
+                        title="Delete selected users">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+
+            <div id="accessError"
+                 class="note-block"
+                 style="display:none;"></div>
+
+            @if (Model.Users == null || !Model.Users.Any())
+            {
+                <div id="accessEmpty" class="empty-state">
+                    <div class="empty-title">No users have write access</div>
+                </div>
+
+                <div id="accessTableWrap" class="inv-table-wrap access-table-wrap" style="display:none;">
+                    <div class="access-table-scroll">
+                        <table class="inv-table access-users-table" id="accessUsersTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-check">
+                                        <input id="checkAllAccess" type="checkbox" aria-label="Select all users" />
+                                    </th>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessUsersTbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div id="accessEmpty" class="empty-state" style="display:none;">
+                    <div class="empty-title">No users have write access</div>
+                </div>
+
+                <div id="accessTableWrap" class="inv-table-wrap access-table-wrap">
+                    <div class="access-table-scroll">
+                        <table class="inv-table access-users-table" id="accessUsersTable">
+                            <thead>
+                                <tr>
+                                    <th class="col-check">
+                                        <input id="checkAllAccess" type="checkbox" aria-label="Select all users" />
+                                    </th>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accessUsersTbody">
+                                @foreach (var u in Model.Users.OrderBy(x => string.IsNullOrWhiteSpace(x.UserName) ? x.Email : x.UserName))
+                                {
+                                    <tr data-user-id="@u.UserId">
+                                        <td class="col-check">
+                                            <input class="access-row-check"
+                                                   type="checkbox"
+                                                   value="@u.UserId" />
+                                        </td>
+
+                                        <td>
+                                            <div class="inv-title access-user-name">
+                                                @(string.IsNullOrWhiteSpace(u.UserName) ? u.Email : u.UserName)
+                                            </div>
+                                        </td>
+
+                                        <td class="access-user-email">
+                                            @u.Email
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="access-right">
+            <div class="access-side-card">
+                <div class="access-side-head">
+                    <div class="card-elements-title">Add user</div>
+                    <div class="hint-text">Grant write access</div>
+                </div>
+
+                <form id="accessAddForm" method="post" autocomplete="off">
+                    <div class="duo-preview-label access-side-label">User or email</div>
+
+                    <div class="access-input-row">
+                        <input id="accessEmail"
+                               class="input-field"
+                               value="@(Model.NewUserEmail ?? "")"
+                               placeholder="user@email.com" />
+
+                        <button type="submit"
+                                class="access-icon-btn"
+                                title="Add user">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+
+                    <div id="accessSuggest"
+                         class="note-block"
+                         style="display:none; padding:6px;"></div>
+                </form>
+
+                <div id="accessSideMessage" class="access-msg">
+                    User must exist in the system.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const invId = "@Model.InventoryId";
+
+        const checkAllEl = document.getElementById("checkAllAccess");
+        const deleteBtn = document.getElementById("deleteSelectedAccessBtn");
+        const tableWrapEl = document.getElementById("accessTableWrap");
+        const tbodyEl = document.getElementById("accessUsersTbody");
+        const emptyEl = document.getElementById("accessEmpty");
+
+        const addForm = document.getElementById("accessAddForm");
+        const emailEl = document.getElementById("accessEmail");
+        const suggestEl = document.getElementById("accessSuggest");
+        const sideMsgEl = document.getElementById("accessSideMessage");
+        const ajaxErr = document.getElementById("accessError");
+
+        const publicEl = document.getElementById("accessIsPublic");
+        const modeHintEl = document.getElementById("accessModeHint");
+
+        let suggestTimer = null;
+
+        function getToken() {
+            const f = document.getElementById("accessAntiForgery");
+            const t = f ? f.querySelector('input[name="__RequestVerificationToken"]') : null;
+            return t ? t.value : "";
+        }
+
+        function setAjaxError(msg) {
+            if (!ajaxErr) return;
+            ajaxErr.textContent = msg || "";
+            ajaxErr.style.display = msg ? "block" : "none";
+        }
+
+        function setSideMessage(msg) {
+            if (!sideMsgEl) return;
+            sideMsgEl.textContent = msg || "";
+        }
+
+        function escapeHtml(s) {
+            return (s ?? "").toString()
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function accessChecks() {
+            return Array.from(document.querySelectorAll(".access-row-check"));
+        }
+
+        function selectedAccessChecks() {
+            return accessChecks().filter(x => x.checked);
+        }
+
+        function syncCheckAll() {
+            if (!checkAllEl) return;
+
+            const all = accessChecks();
+            const checked = all.filter(x => x.checked).length;
+
+            checkAllEl.checked = all.length > 0 && checked === all.length;
+            checkAllEl.indeterminate = checked > 0 && checked < all.length;
+        }
+
+        function syncButtons() {
+            const selected = selectedAccessChecks();
+            if (deleteBtn) deleteBtn.disabled = selected.length === 0;
+        }
+
+        function syncEmptyState() {
+            const hasRows = !!(tbodyEl && tbodyEl.querySelector("tr"));
+            if (emptyEl) emptyEl.style.display = hasRows ? "none" : "flex";
+            if (tableWrapEl) tableWrapEl.style.display = hasRows ? "" : "none";
+            syncCheckAll();
+            syncButtons();
+        }
+
+        function renderSuggestions(users) {
+            if (!suggestEl) return;
+
+            if (!users || users.length === 0) {
+                suggestEl.innerHTML = "";
+                suggestEl.style.display = "none";
+                return;
+            }
+
+            suggestEl.innerHTML = users.map(u => `
+                <button type="button"
+                        class="chat-btn"
+                        data-pick-user
+                        data-email="${escapeHtml(u.email)}"
+                        style="width:100%; justify-content:flex-start; margin-bottom:6px; border-radius:10px;">
+                    <div style="display:flex; flex-direction:column; align-items:flex-start; min-width:0;">
+                        <span style="font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                            ${escapeHtml(u.userName || u.email)}
+                        </span>
+                        <span class="hint-text" style="margin-top:2px;">
+                            ${escapeHtml(u.email)}
+                        </span>
+                    </div>
+                </button>
+            `).join("");
+
+            suggestEl.style.display = "block";
+        }
+
+        async function postJson(url, body) {
+            const resp = await fetch(url, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": getToken()
+                },
+                body: JSON.stringify(body || {})
+            });
+
+            const text = await resp.text();
+            let data = null;
+
+            try {
+                data = JSON.parse(text);
+            } catch { }
+
+            if (!resp.ok) {
+                const msg = (data && data.error) ? data.error : `HTTP ${resp.status}`;
+                throw new Error(msg);
+            }
+
+            return data;
+        }
+
+        async function loadSuggestions(query) {
+            if (!suggestEl) return;
+
+            const q = (query || "").trim();
+            if (q.length < 2) {
+                renderSuggestions([]);
+                return;
+            }
+
+            try {
+                const resp = await fetch(`/Inventories/${invId}/Access/SearchUsers?q=${encodeURIComponent(q)}`, {
+                    method: "GET",
+                    credentials: "same-origin"
+                });
+
+                if (!resp.ok) {
+                    renderSuggestions([]);
+                    return;
+                }
+
+                const users = await resp.json();
+                renderSuggestions(users);
+            } catch {
+                renderSuggestions([]);
+            }
+        }
+
+        function addUserRow(user) {
+            if (!tbodyEl) return;
+            if (tbodyEl.querySelector(`tr[data-user-id="${user.userId}"]`)) return;
+
+            const tr = document.createElement("tr");
+            tr.setAttribute("data-user-id", user.userId);
+
+            tr.innerHTML = `
+                <td class="col-check">
+                    <input class="access-row-check" type="checkbox" value="${escapeHtml(user.userId)}" />
+                </td>
+                <td>
+                    <div class="inv-title" style="font-size:16px;">
+                        ${escapeHtml(user.userName || user.email)}
+                    </div>
+                </td>
+                <td align="center">
+                    ${escapeHtml(user.email)}
+                </td>
+            `;
+
+            tbodyEl.appendChild(tr);
+            syncEmptyState();
+        }
+
+        async function removeSelectedAccess() {
+            const selected = selectedAccessChecks();
+            if (selected.length === 0) return;
+
+            setAjaxError("");
+            setSideMessage("Removing selected users...");
+
+            try {
+                for (const cb of selected) {
+                    const tr = cb.closest("tr[data-user-id]");
+                    if (!tr) continue;
+
+                    const userId = tr.getAttribute("data-user-id");
+                    await postJson(`/Inventories/${invId}/Access/Remove`, { userId });
+                    tr.remove();
+                }
+
+                setSideMessage("Selected users were removed.");
+                syncEmptyState();
+            } catch (err) {
+                setAjaxError(err.message || "Error");
+                setSideMessage("User must exist in the system.");
+            }
+        }
+
+        if (addForm) {
+            addForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                setAjaxError("");
+
+                const email = (emailEl ? emailEl.value : "").trim();
+                if (!email) {
+                    setSideMessage("Email is required.");
+                    return;
+                }
+
+                try {
+                    const data = await postJson(`/Inventories/${invId}/Access/Add`, { email });
+
+                    if (data && data.ok && data.user) {
+                        addUserRow(data.user);
+                        if (emailEl) emailEl.value = "";
+                        renderSuggestions([]);
+                        setSideMessage("User was added successfully.");
+                    }
+                } catch (err) {
+                    setSideMessage(err.message || "Error");
+                }
+            });
+        }
+
+        if (emailEl) {
+            emailEl.addEventListener("input", () => {
+                if (suggestTimer) clearTimeout(suggestTimer);
+
+                suggestTimer = setTimeout(() => {
+                    loadSuggestions(emailEl.value);
+                }, 250);
+            });
+        }
+
+        if (publicEl) {
+            publicEl.addEventListener("change", async () => {
+                setAjaxError("");
+
+                const isPublic = !!publicEl.checked;
+
+                try {
+                    const data = await postJson(`/Inventories/${invId}/Access/SetPublic`, { isPublic });
+
+                    if (data && data.ok && modeHintEl) {
+                        modeHintEl.textContent = isPublic
+                            ? "This inventory is public: all authenticated users can add, edit and delete items."
+                            : "This inventory is private: only explicitly granted users can edit items.";
+                    }
+                } catch (err) {
+                    publicEl.checked = !isPublic;
+                    setAjaxError(err.message || "Error");
+                }
+            });
+        }
+
+        document.addEventListener("click", async function (e) {
+            const pickBtn = e.target.closest("[data-pick-user]");
+            if (pickBtn) {
+                const email = pickBtn.getAttribute("data-email") || "";
+                if (emailEl) emailEl.value = email;
+                renderSuggestions([]);
+                setSideMessage("Selected user is ready to add.");
+                return;
+            }
+        });
+
+        document.addEventListener("change", function (e) {
+            const cb = e.target.closest(".access-row-check");
+            if (!cb) return;
+
+            syncCheckAll();
+            syncButtons();
+        });
+
+        if (checkAllEl) {
+            checkAllEl.addEventListener("change", function () {
+                accessChecks().forEach(cb => cb.checked = checkAllEl.checked);
+                syncCheckAll();
+                syncButtons();
+            });
+        }
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener("click", async function () {
+                await removeSelectedAccess();
+            });
+        }
+
+        syncEmptyState();
+    })();
+</script>

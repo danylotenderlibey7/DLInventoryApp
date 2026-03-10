@@ -1,0 +1,529 @@
+﻿@using DLInventoryApp.ViewModels.CustomId
+@using DLInventoryApp.Models
+@model CustomIdIndexVm
+
+@if (Model == null)
+{
+    <div class="empty-block">No data</div>
+    return;
+}
+
+<form id="cidAntiForgery" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+<div class="chat-feed">
+
+    <div class="duo-layout cid-layout">
+        <div class="duo-top">
+            <div class="duo-preview-line">
+                <span class="duo-preview-label">Example:</span>
+                <span id="cidPreview" class="duo-preview-value">@Model.Preview</span>
+            </div>
+        </div>
+
+        <div class="duo-grid cid-grid">
+
+            <div class="duo-left cid-left">
+                <div class="card-elements cid-card">
+                    <div class="card-elements-head">
+                        <div class="card-elements-title">Elements</div>
+
+                    @if (Model.CanManage)
+                    {
+                            <button id="cidAddBtn"
+                                    type="button"
+                                    class="inv-btn inv-btn-accent btn-add"
+                                    title="Add element"
+                                    aria-label="Add element">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                    }
+                    </div>
+
+                @if (!Model.CanManage)
+                {
+                        <div class="note-block" style="margin-bottom:10px;">You have read-only access.</div>
+                }
+
+                    <div id="cidElementsScroll" class="elements-scroll cid-scroll">
+                    @if (Model.Elements == null || Model.Elements.Count == 0)
+                    {
+                            <div class="empty-block" style="margin:10px;" id="cidEmptyState">
+                                No elements configured yet.
+                            </div>
+                    }
+                    else
+                    {
+                            <ul id="customIdList" class="elements-list">
+                            @foreach (var el in Model.Elements)
+                            {
+                                    <li class="elements-item" data-id="@el.Id" data-row-id="@el.Id">
+                                        <div class="drag-handle" title="Drag">↕</div>
+
+                                        <div class="item-main">
+                                            <div class="item-line">
+                                                <select class="select-field" data-field="type" @(Model.CanManage ? "" : "disabled")>
+                                                @foreach (var t in Enum.GetValues(typeof(CustomIdElementType)).Cast<CustomIdElementType>())
+                                                {
+                                                        <option value="@((int)t)" selected="@(t == el.Type)">@t</option>
+                                                }
+                                                </select>
+
+                                                <input class="input-field"
+                                                       data-field="value"
+                                                       value="@(el.Type == CustomIdElementType.FixedText ? (el.Text ?? "") : (el.Format ?? ""))"
+                                                       placeholder="—"
+                                                       title=""
+                                            @(Model.CanManage ? "" : "disabled") />
+                                            </div>
+                                        </div>
+                                    </li>
+                            }
+                            </ul>
+                    }
+                    </div>
+                </div>
+            </div>
+
+            <div class="duo-right cid-right">
+                <div id="cidTrash" class="trash-zone">
+                    <div class="trash-head">
+                        <div class="trash-title">Delete</div>
+                        <div class="trash-sub">Drop here to delete</div>
+                    </div>
+
+                    <div id="cidTrashDrop" class="trash-drop"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+    (function () {
+      var canWrite = @Model.CanManage.ToString().ToLower();
+      var inventoryId = "@Model.InventoryId";
+      var previewEl = document.getElementById("cidPreview");
+      var addBtn = document.getElementById("cidAddBtn");
+      var listEl = document.getElementById("customIdList");
+      var trashEl = document.getElementById("cidTrashDrop");
+
+      function getToken() {
+        var f = document.getElementById("cidAntiForgery");
+        if (!f) return "";
+        var t = f.querySelector('input[name="__RequestVerificationToken"]');
+        return t ? t.value : "";
+      }
+
+      function typeMeta(typeInt) {
+        switch (typeInt) {
+          case @((int)CustomIdElementType.FixedText):
+            return { title: "Fixed text. Type the exact text here.", placeholder: "Text (e.g. INV-)", usesValue: true };
+
+          case @((int)CustomIdElementType.Sequence):
+            return { title: "Sequence. Use format like D, D3, D6 (leading zeros).", placeholder: "Format (e.g. D3)", usesValue: true };
+
+          case @((int)CustomIdElementType.DateTime):
+            return { title: "Date/time. Use format like yyyy, yyyyMMdd, yyyyMMddHHmmss.", placeholder: "Format (e.g. yyyyMMdd)", usesValue: true };
+
+          case @((int)CustomIdElementType.Guid):
+            return { title: "GUID. Use N, D, etc. (default N).", placeholder: "Format (e.g. N)", usesValue: true };
+
+          case @((int)CustomIdElementType.Random6Digits):
+            return { title: "Random 6 digits (000000–999999). Format not used.", placeholder: "—", usesValue: false };
+
+          case @((int)CustomIdElementType.Random9Digits):
+            return { title: "Random 9 digits (000000000–999999999). Format not used.", placeholder: "—", usesValue: false };
+
+          case @((int)CustomIdElementType.Random20Bit):
+            return { title: "Random 20-bit integer. Format not used.", placeholder: "—", usesValue: false };
+
+          case @((int)CustomIdElementType.Random32Bit):
+            return { title: "Random 32-bit integer. Format not used.", placeholder: "—", usesValue: false };
+
+          default:
+            return { title: "Configure this element.", placeholder: "—", usesValue: true };
+        }
+      }
+
+      function applyMetaForRow(rowEl) {
+        if (!rowEl) return;
+        var typeEl = rowEl.querySelector('[data-field="type"]');
+        var valEl  = rowEl.querySelector('[data-field="value"]');
+        if (!typeEl || !valEl) return;
+
+        var t = parseInt(typeEl.value || "0", 10);
+        var meta = typeMeta(t);
+
+        valEl.placeholder = meta.placeholder || "—";
+        valEl.title = meta.title || "";
+
+        if (!meta.usesValue) {
+          valEl.value = "";
+          valEl.setAttribute("disabled", "disabled");
+        } else {
+          if (canWrite) valEl.removeAttribute("disabled");
+        }
+      }
+
+      function hydrateAllRows() {
+        document.querySelectorAll('li[data-row-id]').forEach(function (li) {
+          applyMetaForRow(li);
+        });
+      }
+
+      hydrateAllRows();
+
+      if (!canWrite) return;
+
+      var timers = new Map();
+
+      function setRowState(rowId, text, isError) {
+        var el = document.querySelector('[data-save-state="' + rowId + '"]');
+        if (!el) return;
+        el.textContent = text || "";
+        el.classList.toggle("is-error", !!isError);
+        el.classList.toggle("is-ok", !isError && !!text && (text.toLowerCase().indexOf("saved") >= 0));
+        el.classList.toggle("is-wip", !isError && !!text && (text.toLowerCase().indexOf("saving") >= 0));
+      }
+
+      async function saveRow(rowId) {
+        var row = document.querySelector('li[data-row-id="' + rowId + '"]');
+        if (!row) return;
+
+        var typeEl = row.querySelector('[data-field="type"]');
+        var valEl  = row.querySelector('[data-field="value"]');
+
+        var typeInt = parseInt((typeEl && typeEl.value) ? typeEl.value : "0", 10);
+        var value = valEl ? (valEl.value || "") : "";
+
+        var dto = {
+          type: typeInt,
+          text: (typeInt === @((int)CustomIdElementType.FixedText)) ? value : "",
+          format: (typeInt === @((int)CustomIdElementType.FixedText)) ? "" : value
+        };
+
+        setRowState(rowId, "Saving…", false);
+
+        try {
+          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/${rowId}/InlineUpdate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "RequestVerificationToken": getToken()
+            },
+            body: JSON.stringify(dto)
+          });
+
+          if (!resp.ok) {
+            setRowState(rowId, "Error", true);
+            return;
+          }
+
+          var data = await resp.json();
+          setRowState(rowId, "Saved", false);
+
+          if (previewEl && data.preview) previewEl.textContent = data.preview;
+        } catch (e) {
+          setRowState(rowId, "Error", true);
+        }
+      }
+
+      function scheduleSave(rowId) {
+        if (timers.has(rowId)) clearTimeout(timers.get(rowId));
+        timers.set(rowId, setTimeout(function () {
+          saveRow(rowId);
+          timers.delete(rowId);
+        }, 450));
+      }
+
+      document.addEventListener("change", function (e) {
+        var field = e.target.closest("[data-field]");
+        if (!field) return;
+
+        var row = e.target.closest('li[data-row-id]');
+        if (!row) return;
+
+        if (field.getAttribute("data-field") === "type") {
+          applyMetaForRow(row);
+          var t = parseInt(field.value || "0", 10);
+          var meta = typeMeta(t);
+          if (!meta.usesValue) {
+            var val = row.querySelector('[data-field="value"]');
+            if (val) val.value = "";
+          }
+        }
+
+        scheduleSave(row.getAttribute("data-row-id"));
+      });
+
+      document.addEventListener("input", function (e) {
+        var field = e.target.closest("[data-field]");
+        if (!field) return;
+
+        var row = e.target.closest('li[data-row-id]');
+        if (!row) return;
+
+        scheduleSave(row.getAttribute("data-row-id"));
+      });
+
+      function ensureListExists() {
+        if (listEl) return listEl;
+
+        var scroll = document.getElementById("cidElementsScroll");
+        if (!scroll) return null;
+
+        var ul = document.createElement("ul");
+        ul.id = "customIdList";
+        ul.className = "elements-list";
+        scroll.innerHTML = "";
+        scroll.appendChild(ul);
+        listEl = ul;
+
+        initSortables();
+        return ul;
+      }
+
+      function buildTypeOptions(selectedType) {
+        var options = [
+          { v: @((int)CustomIdElementType.FixedText),  t: "FixedText" },
+          { v: @((int)CustomIdElementType.Sequence),   t: "Sequence" },
+          { v: @((int)CustomIdElementType.DateTime),   t: "DateTime" },
+          { v: @((int)CustomIdElementType.Guid),       t: "Guid" },
+          { v: @((int)CustomIdElementType.Random6Digits), t: "Random6Digits" },
+          { v: @((int)CustomIdElementType.Random9Digits), t: "Random9Digits" },
+          { v: @((int)CustomIdElementType.Random20Bit),   t: "Random20Bit" },
+          { v: @((int)CustomIdElementType.Random32Bit),   t: "Random32Bit" }
+        ];
+
+        return options.map(function (o) {
+          var sel = (o.v === selectedType) ? "selected" : "";
+          return `<option value="${o.v}" ${sel}>${o.t}</option>`;
+        }).join("");
+      }
+
+      function escapeHtml(s) {
+        return (s ?? "").toString()
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function createRowEl(el) {
+        var typeInt = parseInt(el.type, 10);
+        var val = (typeInt === @((int)CustomIdElementType.FixedText)) ? (el.text || "") : (el.format || "");
+
+        var li = document.createElement("li");
+        li.className = "elements-item";
+        li.setAttribute("data-id", el.id);
+        li.setAttribute("data-row-id", el.id);
+
+        li.innerHTML = `
+          <div class="drag-handle" title="Drag">↕</div>
+          <div class="item-main">
+            <div class="item-line">
+              <select class="select-field" data-field="type">
+                ${buildTypeOptions(typeInt)}
+              </select>
+              <input class="input-field" data-field="value" value="${escapeHtml(val)}" placeholder="—" title="" />
+              <div class="cid-state" data-save-state="${el.id}"></div>
+            </div>
+          </div>
+        `;
+
+        applyMetaForRow(li);
+        return li;
+      }
+
+      if (addBtn) {
+        addBtn.addEventListener("click", async function () {
+          try {
+            var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Add`, {
+              method: "POST",
+              headers: { "RequestVerificationToken": getToken() }
+            });
+            if (!resp.ok) return;
+
+            var data = await resp.json();
+            if (previewEl && data.preview) previewEl.textContent = data.preview;
+
+            var ul = ensureListExists();
+            if (!ul) return;
+
+            var row = createRowEl(data.element);
+            ul.appendChild(row);
+
+            var scroll = document.getElementById("cidElementsScroll");
+            if (scroll) scroll.scrollTop = scroll.scrollHeight;
+          } catch (e) { }
+        });
+      }
+
+      var sortableList, sortableTrash;
+
+      async function persistReorder() {
+        if (!listEl) return;
+
+        var ids = [];
+        listEl.querySelectorAll('li[data-id]').forEach(function (li) {
+          ids.push(parseInt(li.getAttribute("data-id"), 10));
+        });
+
+        try {
+          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "RequestVerificationToken": getToken()
+            },
+            body: JSON.stringify(ids)
+          });
+          if (!resp.ok) return;
+
+          var p = await fetch(`/Inventories/${inventoryId}/CustomId/Preview`);
+          if (p.ok) {
+            var pdata = await p.json();
+            if (previewEl && pdata.preview) previewEl.textContent = pdata.preview;
+          }
+        } catch (e) { }
+      }
+
+      async function deleteElement(id) {
+        try {
+          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/${id}/Delete`, {
+            method: "POST",
+            headers: { "RequestVerificationToken": getToken() }
+          });
+
+          if (!resp.ok) return null;
+          return await resp.json();
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function initSortables() {
+        listEl = document.getElementById("customIdList");
+        if (!listEl || !trashEl) return;
+
+        sortableList = Sortable.create(listEl, {
+          animation: 150,
+          handle: ".drag-handle",
+          group: { name: "cidGroup", pull: true, put: false },
+          onEnd: function () {
+            persistReorder();
+          }
+        });
+
+        sortableTrash = Sortable.create(trashEl, {
+          animation: 150,
+          group: { name: "cidGroup", pull: false, put: true },
+          onAdd: async function (evt) {
+            var li = evt.item;
+            if (!li) return;
+
+            var id = parseInt(li.getAttribute("data-id"), 10);
+            li.parentNode && li.parentNode.removeChild(li);
+
+            var data = await deleteElement(id);
+            if (data && previewEl && data.preview) previewEl.textContent = data.preview;
+            await persistReorder();
+          }
+        });
+      }
+
+      initSortables();
+    })();
+</script>
+<style>
+    .cid-layout {
+        min-height: 0;
+    }
+
+    .cid-grid {
+        min-height: 0;
+    }
+
+    .cid-left,
+    .cid-right {
+        min-height: 0;
+    }
+
+    .cid-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .cid-scroll {
+        --cid-row-h: 108px;
+        --cid-gap: 12px;
+        --cid-pad: 12px;
+        max-height: calc(var(--cid-row-h) * 4 + var(--cid-gap) * 3 + var(--cid-pad) * 2) !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+    }
+
+        .cid-scroll .elements-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--cid-gap);
+        }
+
+    .cid-state {
+        margin-left: 10px;
+        flex: 0 0 auto;
+        min-width: 60px;
+        text-align: right;
+        font-size: 12px;
+        line-height: 1;
+        opacity: 0.75;
+        user-select: none;
+    }
+
+        .cid-state.is-error {
+            color: #b42318;
+            opacity: 1;
+        }
+
+        .cid-state.is-wip {
+            opacity: 0.85;
+        }
+
+        .cid-state.is-ok {
+            opacity: 0.9;
+        }
+    .item-line {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .item-line .input-field {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .item-line .select-field {
+            flex: 0 0 210px;
+            max-width: 260px;
+        }
+
+    .cid-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .cid-scroll::-webkit-scrollbar-thumb {
+        background: rgba(0,0,0,.18);
+        border-radius: 10px;
+    }
+
+    body[data-theme="dark"] .cid-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,.25);
+    }
+</style>

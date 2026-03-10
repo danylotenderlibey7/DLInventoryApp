@@ -1,53 +1,105 @@
 ﻿@page
 @model ExternalLoginsModel
 @{
-    ViewData["Title"] = "Manage your external logins";
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "External logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
-@if (Model.CurrentLogins?.Count > 0)
-{
-    <h3>Registered Logins</h3>
-    <table class="table">
-        <tbody>
-            @foreach (var login in Model.CurrentLogins)
+<div class="workspace-inner profile-page">
+    <div class="manage-layout">
+
+        <aside class="manage-sidebar">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <div class="manage-content">
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">External logins</h1>
+                    <p class="page-subtitle">
+                        Connect or remove external authentication providers.
+                    </p>
+                </div>
+            </div>
+
+            <partial name="_StatusMessage" for="StatusMessage" />
+
+            @if (Model.CurrentLogins?.Count > 0)
             {
-                <tr>
-                    <td id="@($"login-provider-{login.LoginProvider}")">@login.ProviderDisplayName</td>
-                    <td>
-                        @if (Model.ShowRemoveButton)
+                <div class="manage-form-card">
+                    <div class="manage-section-title">Connected accounts</div>
+
+                    <div class="external-login-list">
+                        @foreach (var login in Model.CurrentLogins)
                         {
-                            <form id="@($"remove-login-{login.LoginProvider}")" asp-page-handler="RemoveLogin" method="post">
-                                <div>
-                                    <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
-                                    <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
-                                    <button type="submit" class="btn btn-primary" title="Remove this @login.ProviderDisplayName login from your account">Remove</button>
+                            var icon = "bi-box-arrow-in-right";
+
+                            if (login.LoginProvider.ToLower().Contains("google"))
+                                icon = "bi-google";
+
+                            if (login.LoginProvider.ToLower().Contains("facebook"))
+                                icon = "bi-facebook";
+
+                            <div class="external-login-item">
+                                <div class="external-login-info">
+                                    <i class="bi @icon"></i>
+                                    <span>@login.ProviderDisplayName</span>
                                 </div>
-                            </form>
+
+                                @if (Model.ShowRemoveButton)
+                                {
+                                    <form asp-page-handler="RemoveLogin" method="post" class="external-login-remove-form">
+                                        <input name="LoginProvider" type="hidden" value="@login.LoginProvider" />
+                                        <input name="ProviderKey" type="hidden" value="@login.ProviderKey" />
+
+                                        <button type="submit"
+                                                class="external-login-remove-btn"
+                                                title="Remove @login.ProviderDisplayName"
+                                                aria-label="Remove @login.ProviderDisplayName">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </div>
                         }
-                        else
-                        {
-                            @: &nbsp;
-                        }
-                    </td>
-                </tr>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
-}
-@if (Model.OtherLogins?.Count > 0)
-{
-    <h4>Add another service to log in.</h4>
-    <hr />
-    <form id="link-login-form" asp-page-handler="LinkLogin" method="post" class="form-horizontal">
-        <div id="socialLoginList">
-            <p>
-                @foreach (var provider in Model.OtherLogins)
-                {
-                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                }
-            </p>
+
+            @if (Model.OtherLogins?.Count > 0)
+            {
+                <div class="manage-form-card">
+                    <div class="manage-section-title">Add login provider</div>
+
+                    <form asp-page-handler="LinkLogin" method="post">
+                        <div class="external-login-add">
+                            @foreach (var provider in Model.OtherLogins)
+                            {
+                                var icon = "bi-box-arrow-in-right";
+
+                                if (provider.Name.ToLower().Contains("google"))
+                                    icon = "bi-google";
+
+                                if (provider.Name.ToLower().Contains("facebook"))
+                                    icon = "bi-facebook";
+
+                                <button type="submit"
+                                        class="auth-provider-btn"
+                                        name="provider"
+                                        value="@provider.Name"
+                                        title="Connect @provider.DisplayName">
+                                    <i class="bi @icon"></i>
+                                    <span>@provider.DisplayName</span>
+                                </button>
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+
         </div>
-    </form>
-}
+
+    </div>
+</div>

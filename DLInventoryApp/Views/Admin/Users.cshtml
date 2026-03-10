@@ -1,55 +1,227 @@
-﻿@model List<DLInventoryApp.ViewModels.Admin.UserAdminVm>
+﻿@using DLInventoryApp.ViewModels.Common.Pagination
+@using DLInventoryApp.ViewModels.Admin
+@model PagedVm<UserAdminVm>
+
 @{
     ViewData["Title"] = "Users";
 }
 
-<h2>Users</h2>
-
-<form method="post">
-
-    @Html.AntiForgeryToken()
-
-    <div style="margin-bottom:10px;">
-        <button type="submit" formaction="@Url.Action("Block", "Admin")">Block</button>
-        <button type="submit" formaction="@Url.Action("Unblock", "Admin")">Unblock</button>
-        <button type="submit" formaction="@Url.Action("Delete", "Admin")">Delete</button>
-        <button type="submit" formaction="@Url.Action("AddAdmin", "Admin")">Add Admin</button>
-        <button type="submit" formaction="@Url.Action("RemoveAdmin", "Admin")">Remove Admin</button>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Users</h1>
     </div>
+</div>
 
-    <table border="1" cellpadding="6" cellspacing="0">
-        <thead>
-            <tr>
-                <th>
-                    <input type="checkbox" id="selectAll" />
-                </th>
-                <th>Email</th>
-                <th>Email Confirmed</th>
-                <th>Blocked</th>
-                <th>Role</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                <tr>
-                    <td>
-                        <input type="checkbox" name="userIds" value="@user.Id" class="user-checkbox" />
-                    </td>
-                    <td>@user.Email</td>
-                    <td>@(user.EmailConfirmed ? "True" : "False")</td>
-                    <td>@(user.IsBlocked ? "True" : "False")</td>
-                    <td>@(user.IsAdmin ? "Admin" : "User")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<form method="post" id="adminUsersForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="page" value="@Model.Page" />
+    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+    <div class="my-section">
+        <div class="my-section-head">
+            <div class="my-section-title">User management</div>
 
+            <nav class="pager-top my-section-pager" aria-label="Users pagination">
+                <div class="pager-right">
+
+                    <div class="inv-actions admin-users-actions">
+                        <button type="submit"
+                                formaction="@Url.Action("Block", "Admin")"
+                                id="blockUsersBtn"
+                                class="inv-btn inv-btn-accent"
+                                disabled
+                                title="Block selected users">
+                            <i class="bi bi-lock"></i>
+                        </button>
+
+                        <button type="submit"
+                                formaction="@Url.Action("Unblock", "Admin")"
+                                id="unblockUsersBtn"
+                                class="inv-btn inv-btn-accent"
+                                disabled
+                                title="Unblock selected users">
+                            <i class="bi bi-unlock"></i>
+                        </button>
+
+                        <button type="submit"
+                                formaction="@Url.Action("Delete", "Admin")"
+                                id="deleteUsersBtn"
+                                class="inv-btn inv-btn-accent"
+                                disabled
+                                title="Delete selected users">
+                            <i class="bi bi-trash"></i>
+                        </button>
+
+                        <button type="submit"
+                                formaction="@Url.Action("AddAdmin", "Admin")"
+                                id="addAdminBtn"
+                                class="inv-btn inv-btn-accent"
+                                disabled
+                                title="Add admin role">
+                            <i class="bi bi-shield-plus"></i>
+                        </button>
+
+                        <button type="submit"
+                                formaction="@Url.Action("RemoveAdmin", "Admin")"
+                                id="removeAdminBtn"
+                                class="inv-btn inv-btn-accent"
+                                disabled
+                                title="Remove admin role">
+                            <i class="bi bi-shield-minus"></i>
+                        </button>
+                    </div>
+
+                    @if (Model.TotalPages > 1)
+                    {
+                        <a class="pager-btn @(Model.HasPrevPage ? "" : "disabled")"
+                           asp-action="Users"
+                           asp-route-page="@(Model.Page - 1)"
+                           asp-route-pageSize="@Model.PageSize">
+                            ‹
+                        </a>
+
+                        <span class="pager-info">
+                            @Model.Page / @Model.TotalPages
+                        </span>
+
+                        <a class="pager-btn @(Model.HasNextPage ? "" : "disabled")"
+                           asp-action="Users"
+                           asp-route-page="@(Model.Page + 1)"
+                           asp-route-pageSize="@Model.PageSize">
+                            ›
+                        </a>
+                    }
+
+                </div>
+            </nav>
+        </div>
+
+        @if (Model == null || !Model.Items.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-title">No users found</div>
+                <div class="empty-sub">User accounts will appear here.</div>
+            </div>
+        }
+        else
+        {
+            <div class="inv-table-wrap admin-users-table-wrap">
+                <div class="admin-users-table-scroll">
+                    <table class="inv-table admin-users-table">
+                        <thead>
+                            <tr>
+                                <th class="col-check">
+                                    <input type="checkbox" id="selectAll" aria-label="Select all users" />
+                                </th>
+                                <th>Email</th>
+                                <th align="center">Confirmed</th>
+                                <th align="center">Blocked</th>
+                                <th align="center">Role</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var user in Model.Items)
+                            {
+                                <tr class="admin-user-row">
+                                    <td class="col-check">
+                                        <input type="checkbox"
+                                               name="userIds"
+                                               value="@user.Id"
+                                               class="user-checkbox" />
+                                    </td>
+
+                                    <td>
+                                        <div class="inv-title admin-user-email">
+                                            @user.Email
+                                        </div>
+                                    </td>
+
+                                    <td align="center">
+                                        <span class="admin-state-icon"
+                                              title="@(user.EmailConfirmed ? "Email confirmed" : "Email not confirmed")">
+                                            <i class="bi @(user.EmailConfirmed ? "bi-check-lg" : "bi-x-lg")"></i>
+                                        </span>
+                                    </td>
+
+                                    <td align="center">
+                                        <span class="admin-state-icon"
+                                              title="@(user.IsBlocked ? "Blocked" : "Active")">
+                                            <i class="bi @(user.IsBlocked ? "bi-lock-fill" : "bi-unlock")"></i>
+                                        </span>
+                                    </td>
+
+                                    <td align="center">
+                                        <span class="admin-state-icon"
+                                              title="@(user.IsAdmin ? "Admin" : "User")">
+                                            <i class="bi @(user.IsAdmin ? "bi-shield-fill-check" : "bi-person")"></i>
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
 </form>
 
-<script>
-    document.getElementById("selectAll").addEventListener("change", function () {
-        const checkboxes = document.querySelectorAll(".user-checkbox");
-        checkboxes.forEach(cb => cb.checked = this.checked);
-    });
-</script>
+@section Scripts {
+    <script>
+        (function () {
+            const selectAll = document.getElementById("selectAll");
+            const blockBtn = document.getElementById("blockUsersBtn");
+            const unblockBtn = document.getElementById("unblockUsersBtn");
+            const deleteBtn = document.getElementById("deleteUsersBtn");
+            const addAdminBtn = document.getElementById("addAdminBtn");
+            const removeAdminBtn = document.getElementById("removeAdminBtn");
+
+            function userChecks() {
+                return Array.from(document.querySelectorAll(".user-checkbox"));
+            }
+
+            function selectedChecks() {
+                return userChecks().filter(x => x.checked);
+            }
+
+            function syncCheckAll() {
+                if (!selectAll) return;
+
+                const all = userChecks();
+                const checked = all.filter(x => x.checked).length;
+
+                selectAll.checked = all.length > 0 && checked === all.length;
+                selectAll.indeterminate = checked > 0 && checked < all.length;
+            }
+
+            function syncButtons() {
+                const hasSelected = selectedChecks().length > 0;
+
+                if (blockBtn) blockBtn.disabled = !hasSelected;
+                if (unblockBtn) unblockBtn.disabled = !hasSelected;
+                if (deleteBtn) deleteBtn.disabled = !hasSelected;
+                if (addAdminBtn) addAdminBtn.disabled = !hasSelected;
+                if (removeAdminBtn) removeAdminBtn.disabled = !hasSelected;
+            }
+
+            document.addEventListener("change", function (e) {
+                const cb = e.target.closest(".user-checkbox");
+                if (!cb) return;
+
+                syncCheckAll();
+                syncButtons();
+            });
+
+            if (selectAll) {
+                selectAll.addEventListener("change", function () {
+                    userChecks().forEach(cb => cb.checked = selectAll.checked);
+                    syncCheckAll();
+                    syncButtons();
+                });
+            }
+
+            syncCheckAll();
+            syncButtons();
+        })();
+    </script>
+}

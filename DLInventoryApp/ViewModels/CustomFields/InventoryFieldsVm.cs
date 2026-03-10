@@ -7,5 +7,6 @@ namespace DLInventoryApp.ViewModels.CustomFields
         public Guid InventoryId { get; set; }
         public string InventoryTitle { get; set; } = null!;
         public List<CustomFieldColumnVm> Fields { get; set; } = new();
+        public bool CanManage { get; set; }
     }
 }

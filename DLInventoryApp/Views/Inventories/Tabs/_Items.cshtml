@@ -1,0 +1,366 @@
+﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
+
+<div class="tab-section">
+
+    @if (Model.Items == null)
+    {
+        <div class="empty-state">
+            <div class="empty-title">Items</div>
+            <div class="empty-sub">No data</div>
+        </div>
+        return;
+    }
+
+    <form id="itemsForm"
+          class="items-form"
+          asp-controller="Items"
+          asp-action="Delete"
+          asp-route-inventoryId="@Model.InventoryId"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div class="items-toolbar">
+            <div class="items-toolbar-left">
+
+                @if (Model.CanEditItems)
+                {
+                    <a class="inv-btn inv-btn-accent"
+                       title="New item"
+                       asp-controller="Items"
+                       asp-action="Create"
+                       asp-route-inventoryId="@Model.InventoryId">
+                        <i class="bi bi-plus-lg"></i>
+                    </a>
+
+                    <button id="editSelectedBtn"
+                            type="button"
+                            class="inv-btn inv-btn-accent"
+                            title="Edit selected"
+                            disabled>
+                        <i class="bi bi-pencil"></i>
+                    </button>
+
+                    <button id="deleteSelectedBtn"
+                            type="submit"
+                            class="inv-btn inv-btn-accent"
+                            title="Delete selected"
+                            disabled>
+                        <i class="bi bi-trash"></i>
+                    </button>
+
+                    <button id="toggleLikeSelectedBtn"
+                            type="button"
+                            class="inv-btn inv-btn-accent"
+                            title="Toggle like"
+                            disabled>
+                        <i id="toggleLikeIcon" class="bi bi-heart"></i>
+                    </button>
+                }
+
+            </div>
+
+            <div class="items-toolbar-right"></div>
+        </div>
+
+        <div class="inv-table-card">
+            <div class="inv-table-scroll">
+
+                <table class="inv-table"
+                       id="itemsTable"
+                       data-inventory-id="@Model.InventoryId"
+                       data-can-write="@(Model.CanEditItems ? "1" : "0")"
+                       data-setlikes-url='@Url.Action("SetLikes", "Items", new { inventoryId = Model.InventoryId })'>
+
+                    <thead>
+                        <tr>
+                            @if (Model.CanEditItems)
+                            {
+                                <th class="col-check" data-col-key="__check">
+                                    <input id="checkAll" type="checkbox" aria-label="Select all items" />
+                                </th>
+                            }
+
+                            <th class="col-id" data-col-key="__customId">Custom ID</th>
+
+                            @foreach (var col in Model.Items.Columns)
+                            {
+                                <th data-col-key="f:@col.Id">
+                                    @col.Name
+                                </th>
+                            }
+
+@*                             <th class="col-muted col-date" data-col-key="__created">Created</th>
+                            <th class="col-muted col-date" data-col-key="__updated">Updated</th> *@
+                            <th class="col-likes" data-col-key="__likes">Likes</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="itemsTbody">
+                        @if (Model.Items.Items == null || Model.Items.Items.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="999" class="col-muted empty-row">
+                                    No items yet
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var it in Model.Items.Items)
+                            {
+                                var editUrl = Url.Action("Edit", "Items", new { inventoryId = Model.InventoryId, itemId = it.Id });
+
+                                <tr class="item-row"
+                                    data-item-id="@it.Id"
+                                    data-edit-url="@editUrl">
+
+                                    @if (Model.CanEditItems)
+                                    {
+                                        <td class="col-check" onclick="event.stopPropagation();">
+                                            <input class="row-check"
+                                                   type="checkbox"
+                                                   name="itemIds"
+                                                   value="@it.Id" />
+                                        </td>
+                                    }
+
+                                    <td class="cell-readonly col-id">@it.CustomId</td>
+
+                                    @for (int i = 0; i < Model.Items.Columns.Count; i++)
+                                    {
+                                        var cell = (it.Cells != null && it.Cells.Count > i) ? it.Cells[i] : null;
+                                        var display = cell ?? "";
+
+                                        <td class="cell-readonly">@display</td>
+                                    }
+@* 
+                                    <td class="col-muted col-date">@it.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td class="col-muted col-date">@(it.UpdatedAt?.ToString("yyyy-MM-dd HH:mm") ?? it.CreatedAt.ToString("yyyy-MM-dd HH:mm"))</td>
+ *@
+                                    <td class="col-likes likes-cell"
+                                        data-liked="@(it.IsLikedByMe ? "1" : "0")">
+                                        <span class="likes-heart" style="margin-right:6px; @(it.IsLikedByMe ? "" : "display:none;")">
+                                            <i class="bi bi-heart-fill"></i>
+                                        </span>
+                                        <span class="likes-count">@it.LikesCount</span>
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    (function () {
+
+      const table = document.getElementById("itemsTable");
+      if (!table) return;
+
+      const canWrite = table.dataset.canWrite === "1";
+
+      const form = document.getElementById("itemsForm");
+      const tokenInput = form ? form.querySelector('input[name="__RequestVerificationToken"]') : null;
+      const token = tokenInput ? tokenInput.value : "";
+
+      const toggleLikeBtn = document.getElementById('toggleLikeSelectedBtn');
+      const toggleLikeIcon = document.getElementById('toggleLikeIcon');
+      const deleteBtn = document.getElementById('deleteSelectedBtn');
+      const editBtn = document.getElementById('editSelectedBtn');
+      const checkAll = document.getElementById('checkAll');
+
+      const setLikesUrl = table.dataset.setlikesUrl || "";
+
+      function getRowFromEvent(e) {
+        const tr = e.target.closest("tbody tr.item-row");
+        if (!tr) return null;
+
+        if (e.target.closest("input[type='checkbox']")) return null;
+        if (e.target.closest("button, a, input, select, textarea, label")) return null;
+
+        return tr;
+      }
+
+      function navigateToEdit(tr) {
+        const url = tr && tr.dataset.editUrl;
+        if (url) window.location.href = url;
+      }
+
+      function rowChecks() {
+        return Array.from(table.querySelectorAll('tbody .row-check'));
+      }
+
+      function selectedChecks() {
+        return rowChecks().filter(cb => cb.checked);
+      }
+
+      function getSelectedRow() {
+        const cb = table.querySelector("tbody .row-check:checked");
+        if (!cb) return null;
+        return cb.closest("tr.item-row");
+      }
+
+      function getRowLiked(itemId) {
+        const tr = table.querySelector(`tbody tr[data-item-id="${itemId}"]`);
+        const cell = tr ? tr.querySelector('.likes-cell') : null;
+        return cell && cell.dataset.liked === "1";
+      }
+
+      function syncCheckAll() {
+        if (!checkAll) return;
+
+        const all = rowChecks();
+        const checked = all.filter(x => x.checked).length;
+
+        checkAll.checked = all.length > 0 && checked === all.length;
+        checkAll.indeterminate = checked > 0 && checked < all.length;
+      }
+
+      function setToggleIcon(allLiked) {
+        if (!toggleLikeIcon) return;
+        toggleLikeIcon.className = allLiked ? "bi bi-heartbreak" : "bi bi-heart";
+      }
+
+      function syncButtons() {
+        const selected = selectedChecks();
+        const has = selected.length > 0;
+
+        if (deleteBtn) deleteBtn.disabled = !has;
+        if (toggleLikeBtn) toggleLikeBtn.disabled = !has;
+
+        if (!has) {
+          setToggleIcon(false);
+          return;
+        }
+
+        const allLiked = selected.every(cb => getRowLiked(cb.value));
+        setToggleIcon(allLiked);
+      }
+
+      function syncEditButton() {
+        if (!editBtn) return;
+        const selected = selectedChecks();
+        editBtn.disabled = selected.length !== 1;
+      }
+
+      function applyServerState(itemId, liked, likesCount) {
+        const tr = table.querySelector(`tbody tr[data-item-id="${itemId}"]`);
+        if (!tr) return;
+
+        const cell = tr.querySelector('.likes-cell');
+        if (!cell) return;
+
+        const heart = cell.querySelector('.likes-heart');
+        const countEl = cell.querySelector('.likes-count');
+
+        cell.dataset.liked = liked ? "1" : "0";
+        if (heart) heart.style.display = liked ? "" : "none";
+        if (countEl) countEl.textContent = String(likesCount ?? 0);
+      }
+
+      async function setLikesSelected(like) {
+        const selected = selectedChecks();
+        if (!selected.length) return;
+
+        if (toggleLikeBtn) toggleLikeBtn.disabled = true;
+
+        const ids = selected.map(cb => cb.value);
+
+        try {
+          const res = await fetch(setLikesUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'RequestVerificationToken': token
+            },
+            body: JSON.stringify({ itemIds: ids, like })
+          });
+
+          const text = await res.text();
+          let data = null;
+          try { data = JSON.parse(text); } catch { }
+
+          if (!res.ok) {
+            console.error('[likes] http error', res.status, text);
+            return;
+          }
+
+          if (!data || data.ok !== true || !Array.isArray(data.items)) {
+            console.error('[likes] bad payload', data);
+            return;
+          }
+
+          for (const x of data.items) {
+            applyServerState(x.id, x.liked, x.likesCount);
+          }
+
+        } finally {
+          syncCheckAll();
+          syncButtons();
+          syncEditButton();
+        }
+      }
+
+      table.addEventListener("dblclick", (e) => {
+        const tr = getRowFromEvent(e);
+        if (!tr) return;
+        navigateToEdit(tr);
+      });
+
+      table.addEventListener('change', (e) => {
+        const cb = e.target.closest('.row-check');
+        if (!cb) return;
+
+        if (cb.checked) {
+          rowChecks().forEach(x => { if (x !== cb) x.checked = false; });
+        }
+
+        syncCheckAll();
+        syncButtons();
+        syncEditButton();
+      });
+
+      if (checkAll) {
+        checkAll.addEventListener('change', () => {
+          rowChecks().forEach(cb => cb.checked = checkAll.checked);
+          syncCheckAll();
+          syncButtons();
+          syncEditButton();
+        });
+      }
+
+      if (toggleLikeBtn && canWrite) {
+        toggleLikeBtn.addEventListener('click', () => {
+          const selected = selectedChecks();
+          if (!selected.length) return;
+
+          const allLiked = selected.every(cb => getRowLiked(cb.value));
+          setLikesSelected(!allLiked);
+        });
+      }
+
+      if (editBtn) {
+        editBtn.addEventListener('click', () => {
+          const tr = getSelectedRow();
+          if (!tr) return;
+          const url = tr.dataset.editUrl;
+          if (url) window.location.href = url;
+        });
+      }
+
+      syncCheckAll();
+      syncButtons();
+      syncEditButton();
+
+    })();
+</script>

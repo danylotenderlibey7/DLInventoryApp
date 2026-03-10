@@ -1,7 +1,6 @@
 ﻿using DLInventoryApp.Services.Interfaces;
-using DLInventoryApp.ViewModels.Search;
+using DLInventoryApp.ViewModels.Items.Search;
 using Microsoft.AspNetCore.Mvc;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace DLInventoryApp.Controllers
 {

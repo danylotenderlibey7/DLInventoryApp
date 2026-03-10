@@ -1,0 +1,142 @@
+﻿@page "/profile"
+@model IndexModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Profile";
+}
+
+<div class="workspace-inner profile-page">
+    <div class="manage-layout">
+
+        <aside class="manage-sidebar">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <div class="manage-content">
+            <div class="profile-card">
+                <div class="profile-avatar" aria-hidden="true">@Model.UserInitial</div>
+
+                <div class="profile-main">
+                    <div class="profile-name-row">
+                        <div class="profile-name">@Model.Username</div>
+
+                        @if (Model.IsBlocked)
+                        {
+                            <span class="inv-badge">Blocked</span>
+                        }
+                    </div>
+
+                    <div class="profile-email">@Model.Email</div>
+
+                    <div class="profile-stats-mini">
+                        <span>@Model.InventoriesCount inventories</span>
+                        <span class="inv-dot">•</span>
+                        <span>@Model.ItemsCount items</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-section-head">
+                <div class="my-section-title">My inventories</div>
+            </div>
+
+            @if (Model.Inventories == null || Model.Inventories.Count == 0)
+            {
+                <div class="empty-state">
+                    <div class="empty-title">No inventories yet</div>
+                </div>
+            }
+            else
+            {
+                <div class="inv-table-wrap profile-table-wrap">
+                    <div class="profile-table-scroll">
+                        <table class="inv-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Access</th>
+                                    <th>Items</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var inv in Model.Inventories)
+                                {
+                                    <tr class="inv-row"
+                                        data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
+
+                                        <td>
+                                            <div class="inv-title">@inv.Title</div>
+                                        </td>
+
+                                        <td class="col-muted">@inv.CategoryName</td>
+                                        <td class="col-muted">@(inv.IsPublic ? "Public" : "Private")</td>
+                                        <td class="col-muted">@inv.ItemsCount</td>
+
+                                        <td class="col-muted">
+                                            <span class="inv-updated"
+                                                  data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                                                @((inv.UpdatedAt ?? inv.CreatedAt).ToString("dd.MM.yyyy HH:mm"))
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.querySelectorAll(".inv-updated").forEach(el => {
+                const raw = el.dataset.date;
+                if (!raw) return;
+
+                const date = new Date(raw);
+                if (isNaN(date.getTime())) return;
+
+                const now = new Date();
+                const diff = Math.floor((now - date) / 1000);
+
+                let text = "";
+
+                if (diff < 60) {
+                    text = "just now";
+                } else if (diff < 3600) {
+                    const m = Math.floor(diff / 60);
+                    text = m + " min ago";
+                } else if (diff < 86400) {
+                    const h = Math.floor(diff / 3600);
+                    text = h + " hour" + (h > 1 ? "s" : "") + " ago";
+                } else if (diff < 604800) {
+                    const d = Math.floor(diff / 86400);
+                    text = d + " day" + (d > 1 ? "s" : "") + " ago";
+                } else {
+                    const w = Math.floor(diff / 604800);
+                    text = w + " week" + (w > 1 ? "s" : "") + " ago";
+                }
+
+                el.textContent = text;
+            });
+
+            document.addEventListener("click", function (e) {
+                const row = e.target.closest(".inv-row");
+                if (!row) return;
+
+                if (e.target.closest("a")) return;
+                if (e.target.closest("button")) return;
+                if (e.target.closest("input")) return;
+
+                const url = row.dataset.href;
+                if (url) window.location.href = url;
+            });
+        })();
+    </script>
+}

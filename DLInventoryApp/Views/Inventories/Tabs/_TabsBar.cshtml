@@ -1,0 +1,48 @@
+﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
+
+@{
+    var tab = (Model.ActiveTab ?? "items").ToLowerInvariant();
+    string TabClass(string name) => tab == name ? "inv-tab active" : "inv-tab";
+}
+
+<div class="inv-tabs inv-tabs-under-title">
+        <a class="@TabClass("items")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="items">
+            Items
+        </a>
+
+        <a class="@TabClass("chat")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="chat">
+            Chat
+        </a>
+
+        <a class="@TabClass("settings")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="settings">
+            Settings
+        </a>
+
+        <a class="@TabClass("customid")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="customid">
+            Custom ID
+        </a>
+
+        <a class="@TabClass("fields")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="fields">
+            Fields
+        </a>
+
+        <a class="@TabClass("access")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="access">
+            Access
+        </a>
+
+        <a class="@TabClass("stats")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="stats">
+            Stats
+        </a>
+
+        <a class="@TabClass("export")"
+           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="export">
+            Export
+        </a>
+</div>

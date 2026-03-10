@@ -1,0 +1,402 @@
+﻿@using DLInventoryApp.ViewModels.Inventories.Tabs.Settings
+@model InventorySettingsVm
+
+<form id="invSettingsAntiForgery" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="inv-settings-card inv-settings-scroll"
+     id="invSettingsRoot"
+     data-inventory-id="@Model.InventoryId"
+     data-can-write="@(Model.CanManage ? "1" : "0")">
+
+    <div class="inv-settings-head">
+        <div class="inv-settings-title">Inventory settings</div>
+
+        <div class="inv-settings-note">
+            <span>Autosave</span>
+            <span class="inv-dot">•</span>
+            <span id="invSettingsState" class="inv-settings-save"></span>
+        </div>
+    </div>
+
+    <div class="inv-settings-grid">
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Created</div>
+            <div class="inv-settings-readonly">
+                @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Owner</div>
+            <div class="inv-settings-readonly">
+                @Model.OwnerName
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Title</div>
+            <div class="inv-settings-field">
+                <input id="invTitle"
+                       class="inv-settings-input"
+                       value="@Model.Title"
+                @(Model.CanManage ? "" : "disabled") />
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Description</div>
+            <div class="inv-settings-field">
+                <textarea id="invDescription"
+                          class="inv-settings-textarea"
+                          rows="5"
+                          placeholder="Markdown supported..."
+                @(Model.CanManage ? "" : "disabled")>@Model.Description</textarea>
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Category</div>
+            <div class="inv-settings-field">
+                <select id="invCategory"
+                        class="inv-settings-input"
+                @(Model.CanManage ? "" : "disabled")>
+
+                    <option value="">Select category...</option>
+
+                    @foreach (var c in Model.Categories)
+                    {
+                        if (Model.CategoryId == c.Id)
+                        {
+                            <option value="@c.Id" selected>@c.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Public</div>
+            <div class="inv-settings-field">
+                <label style="display:flex; gap:10px; align-items:center;">
+                    <input id="invIsPublic"
+                           type="checkbox"
+                    @(Model.IsPublic ? "checked" : "")
+                    @(Model.CanManage ? "" : "disabled") />
+                    <span class="inv-muted">
+                        If public, all authenticated users can add items.
+                    </span>
+                </label>
+            </div>
+        </div>
+
+        <div class="inv-settings-row">
+            <div class="inv-settings-label">Tags</div>
+
+            <div class="inv-settings-field" style="grid-template-columns:1fr;">
+                <div class="tag-input-wrap position-relative">
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="text"
+                               id="tagInputSettings"
+                               class="inv-settings-input"
+                               placeholder="Type tag and press Add"
+                        @(Model.CanManage ? "" : "disabled") />
+
+                        <button type="button"
+                                id="addTagBtnSettings"
+                                class="inv-btn inv-btn-accent"
+                                title="Add tag"
+                                aria-label="Add tag"
+                        @(Model.CanManage ? "" : "disabled")>
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                    </div>
+
+                    <div id="tagSuggestListSettings"
+                         class="tag-suggest shadow-sm"
+                         style="display:none;"></div>
+                </div>
+
+                <div id="tagsChipsSettings" class="tags-chips mt-2"></div>
+            </div>
+        </div>
+
+        <input type="hidden"
+               id="invVersion"
+               value="@Convert.ToBase64String(Model.Version ?? Array.Empty<byte>())" />
+
+    </div>
+</div>
+
+<script>
+    (function () {
+      const root = document.getElementById("invSettingsRoot");
+      if (!root) return;
+
+      const inventoryId = root.dataset.inventoryId;
+      const canWrite = root.dataset.canWrite === "1";
+
+      const token = document.querySelector('#invSettingsAntiForgery input[name="__RequestVerificationToken"]')?.value || "";
+
+      const stateEl = document.getElementById("invSettingsState");
+
+      const titleEl = document.getElementById("invTitle");
+      const descEl  = document.getElementById("invDescription");
+      const catEl   = document.getElementById("invCategory");
+      const pubEl   = document.getElementById("invIsPublic");
+      const verEl   = document.getElementById("invVersion");
+
+      const tagInput   = document.getElementById("tagInputSettings");
+      const addTagBtn  = document.getElementById("addTagBtnSettings");
+      const chipsEl    = document.getElementById("tagsChipsSettings");
+      const suggestBox = document.getElementById("tagSuggestListSettings");
+
+      const tags = new Set((@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Tags ?? new List<string>()))) || []);
+
+      function normalize(v) { return (v || "").trim().toLowerCase(); }
+
+      function setState(text, err) {
+        if (!stateEl) return;
+        stateEl.textContent = text || "";
+        stateEl.classList.toggle("is-error", !!err);
+      }
+
+      function getVersion() { return verEl ? (verEl.value || "") : ""; }
+      function setVersion(v) { if (verEl) verEl.value = v || ""; }
+
+      let dirtyMeta = false;
+      let dirtyTags = false;
+      let saving = false;
+
+      function markDirtyMeta() {
+        if (!canWrite) return;
+        dirtyMeta = true;
+        setState("Unsaved", false);
+      }
+
+      function markDirtyTags() {
+        if (!canWrite) return;
+        dirtyTags = true;
+        setState("Unsaved", false);
+      }
+
+      async function postJson(url, body) {
+        const resp = await fetch(url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { "RequestVerificationToken": token } : {})
+          },
+          body: JSON.stringify(body || {})
+        });
+
+        const text = await resp.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch { }
+
+        if (!resp.ok) {
+          const msg = (data && (data.error || data.message)) ? (data.error || data.message) : (text ? text.slice(0, 200) : "");
+          throw new Error(msg || `HTTP ${resp.status}`);
+        }
+
+        return data || {};
+      }
+
+      async function saveMeta() {
+        if (!canWrite || !dirtyMeta || saving) return;
+
+        saving = true;
+        setState("Saving...", false);
+
+        try {
+          const data = await postJson(`/Inventories/${inventoryId}/Settings/InlineUpdate`, {
+            title: titleEl ? titleEl.value : "",
+            description: descEl ? descEl.value : "",
+            categoryId: catEl ? (catEl.value ? Number(catEl.value) : null) : null,
+            isPublic: pubEl ? !!pubEl.checked : false,
+            version: getVersion()
+          });
+
+          if (data && data.version) setVersion(data.version);
+
+          dirtyMeta = false;
+          setState("Saved", false);
+          setTimeout(() => { if (stateEl && stateEl.textContent === "Saved") setState("", false); }, 900);
+        } catch (e) {
+          setState(e && e.message ? e.message : "Error", true);
+        } finally {
+          saving = false;
+        }
+      }
+
+      async function saveTags() {
+        if (!canWrite || !dirtyTags || saving) return;
+
+        saving = true;
+        setState("Saving...", false);
+
+        try {
+          const data = await postJson(`/Inventories/${inventoryId}/Settings/InlineUpdateTags`, {
+            tags: Array.from(tags).map(normalize).filter(Boolean),
+            version: getVersion()
+          });
+
+          if (data && Array.isArray(data.tags)) {
+            tags.clear();
+            data.tags.map(normalize).filter(Boolean).forEach(t => tags.add(t));
+            renderTags();
+          }
+
+          if (data && data.version) setVersion(data.version);
+
+          dirtyTags = false;
+          setState("Saved", false);
+          setTimeout(() => { if (stateEl && stateEl.textContent === "Saved") setState("", false); }, 900);
+        } catch (e) {
+          setState(e && e.message ? e.message : "Error", true);
+        } finally {
+          saving = false;
+        }
+      }
+
+      setInterval(async () => {
+        if (!canWrite) return;
+        if (saving) return;
+
+        if (dirtyMeta) await saveMeta();
+        if (dirtyTags) await saveTags();
+      }, 8000);
+
+      if (titleEl) titleEl.addEventListener("input", markDirtyMeta);
+      if (descEl)  descEl.addEventListener("input", markDirtyMeta);
+      if (catEl)   catEl.addEventListener("change", markDirtyMeta);
+      if (pubEl)   pubEl.addEventListener("change", markDirtyMeta);
+
+      let lastQuery = "";
+
+      function closeSuggest() {
+        if (!suggestBox) return;
+        suggestBox.style.display = "none";
+        suggestBox.innerHTML = "";
+      }
+
+      function showSuggest(items) {
+        if (!suggestBox) return;
+        suggestBox.innerHTML = "";
+        if (!items || items.length === 0) { closeSuggest(); return; }
+
+        items.forEach((name) => {
+          const row = document.createElement("div");
+          row.className = "tag-suggest-item";
+          row.textContent = name;
+
+          row.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            const n = normalize(name);
+            if (n) tags.add(n);
+            if (tagInput) tagInput.value = "";
+            renderTags();
+            closeSuggest();
+            markDirtyTags();
+          });
+
+          suggestBox.appendChild(row);
+        });
+
+        suggestBox.style.display = "block";
+      }
+
+      async function loadSuggest() {
+        if (!tagInput) return;
+        const current = normalize(tagInput.value || "");
+        if (!current || current.length < 2) { closeSuggest(); return; }
+        if (current === lastQuery) return;
+        lastQuery = current;
+
+        try {
+          const resp = await fetch(`/Tags/Suggest?prefix=${encodeURIComponent(current)}`, { credentials: "same-origin" });
+          if (!resp.ok) { closeSuggest(); return; }
+          const names = await resp.json();
+
+          const filtered = (names || [])
+            .map(n => normalize(n))
+            .filter(n => n && !tags.has(n))
+            .slice(0, 10);
+
+          showSuggest(filtered);
+        } catch {
+          closeSuggest();
+        }
+      }
+
+      function renderTags() {
+        if (!chipsEl) return;
+        chipsEl.innerHTML = "";
+
+        Array.from(tags).map(normalize).filter(Boolean).sort().forEach(t => {
+          const chip = document.createElement("span");
+          chip.className = "tag-chip";
+          chip.textContent = t;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "tag-chip-x";
+          btn.textContent = "×";
+          btn.disabled = !canWrite;
+
+          btn.onclick = () => {
+            tags.delete(t);
+            renderTags();
+            markDirtyTags();
+          };
+
+          chip.appendChild(btn);
+          chipsEl.appendChild(chip);
+        });
+      }
+
+      function addTag() {
+        if (!canWrite || !tagInput) return;
+        const t = normalize(tagInput.value);
+        if (!t) return;
+        tags.add(t);
+        tagInput.value = "";
+        renderTags();
+        closeSuggest();
+        markDirtyTags();
+      }
+
+      if (addTagBtn) addTagBtn.addEventListener("click", addTag);
+
+      if (tagInput) {
+        tagInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") { e.preventDefault(); addTag(); }
+        });
+
+        let tmr = null;
+        tagInput.addEventListener("input", () => {
+          clearTimeout(tmr);
+          tmr = setTimeout(loadSuggest, 150);
+        });
+      }
+
+      document.addEventListener("click", (e) => {
+        if (tagInput && e.target !== tagInput && suggestBox && !suggestBox.contains(e.target)) closeSuggest();
+      });
+
+      renderTags();
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState !== "hidden") return;
+        if (dirtyMeta) saveMeta();
+        if (dirtyTags) saveTags();
+      });
+    })();
+</script>

@@ -1,68 +1,335 @@
-﻿@using DLInventoryApp.ViewModels.Inventories
-@model IEnumerable<MyInventoryRowVm>
+﻿@using DLInventoryApp.ViewModels.Common.Pagination
+@using DLInventoryApp.ViewModels.Inventories.Pages
+@model MyInventoriesPageVm
 @using System.Linq
-<h2>My Inventories</h2>
-<a asp-action="Create">Create</a>
-@if (!Model.Any())
-{
-    <p>No inventories yet.</p>
-}
-else
-{
-    <table>
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Items</th>
-                <th>Visibility</th>
-                <th>Last Updated</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var inv in Model)
-            {
-                <tr>
-                    <td>
-                        <a asp-action="Details" asp-route-id="@inv.Id">
-                            @inv.Title
+
+<div class="page-header">
+
+    <div>
+        <h1 class="page-title">My Inventories</h1>
+    </div>
+</div>
+
+<form id="ownedInventoriesForm"
+      asp-controller="Inventories"
+      asp-action="Delete"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="my-section">
+        <div class="my-section-head">
+            <div class="my-section-title">Owned by me</div>
+            <nav class="pager-top my-section-pager" aria-label="Owned inventories pagination">
+
+                <div class="pager-right">
+
+                    <div class="inv-actions">
+                        <a asp-action="Create"
+                           class="inv-btn inv-btn-accent"
+                           title="New inventory">
+                            <i class="bi bi-plus-lg"></i>
                         </a>
-                    </td>
-                    <td>
-                        @(inv.CategoryName ?? "-")
-                    </td>
-                    <td>
-                        @if (inv.Tags != null && inv.Tags.Any())
-                        {
-                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                @foreach (var t in inv.Tags)
-                                {
-                                    <span style="padding:2px 8px; background:#eee; border-radius:12px; font-size:12px;">
-                                        @t
-                                    </span>
-                                }
-                            </div>
-                        }
-                        else
-                        {
-                            <span style="color:#888;">-</span>
-                        }
-                    </td>
-                    <td>
-                        <a asp-controller="Items"
-                           asp-action="Index"
-                           asp-route-inventoryId="@inv.Id">
-                            @inv.ItemsCount
+
+                        <button id="editSelectedInventoryBtn"
+                                type="button"
+                                class="inv-btn inv-btn-accent"
+                                disabled>
+                            <i class="bi bi-pencil"></i>
+                        </button>
+
+                        <button id="deleteSelectedInventoryBtn"
+                                type="submit"
+                                form="ownedInventoriesForm"
+                                class="inv-btn inv-btn-accent"
+                                disabled>
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+
+                    @if (Model.My.TotalPages > 1)
+                    {
+                        <a class="pager-btn @(Model.My.HasPrevPage ? "" : "disabled")"
+                           asp-action="My"
+                           asp-route-ownedPage="@(Model.My.Page - 1)"
+                           asp-route-sharedPage="@Model.Shared.Page"
+                           asp-route-pageSize="@Model.My.PageSize">
+                            ‹
                         </a>
-                    </td>
-                    <td>
-                        @(inv.IsPublic ? "Public" : "Private")
-                    </td>
-                    <td>
-                        @(inv.UpdatedAt ?? inv.CreatedAt)
-                    </td>
-                </tr>
+
+                        <span class="pager-info">
+                            @Model.My.Page / @Model.My.TotalPages
+                        </span>
+
+                        <a class="pager-btn @(Model.My.HasNextPage ? "" : "disabled")"
+                           asp-action="My"
+                           asp-route-ownedPage="@(Model.My.Page + 1)"
+                           asp-route-sharedPage="@Model.Shared.Page"
+                           asp-route-pageSize="@Model.My.PageSize">
+                            ›
+                        </a>
+                    }
+
+                </div>
+
+            </nav>
+        </div>
+
+        @if (!Model.My.Items.Any())
+        {
+            <div class="empty-state">
+                <div class="empty-title">No inventories yet</div>
+                <div class="empty-sub">Create your first inventory to get started.</div>
+            </div>
+        }
+        else
+        {
+            <div class="inv-table-wrap">
+                <table class="inv-table" id="ownedInventoriesTable">
+                    <thead>
+                        <tr>
+                            <th class="col-check">
+                                <input id="checkAllOwned" type="checkbox" aria-label="Select all inventories" />
+                            </th>
+
+                            <th class="inv-col-title">Inventory</th>
+                            <th class="inv-col-items" align="center">Items</th>
+                            <th class="inv-col-updated" align="center">Last update</th>
+                            <th class="inv-col-cat" align="center">Category</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var inv in Model.My.Items)
+                        {
+                            <tr class="inv-row"
+                                data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })"
+                                data-edit-url="@Url.Action("Edit", "Inventories", new { inventoryId = inv.Id })">
+
+                                <td class="col-check" onclick="event.stopPropagation();">
+                                    <input class="owned-row-check"
+                                           type="checkbox"
+                                           name="inventoryIds"
+                                           value="@inv.Id" />
+                                </td>
+
+                                <td>
+                                    <div class="inv-title">
+                                        @inv.Title
+                                    </div>
+                                </td>
+
+                                <td class="inv-items" align="center">
+                                    [@inv.ItemsCount]
+                                </td>
+
+                                <td class="inv-updated" align="center"
+                                    data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                                </td>
+
+                                <td class="inv-cat" align="center">
+                                    @(inv.CategoryName ?? "-")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</form>
+
+
+<div class="my-section">
+    <div class="my-section-head">
+        <div class="my-section-title">Shared with me</div>
+        @if (Model.Shared.TotalPages > 1)
+        {
+            <div class="pager-top my-section-pager" aria-label="Shared inventories pagination">
+                <div class="pager-right">
+
+                    <a class="pager-btn @(Model.Shared.HasPrevPage ? "" : "disabled")"
+                       asp-action="My"
+                       asp-route-ownedPage="@Model.My.Page"
+                       asp-route-sharedPage="@(Model.Shared.Page - 1)"
+                       asp-route-pageSize="@Model.Shared.PageSize">
+                        ‹
+                    </a>
+
+                    <span class="pager-info">@Model.Shared.Page / @Model.Shared.TotalPages</span>
+
+                    <a class="pager-btn @(Model.Shared.HasNextPage ? "" : "disabled")"
+                       asp-action="My"
+                       asp-route-ownedPage="@Model.My.Page"
+                       asp-route-sharedPage="@(Model.Shared.Page + 1)"
+                       asp-route-pageSize="@Model.Shared.PageSize">
+                        ›
+                    </a>
+
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.Shared.Items.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-title">No shared inventories</div>
+            <div class="empty-sub">Inventories where you have write access will appear here.</div>
+        </div>
+    }
+    else
+    {
+        <div class="inv-table-wrap">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th class="inv-col-title">Inventory</th>
+                        <th class="inv-col-items" align="center">Items</th>
+                        <th class="inv-col-owner" align="center">Owner</th>
+                        <th class="inv-col-updated" align="center">Last update</th>
+                        <th class="inv-col-cat" align="center">Category</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var inv in Model.Shared.Items)
+                    {
+                        <tr class="inv-row"
+                            data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
+
+                            <td>
+                                <div class="inv-title">
+                                    @inv.Title
+                                </div>
+                            </td>
+
+                            <td class="inv-items" align="center">
+                                [@inv.ItemsCount]
+                            </td>
+
+                            <td class="inv-owner" align="center">
+                                @(inv.OwnerEmail ?? "-")
+                            </td>
+
+                            <td class="inv-updated" align="center"
+                                data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                            </td>
+
+                            <td class="inv-cat" align="center">
+                                @(inv.CategoryName ?? "-")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const checkAll = document.getElementById("checkAllOwned");
+            const editBtn = document.getElementById("editSelectedInventoryBtn");
+            const deleteBtn = document.getElementById("deleteSelectedInventoryBtn");
+
+            function ownedChecks() {
+                return Array.from(document.querySelectorAll(".owned-row-check"));
             }
-        </tbody>
-    </table>
+
+            function selectedChecks() {
+                return ownedChecks().filter(x => x.checked);
+            }
+
+            function syncCheckAll() {
+                if (!checkAll) return;
+
+                const all = ownedChecks();
+                const checked = all.filter(x => x.checked).length;
+
+                checkAll.checked = all.length > 0 && checked === all.length;
+                checkAll.indeterminate = checked > 0 && checked < all.length;
+            }
+
+            function syncButtons() {
+                const selected = selectedChecks();
+                if (editBtn) editBtn.disabled = selected.length !== 1;
+                if (deleteBtn) deleteBtn.disabled = selected.length === 0;
+            }
+
+            document.addEventListener("click", function (e) {
+                const row = e.target.closest(".inv-row");
+                if (!row) return;
+
+                if (e.target.closest("a")) return;
+                if (e.target.closest("input")) return;
+                if (e.target.closest("button")) return;
+
+                const href = row.getAttribute("data-href");
+                if (href) window.location.href = href;
+            });
+
+            document.addEventListener("change", function (e) {
+                const cb = e.target.closest(".owned-row-check");
+                if (!cb) return;
+
+                syncCheckAll();
+                syncButtons();
+            });
+
+            if (checkAll) {
+                checkAll.addEventListener("change", function () {
+                    ownedChecks().forEach(cb => cb.checked = checkAll.checked);
+                    syncCheckAll();
+                    syncButtons();
+                });
+            }
+
+            if (editBtn) {
+                editBtn.addEventListener("click", function () {
+                    const selected = selectedChecks();
+                    if (selected.length !== 1) return;
+
+                    const row = selected[0].closest("tr");
+                    const url = row ? row.dataset.editUrl : null;
+                    if (url) window.location.href = url;
+                });
+            }
+
+            document.querySelectorAll(".inv-updated").forEach(el => {
+                const date = new Date(el.dataset.date);
+                const now = new Date();
+                const diff = (now - date) / 1000;
+
+                let text = "";
+
+                if (diff < 60) {
+                    text = "just now";
+                }
+                else if (diff < 3600) {
+                    const m = Math.floor(diff / 60);
+                    text = m + " min ago";
+                }
+                else if (diff < 86400) {
+                    const h = Math.floor(diff / 3600);
+                    text = h + " hour" + (h > 1 ? "s" : "") + " ago";
+                }
+                else if (diff < 604800) {
+                    const d = Math.floor(diff / 86400);
+                    text = d + " day" + (d > 1 ? "s" : "") + " ago";
+                }
+                else {
+                    const w = Math.floor(diff / 604800);
+                    text = w + " week" + (w > 1 ? "s" : "") + " ago";
+                }
+
+                el.textContent = text;
+            });
+
+            syncCheckAll();
+            syncButtons();
+        })();
+    </script>
 }

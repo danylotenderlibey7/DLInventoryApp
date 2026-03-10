@@ -1,15 +1,42 @@
-﻿@inject SignInManager<ApplicationUser> SignInManager
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<DLInventoryApp.Models.ApplicationUser> SignInManager
+
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Profile</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Email</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Password</a></li>
-    @if (hasExternalLogins)
-    {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">External logins</a></li>
-    }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Two-factor authentication</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Personal data</a></li>
-</ul>
+
+<div class="manage-nav-card">
+    <div class="manage-nav-head">
+        <div class="manage-nav-title">Account</div>
+        <div class="manage-nav-subtitle">Manage your profile and security</div>
+    </div>
+
+    <nav class="manage-nav-list">
+        <a class="manage-nav-link @ManageNavPages.IndexNavClass(ViewContext)"
+           asp-page="./Index">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+
+        <a class="manage-nav-link @ManageNavPages.EmailNavClass(ViewContext)"
+           asp-page="./Email">
+            <i class="bi bi-envelope"></i>
+            <span>Email</span>
+        </a>
+
+        <a class="manage-nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
+           asp-page="./ChangePassword">
+            <i class="bi bi-key"></i>
+            <span>Password</span>
+        </a>
+
+        @if (hasExternalLogins)
+        {
+            <a class="manage-nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
+               asp-page="./ExternalLogins">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>External logins</span>
+            </a>
+        }
+    </nav>
+</div>

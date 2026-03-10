@@ -1,7 +1,7 @@
 ﻿using DLInventoryApp.Data;
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
-using DLInventoryApp.ViewModels.Search;
+using DLInventoryApp.ViewModels.Items.Search;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;

@@ -8,7 +8,7 @@ namespace DLInventoryApp.Models
         public Guid InventoryId { get; set; }
         public Inventory Inventory { get; set; } = null!;
         [Required]
-        [MaxLength(20)]
+        [MaxLength(50)]
         public string CustomId { get; set; } = null!;
         [Required]
         public string CreatedById { get; set; } = null!;
@@ -19,6 +19,7 @@ namespace DLInventoryApp.Models
         public byte[]? Version { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
         public List<ItemLike> Likes { get; set; } = new();
+        public int ViewsTotal { get; set; } = 0;
         public int? SequenceNumber { get; set; }
     }
 }

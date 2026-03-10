@@ -118,6 +118,108 @@ namespace DLInventoryApp.Migrations
                         .IsUnique();
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Equipment"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Furniture"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Book"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Collectibles"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Electronics"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Clothing"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Tools"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "Kitchen"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "Office"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "Home"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Name = "Sports"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Name = "Toys"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Name = "Garden"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Name = "Automotive"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Name = "Health"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Name = "Beauty"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Name = "Art"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Name = "Music"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Name = "Games"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Name = "Other"
+                        });
                 });
 
             modelBuilder.Entity("DLInventoryApp.Models.CustomField", b =>
@@ -345,6 +447,9 @@ namespace DLInventoryApp.Migrations
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("bytea");
+
+                    b.Property<int>("ViewsTotal")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

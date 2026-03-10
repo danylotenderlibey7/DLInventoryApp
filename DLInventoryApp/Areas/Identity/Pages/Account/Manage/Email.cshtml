@@ -1,0 +1,103 @@
+﻿@page
+@model EmailModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Manage Email";
+    ViewData["ActivePage"] = ManageNavPages.Email;
+}
+
+<div class="workspace-inner profile-page">
+    <div class="manage-layout">
+
+        <aside class="manage-sidebar">
+            <partial name="_ManageNav" />
+        </aside>
+
+        <div class="manage-content">
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Manage Email</h1>
+                    <p class="page-subtitle">Check your current email, send verification, or change it.</p>
+                </div>
+            </div>
+
+            <partial name="_StatusMessage" for="StatusMessage" />
+
+            <div class="manage-form-card">
+                <form id="email-form" method="post" class="manage-form">
+                    <div asp-validation-summary="ModelOnly" class="auth-validation"></div>
+
+                    <div class="manage-form-grid">
+
+                        <div class="auth-field">
+                            <label asp-for="Email" class="auth-label">Current email</label>
+
+                            <div class="email-current-row">
+                                <input asp-for="Email"
+                                       class="auth-input"
+                                       placeholder="Current email"
+                                       disabled />
+
+                                @if (Model.IsEmailConfirmed)
+                                {
+                                    <span class="email-badge email-badge-ok">
+                                        <i class="bi bi-check-lg"></i>
+                                        <span>Confirmed</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="email-badge">
+                                        <i class="bi bi-envelope-exclamation"></i>
+                                        <span>Not confirmed</span>
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        @if (!Model.IsEmailConfirmed)
+                        {
+                            <div class="manage-actions-row">
+                                <button id="email-verification"
+                                        type="submit"
+                                        asp-page-handler="SendVerificationEmail"
+                                        class="inv-btn inv-btn-ghost">
+                                    <i class="bi bi-envelope"></i>
+                                    <span>Send verification email</span>
+                                </button>
+                            </div>
+                        }
+
+                        <div class="auth-field">
+                            <label asp-for="Input.NewEmail" class="auth-label"></label>
+                            <input asp-for="Input.NewEmail"
+                                   class="auth-input"
+                                   autocomplete="email"
+                                   aria-required="true"
+                                   placeholder="Enter new email" />
+                            <span asp-validation-for="Input.NewEmail" class="auth-field-error"></span>
+                        </div>
+
+                        <div class="manage-actions-row">
+                            <button id="change-email-button"
+                                    type="submit"
+                                    asp-page-handler="ChangeEmail"
+                                    class="inv-btn inv-btn-accent">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <span>Change email</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
