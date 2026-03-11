@@ -39,6 +39,7 @@ namespace DLInventoryApp.Controllers
                 .Select(u => new UserAdminVm
                 {
                     Id = u.Id,
+                    UserName = u.UserName ?? "User",
                     Email = u.Email!,
                     EmailConfirmed = u.EmailConfirmed,
                     IsBlocked = u.IsBlocked,

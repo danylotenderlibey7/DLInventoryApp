@@ -1,0 +1,100 @@
+﻿@using DLInventoryApp.ViewModels.Common.Pagination
+@using DLInventoryApp.ViewModels.Tags
+@model PagedVm<TagListItemVm>
+
+@{
+    ViewData["Title"] = "Tags";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tags</h1>
+    </div>
+</div>
+
+<div class="my-section">
+
+    <div class="my-section-head">
+        @if (Model.TotalPages > 1)
+        {
+            <div class="pager-top my-section-pager" aria-label="Tags pagination">
+                <div class="pager-right">
+
+                    <a class="pager-btn @(Model.HasPrevPage ? "" : "disabled")"
+                       asp-action="Index"
+                       asp-route-page="@(Model.Page - 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                        ‹
+                    </a>
+
+                    <span class="pager-info">@Model.Page / @Model.TotalPages</span>
+
+                    <a class="pager-btn @(Model.HasNextPage ? "" : "disabled")"
+                       asp-action="Index"
+                       asp-route-page="@(Model.Page + 1)"
+                       asp-route-pageSize="@Model.PageSize">
+                        ›
+                    </a>
+
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-title">No tags yet</div>
+            <div class="empty-sub">Tags will appear here when inventories are created.</div>
+        </div>
+    }
+    else
+    {
+        <div class="inv-table-wrap">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th align="center">Inventories</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var tag in Model.Items)
+                    {
+                        <tr class="inv-row"
+                            data-href="@Url.Action("Index", "Inventories", new { tag = tag.Name })">
+
+                            <td>
+                                <div class="inv-title">#@tag.Name</div>
+                            </td>
+
+                            <td class="col-muted" align="center">
+                                [@tag.InventoriesCount]
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            document.addEventListener("click", function (e) {
+                const row = e.target.closest(".inv-row");
+                if (!row) return;
+
+                if (e.target.closest("a")) return;
+                if (e.target.closest("button")) return;
+                if (e.target.closest("input")) return;
+
+                const href = row.dataset.href;
+                if (href) window.location.href = href;
+            });
+        })();
+    </script>
+}

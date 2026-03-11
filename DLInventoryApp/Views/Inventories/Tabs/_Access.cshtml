@@ -11,14 +11,13 @@
     @Html.AntiForgeryToken()
 </form>
 <div class="access-page">
-    <div class="page-subtitle">
-        Manage users who have write access to this inventory.
-    </div>
     <div class="access-main-grid">
         <div class="access-left">
             <div class="access-toolbar">
                 <div class="my-section-title access-section-title">Users with write access</div>
-
+                <div class="page-subtitle">
+                    Manage users who have write access to this inventory.
+                </div>
                 <button id="deleteSelectedAccessBtn"
                         type="button"
                         class="app-btn app-btn-primary access-delete-btn"
@@ -73,6 +72,7 @@
                                     <th>Email</th>
                                 </tr>
                             </thead>
+
                             <tbody id="accessUsersTbody">
                                 @foreach (var u in Model.Users.OrderBy(x => string.IsNullOrWhiteSpace(x.UserName) ? x.Email : x.UserName))
                                 {
@@ -83,10 +83,11 @@
                                                    value="@u.UserId" />
                                         </td>
 
-                                        <td>
-                                            <div class="inv-title access-user-name">
+                                        <td class="access-user-name-cell">
+                                            <a class="access-user-link"
+                                               href="/profile/@u.UserId">
                                                 @(string.IsNullOrWhiteSpace(u.UserName) ? u.Email : u.UserName)
-                                            </div>
+                                            </a>
                                         </td>
 
                                         <td class="access-user-email">
@@ -308,12 +309,12 @@
                 <td class="col-check">
                     <input class="access-row-check" type="checkbox" value="${escapeHtml(user.userId)}" />
                 </td>
-                <td>
-                    <div class="inv-title" style="font-size:16px;">
+                <td class="access-user-name-cell">
+                    <a class="access-user-link" href="/profile/${escapeHtml(user.userId)}">
                         ${escapeHtml(user.userName || user.email)}
-                    </div>
+                    </a>
                 </td>
-                <td align="center">
+                <td class="access-user-email">
                     ${escapeHtml(user.email)}
                 </td>
             `;
@@ -404,7 +405,7 @@
             });
         }
 
-        document.addEventListener("click", async function (e) {
+        document.addEventListener("click", function (e) {
             const pickBtn = e.target.closest("[data-pick-user]");
             if (pickBtn) {
                 const email = pickBtn.getAttribute("data-email") || "";

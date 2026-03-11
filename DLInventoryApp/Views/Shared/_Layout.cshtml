@@ -322,8 +322,8 @@
             darkBtn?.addEventListener("click", () => applyTheme("dark"));
 
             const savedTheme =
-                body.getAttribute("data-theme") ||
                 localStorage.getItem("theme") ||
+                body.getAttribute("data-theme") ||
                 "light";
 
             applyTheme(savedTheme);

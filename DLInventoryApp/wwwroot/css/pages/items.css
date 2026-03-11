@@ -197,3 +197,60 @@ body[data-theme="dark"] .inv-table-card {
         font-size: 26px;
     }
 }
+
+.items-table th,
+.items-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+    .items-table th.col-check,
+    .items-table td.col-check {
+        text-align: left;
+        width: 46px;
+        min-width: 46px;
+        max-width: 46px;
+        padding-left: 14px;
+        padding-right: 8px;
+    }
+
+.items-table .col-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    transform: none;
+    vertical-align: middle;
+}
+
+.items-table .col-id,
+.items-table .col-likes {
+    text-align: center;
+}
+
+.items-table tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.items-table .col-check {
+    text-align: center;
+}
+
+.items-table .col-id {
+    text-align: center;
+}
+
+.items-table .col-likes {
+    text-align: center;
+}
+
+.items-table tbody td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.items-table .col-check {
+    width: 46px;
+    min-width: 46px;
+    max-width: 46px;
+}

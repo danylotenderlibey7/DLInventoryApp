@@ -66,8 +66,8 @@ namespace DLInventoryApp.Controllers
             {
                 CustomFieldId = f.Id,
                 Name = f.Name,
-                Type = f.Type,
-                IsRequired = f.IsRequired
+                Description = f.Description,
+                Type = f.Type
             }).ToList();
             return View(vm);
         }
@@ -99,31 +99,8 @@ namespace DLInventoryApp.Controllers
                 var fieldsMeta = await _context.CustomFields
                     .Where(f => f.InventoryId == inventoryId)
                     .OrderBy(f => f.Order)
-                    .Select(f => new { f.Id, f.Type, f.IsRequired })
+                    .Select(f => new { f.Id, f.Type })
                     .ToListAsync();
-                var errors = new Dictionary<string, string>();
-                foreach (var fm in fieldsMeta)
-                {
-                    if (!fm.IsRequired) continue;
-                    var incoming = req.Fields.FirstOrDefault(x => x.CustomFieldId == fm.Id);
-                    bool missing = fm.Type switch
-                    {
-                        CustomFieldType.SingleLineText or CustomFieldType.MultiLineText
-                            => string.IsNullOrWhiteSpace(incoming?.TextValue),
-                        CustomFieldType.DocumentLink
-                            => string.IsNullOrWhiteSpace(incoming?.LinkValue),
-                        CustomFieldType.Number
-                            => incoming?.NumberValue == null,
-                        CustomFieldType.Boolean
-                            => false,
-
-                        _ => false
-                    };
-                    if (missing)
-                        errors[fm.Id.ToString()] = "Required";
-                }
-                if (errors.Count > 0)
-                    return BadRequest(new { errors });
                 int? sequenceNumber = null;
                 bool auto = string.IsNullOrWhiteSpace(req.CustomId);
                 int attempts = auto ? 3 : 1;
@@ -308,34 +285,6 @@ namespace DLInventoryApp.Controllers
             if (!canEditItems) return NotFound();
             if (inventoryId != vm.InventoryId) return NotFound();
             if (itemId != vm.ItemId) return NotFound();
-            for (int i = 0; i < vm.Fields.Count; i++)
-            {
-                var f = vm.Fields[i];
-                if (f.IsRequired)
-                {
-                    if (f.Type == CustomFieldType.SingleLineText || f.Type == CustomFieldType.MultiLineText)
-                    {
-                        if (string.IsNullOrWhiteSpace(f.TextValue))
-                        {
-                            ModelState.AddModelError($"Fields[{i}].TextValue", "This field is required.");
-                        }
-                    }
-                    else if (f.Type == CustomFieldType.DocumentLink)
-                    {
-                        if (string.IsNullOrWhiteSpace(f.LinkValue))
-                        {
-                            ModelState.AddModelError($"Fields[{i}].LinkValue", "This field is required.");
-                        }
-                    }
-                    else if (f.Type == CustomFieldType.Number)
-                    {
-                        if (f.NumberValue == null)
-                        {
-                            ModelState.AddModelError($"Fields[{i}].NumberValue", "This field is required.");
-                        }
-                    }
-                }
-            }
             if (!ModelState.IsValid)
             {
                 await FillEditVm(inventoryId, itemId, vm);
@@ -405,8 +354,8 @@ namespace DLInventoryApp.Controllers
             {
                 CustomFieldId = f.Id,
                 Name = f.Name,
-                Type = f.Type,
-                IsRequired = f.IsRequired
+                Description = f.Description,
+                Type = f.Type
             }).ToList();
             vm.InventoryTitle = title ?? "";
         }
@@ -430,12 +379,12 @@ namespace DLInventoryApp.Controllers
                 {
                     CustomFieldId = f.Id,
                     Name = f.Name,
+                    Description = f.Description,
                     Type = f.Type,
                     TextValue = val?.TextValue,
                     NumberValue = val?.NumberValue,
                     LinkValue = val?.LinkValue,
-                    BoolValue = val?.BoolValue ?? false,
-                    IsRequired = f.IsRequired
+                    BoolValue = val?.BoolValue ?? false
                 };
             }).ToList();
             vm.InventoryTitle = title ?? "";

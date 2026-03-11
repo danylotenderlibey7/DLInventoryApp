@@ -4,7 +4,6 @@
 @using System.Linq
 
 <div class="page-header">
-
     <div>
         <h1 class="page-title">My Inventories</h1>
     </div>
@@ -20,8 +19,8 @@
     <div class="my-section">
         <div class="my-section-head">
             <div class="my-section-title">Owned by me</div>
-            <nav class="pager-top my-section-pager" aria-label="Owned inventories pagination">
 
+            <nav class="pager-top my-section-pager" aria-label="Owned inventories pagination">
                 <div class="pager-right">
 
                     <div class="inv-actions">
@@ -69,9 +68,7 @@
                             ›
                         </a>
                     }
-
                 </div>
-
             </nav>
         </div>
 
@@ -84,66 +81,67 @@
         }
         else
         {
-            <div class="inv-table-wrap">
-                <table class="inv-table" id="ownedInventoriesTable">
-                    <thead>
-                        <tr>
-                            <th class="col-check">
-                                <input id="checkAllOwned" type="checkbox" aria-label="Select all inventories" />
-                            </th>
+            <div class="inv-table-wrap inv-table-card my-inv-table-wrap">
+                <div class="inv-table-scroll my-inv-table-scroll">
+                    <table class="inv-table my-inv-table" id="ownedInventoriesTable">
+                        <thead>
+                            <tr>
+                                <th class="col-check">
+                                    <input id="checkAllOwned" type="checkbox" aria-label="Select all inventories" />
+                                </th>
 
-                            <th class="inv-col-title">Inventory</th>
-                            <th class="inv-col-items" align="center">Items</th>
-                            <th class="inv-col-updated" align="center">Last update</th>
-                            <th class="inv-col-cat" align="center">Category</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        @foreach (var inv in Model.My.Items)
-                        {
-                            <tr class="inv-row"
-                                data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })"
-                                data-edit-url="@Url.Action("Edit", "Inventories", new { inventoryId = inv.Id })">
-
-                                <td class="col-check" onclick="event.stopPropagation();">
-                                    <input class="owned-row-check"
-                                           type="checkbox"
-                                           name="inventoryIds"
-                                           value="@inv.Id" />
-                                </td>
-
-                                <td>
-                                    <div class="inv-title">
-                                        @inv.Title
-                                    </div>
-                                </td>
-
-                                <td class="inv-items" align="center">
-                                    [@inv.ItemsCount]
-                                </td>
-
-                                <td class="inv-updated" align="center"
-                                    data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
-                                </td>
-
-                                <td class="inv-cat" align="center">
-                                    @(inv.CategoryName ?? "-")
-                                </td>
+                                <th class="inv-col-title">Inventory</th>
+                                <th class="inv-col-items" >Items</th>
+                                <th class="inv-col-updated" >Last update</th>
+                                <th class="inv-col-cat" >Category</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var inv in Model.My.Items)
+                            {
+                                <tr class="inv-row"
+                                    data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })"
+                                    data-edit-url="@Url.Action("Edit", "Inventories", new { inventoryId = inv.Id })">
+
+                                    <td class="col-check"  onclick="event.stopPropagation();">
+                                        <input class="owned-row-check"
+                                               type="checkbox"
+                                               name="inventoryIds"
+                                               value="@inv.Id" />
+                                    </td>
+
+                                    <td>
+                                        <div class="inv-title" align="center">
+                                            @inv.Title
+                                        </div>
+                                    </td>
+
+                                    <td class="inv-items" align="center">
+                                        [@inv.ItemsCount]
+                                    </td>
+
+                                    <td class="inv-updated" align="center"
+                                        data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                                    </td>
+
+                                    <td class="inv-cat" align="center">
+                                        @(inv.CategoryName ?? "-")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         }
     </div>
-
 </form>
-
 
 <div class="my-section">
     <div class="my-section-head">
         <div class="my-section-title">Shared with me</div>
+
         @if (Model.Shared.TotalPages > 1)
         {
             <div class="pager-top my-section-pager" aria-label="Shared inventories pagination">
@@ -181,49 +179,62 @@
     }
     else
     {
-        <div class="inv-table-wrap">
-            <table class="inv-table">
-                <thead>
-                    <tr>
-                        <th class="inv-col-title">Inventory</th>
-                        <th class="inv-col-items" align="center">Items</th>
-                        <th class="inv-col-owner" align="center">Owner</th>
-                        <th class="inv-col-updated" align="center">Last update</th>
-                        <th class="inv-col-cat" align="center">Category</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var inv in Model.Shared.Items)
-                    {
-                        <tr class="inv-row"
-                            data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
-
-                            <td>
-                                <div class="inv-title">
-                                    @inv.Title
-                                </div>
-                            </td>
-
-                            <td class="inv-items" align="center">
-                                [@inv.ItemsCount]
-                            </td>
-
-                            <td class="inv-owner" align="center">
-                                @(inv.OwnerEmail ?? "-")
-                            </td>
-
-                            <td class="inv-updated" align="center"
-                                data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
-                            </td>
-
-                            <td class="inv-cat" align="center">
-                                @(inv.CategoryName ?? "-")
-                            </td>
+        <div class="inv-table-wrap inv-table-card my-inv-table-wrap">
+            <div class="inv-table-scroll my-inv-table-scroll">
+                <table class="inv-table my-inv-table">
+                    <thead>
+                        <tr>
+                            <th class="inv-col-title">Inventory</th>
+                            <th class="inv-col-items" align="center">Items</th>
+                            <th class="inv-col-owner" align="center">Owner</th>
+                            <th class="inv-col-updated" align="center">Last update</th>
+                            <th class="inv-col-cat" align="center">Category</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var inv in Model.Shared.Items)
+                        {
+                            <tr class="inv-row" 
+                                data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
+
+                                <td class="shared-inv-title-cell">
+                                    <div class="inv-title shared-inv-title">
+                                        @inv.Title
+                                    </div>
+                                </td>
+
+                                <td class="inv-items" align="center">
+                                    [@inv.ItemsCount]
+                                </td>
+
+                                <td class="inv-owner" align="center">
+                                    @if (!string.IsNullOrWhiteSpace(inv.OwnerId))
+                                    {
+                                        <a class="inv-owner-link"
+                                           href="/profile/@inv.OwnerId"
+                                           onclick="event.stopPropagation();">
+                                            @(inv.OwnerUserName  ?? "User")
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        @(inv.OwnerUserName ?? "User")
+                                    }
+                                </td>
+
+                                <td class="inv-updated" align="center"
+                                    data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                                </td>
+
+                                <td class="inv-cat" align="center">
+                                    @(inv.CategoryName ?? "-")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
@@ -299,7 +310,18 @@
             }
 
             document.querySelectorAll(".inv-updated").forEach(el => {
-                const date = new Date(el.dataset.date);
+                const raw = el.dataset.date;
+                if (!raw) {
+                    el.textContent = "-";
+                    return;
+                }
+
+                const date = new Date(raw);
+                if (isNaN(date.getTime())) {
+                    el.textContent = "-";
+                    return;
+                }
+
                 const now = new Date();
                 const diff = (now - date) / 1000;
 

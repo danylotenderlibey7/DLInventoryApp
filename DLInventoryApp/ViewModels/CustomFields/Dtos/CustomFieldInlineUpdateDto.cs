@@ -3,8 +3,8 @@
     public class CustomFieldInlineUpdateDto
     {
         public string? Name { get; set; }
+        public string? Description { get; set; }
         public int Type { get; set; }
-        public bool IsRequired { get; set; }
-        public bool IsUnique { get; set; }
+        public bool ShowInTable { get; set; }
     }
 }

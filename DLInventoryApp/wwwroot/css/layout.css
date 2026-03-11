@@ -329,23 +329,6 @@ body[data-theme="dark"] .app-shell.sidebar-collapsed .sidebar-account-link:hover
             background: rgba(111, 45, 40, .95);
         }
 
-.page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 18px;
-}
-
-.page-title {
-    font-size: 32px;
-    line-height: 1.1;
-    margin: 0;
-    font-weight: 700;
-}
-
 .page-subtitle {
     margin: 6px 0 0;
     opacity: .75;

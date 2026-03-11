@@ -5,69 +5,127 @@
     ViewData["Title"] = "Search";
 }
 
-<h1>Search</h1>
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Search</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <div class="page-subtitle">
+                Results for: <span class="page-meta">@Model.Query</span>
+            </div>
+        }
+    </div>
+</div>
 
 @if (string.IsNullOrWhiteSpace(Model.Query))
 {
-    <p>Enter a query in the search box.</p>
+    <div class="empty-state">
+        <div class="empty-title">Enter a search query</div>
+        <div class="empty-sub">Use the search box in the sidebar to find inventories and items.</div>
+    </div>
     return;
 }
 
-<p>Query: <strong>@Model.Query</strong></p>
+<div class="my-section">
+    <div class="my-section-head">
+        <div class="my-section-title">Inventories</div>
+    </div>
 
-<hr />
+    @if (Model.Inventories == null || Model.Inventories.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-title">No inventories found</div>
+            <div class="empty-sub">Try another query.</div>
+        </div>
+    }
+    else
+    {
+        <div class="inv-table-wrap">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th class="inv-col-title">Inventory</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in Model.Inventories)
+                    {
+                        <tr class="inv-row"
+                            data-href="@Url.Action("Details", "Inventories", new { id = inv.Id, tab = "items" })">
+                            <td>
+                                <div class="inv-title">@inv.Title</div>
+                            </td>
+                            <td class="col-muted">
+                                @(string.IsNullOrWhiteSpace(inv.Snippet) ? "-" : inv.Snippet)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
-<h2>Inventories (@Model.Inventories.Count)</h2>
+<div class="my-section">
+    <div class="my-section-head">
+        <div class="my-section-title">Items</div>
+    </div>
 
-@if (Model.Inventories.Count == 0)
-{
-    <p>No inventories found.</p>
-}
-else
-{
-    <ul>
-        @foreach (var inv in Model.Inventories)
-        {
-            <li>
-                <div>
-                    <a asp-controller="Inventories"
-                       asp-action="Details"
-                       asp-route-id="@inv.Id"
-                       asp-route-tab="items">
-                        @inv.Title
-                    </a>
-                </div>
-                <div>@inv.Snippet</div>
-            </li>
-        }
-    </ul>
-}
+    @if (Model.Items == null || Model.Items.Count == 0)
+    {
+        <div class="empty-state">
+            <div class="empty-title">No items found</div>
+            <div class="empty-sub">Try another query.</div>
+        </div>
+    }
+    else
+    {
+        <div class="inv-table-wrap">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th>Custom ID</th>
+                        <th>Inventory</th>
+                        <th>Snippet</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr class="inv-row"
+                            data-href="@Url.Action("Details", "Inventories", new { id = item.InventoryId, tab = "items" })">
+                            <td>
+                                <div class="inv-title">@item.CustomId</div>
+                            </td>
+                            <td class="col-muted">
+                                @(string.IsNullOrWhiteSpace(item.InventoryTitle) ? "-" : item.InventoryTitle)
+                            </td>
+                            <td class="col-muted">
+                                @(string.IsNullOrWhiteSpace(item.Snippet) ? "-" : item.Snippet)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
 
-<hr />
+@section Scripts {
+    <script>
+        (function () {
+            document.addEventListener("click", function (e) {
+                const row = e.target.closest(".inv-row");
+                if (!row) return;
 
-<h2>Items (@Model.Items.Count)</h2>
+                if (e.target.closest("a")) return;
+                if (e.target.closest("button")) return;
+                if (e.target.closest("input")) return;
 
-@if (Model.Items.Count == 0)
-{
-    <p>No items found.</p>
-}
-else
-{
-    <ul>
-        @foreach (var item in Model.Items)
-        {
-            <li>
-                <div>
-                    <a asp-controller="Inventories"
-                       asp-action="Details"
-                       asp-route-id="@item.InventoryId"
-                       asp-route-tab="items">
-                        @item.CustomId
-                    </a>
-                    <span> — in inventory: @item.InventoryTitle</span>
-                </div>
-                <div>@item.Snippet</div>
-            </li>
-        }
-    </ul>
+                const href = row.dataset.href;
+                if (href) window.location.href = href;
+            });
+        })();
+    </script>
 }

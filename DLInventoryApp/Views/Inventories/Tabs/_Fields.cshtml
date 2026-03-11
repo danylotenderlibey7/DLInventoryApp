@@ -78,22 +78,18 @@
                                                     }
                                                 </select>
                                             </div>
+                                            <textarea class="input-field field-description"
+                                                      data-field="description"
+                                                      placeholder="Description (optional)"
+                                            @(canManage ? "" : "disabled")>@f.Description</textarea>
 
                                             <div class="field-flags">
                                                 <label class="fields3-flag">
                                                     <input type="checkbox"
-                                                           data-field="required"
-                                                    @(f.IsRequired ? "checked" : "")
+                                                           data-field="showInTable"
+                                                    @(f.ShowInTable ? "checked" : "")
                                                     @(canManage ? "" : "disabled") />
-                                                    Required
-                                                </label>
-
-                                                <label class="fields3-flag">
-                                                    <input type="checkbox"
-                                                           data-field="unique"
-                                                    @(f.IsUnique ? "checked" : "")
-                                                    @(canManage ? "" : "disabled") />
-                                                    Unique
+                                                    Show in table
                                                 </label>
 
                                                 <div class="save-text field-save-state" data-save-state="@f.Id"></div>
@@ -213,14 +209,14 @@
 
             const nameEl = row.querySelector('[data-field="name"]');
             const typeEl = row.querySelector('[data-field="type"]');
-            const reqEl = row.querySelector('[data-field="required"]');
-            const uniqEl = row.querySelector('[data-field="unique"]');
+            const descEl = row.querySelector('[data-field="description"]');
+            const showEl = row.querySelector('[data-field="showInTable"]');
 
             const dto = {
-                name: nameEl ? nameEl.value : "",
-                type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
-                isRequired: reqEl ? !!reqEl.checked : false,
-                isUnique: uniqEl ? !!uniqEl.checked : false
+              name: nameEl ? nameEl.value : "",
+              type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
+              description: descEl ? descEl.value : "",
+              showInTable: showEl ? !!showEl.checked : false
             };
 
             setRowState(rowId, "Saving…", false);
@@ -309,24 +305,22 @@
                         </select>
                     </div>
 
+                    <textarea class="input-field field-description"
+                      data-field="description"
+                      placeholder="Description (optional)"
+                      ${canWrite ? "" : "disabled"}>${escapeHtml(field.description || "")}
+                    </textarea>
+
                     <div class="field-flags">
-                        <label class="fields3-flag">
-                            <input type="checkbox"
-                                   data-field="required"
-                                   ${field.isRequired ? "checked" : ""}
-                                   ${canWrite ? "" : "disabled"} />
-                            Required
-                        </label>
+                      <label class="fields3-flag">
+                        <input type="checkbox"
+                               data-field="showInTable"
+                               ${field.showInTable ? "checked" : ""}
+                               ${canWrite ? "" : "disabled"} />
+                        Show in table
+                      </label>
 
-                        <label class="fields3-flag">
-                            <input type="checkbox"
-                                   data-field="unique"
-                                   ${field.isUnique ? "checked" : ""}
-                                   ${canWrite ? "" : "disabled"} />
-                            Unique
-                        </label>
-
-                        <div class="save-text field-save-state" data-save-state="${field.id}"></div>
+                      <div class="save-text field-save-state" data-save-state="${field.id}"></div>
                     </div>
                 </div>
             `;

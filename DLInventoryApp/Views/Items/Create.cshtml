@@ -73,7 +73,12 @@
                         <label class="inv-settings-label">
                             @Model.Fields[i].Name
                         </label>
-
+                        @if (!string.IsNullOrWhiteSpace(Model.Fields[i].Description))
+                        {
+                            <div class="item-field-hint">
+                                @Model.Fields[i].Description
+                            </div>
+                        }
                         @if (Model.Fields[i].Type == CustomFieldType.SingleLineText)
                         {
                             <input asp-for="Fields[@i].TextValue"

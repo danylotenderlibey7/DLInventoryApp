@@ -1,5 +1,4 @@
-﻿
-.access-mode-inline {
+﻿.access-mode-inline {
     display: flex;
     align-items: center;
     gap: 14px;
@@ -38,10 +37,8 @@
 
 .access-main-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 22px;
-    align-items: start;
-    min-height: 0;
+    grid-template-columns: 0.55fr 0.45fr;
+    gap: 24px;
 }
 
 .access-left {
@@ -52,7 +49,7 @@
 }
 
 .access-right {
-    min-width: 0;
+    min-width: 320px;
     width: 100%;
 }
 
@@ -79,7 +76,6 @@
     height: 390px;
     min-height: 390px;
     max-height: 390px;
-    max-width: 920px;
 }
 
 .access-table-scroll {
@@ -92,6 +88,35 @@
     table-layout: fixed;
 }
 
+    .access-users-table .col-check {
+        width: 52px;
+        min-width: 52px;
+        max-width: 52px;
+        text-align: center;
+    }
+
+    .access-users-table th:not(.col-check),
+    .access-users-table td:not(.col-check) {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .access-users-table th.col-check,
+    .access-users-table td.col-check {
+        text-align: left;
+        width: 52px;
+        min-width: 52px;
+        max-width: 52px;
+        padding-left: 14px;
+    }
+
+    .access-users-table .col-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        transform: none;
+        vertical-align: middle;
+    }
     .access-users-table th:nth-child(1),
     .access-users-table td:nth-child(1) {
         width: 52px;
@@ -99,29 +124,71 @@
 
     .access-users-table th:nth-child(2),
     .access-users-table td:nth-child(2) {
-        width: 42%;
+        width: 40%;
     }
 
     .access-users-table th:nth-child(3),
     .access-users-table td:nth-child(3) {
-        width: 58%;
+        width: 60%;
     }
 
-.access-user-name {
-    font-size: 15px;
-    font-weight: 700;
+    .access-users-table thead th {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+        .access-users-table thead th:first-child {
+            text-align: center;
+        }
+
+    .access-users-table tbody td {
+        vertical-align: middle;
+    }
+
+.access-user-name-cell {
+    text-align: center;
 }
 
 .access-user-email {
+    text-align: center;
     color: var(--text-main);
     opacity: .9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.access-user-link {
+    display: inline-block;
+    max-width: 100%;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .access-user-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+
+.col-check input[type="checkbox"],
+.access-users-table .col-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    vertical-align: middle;
+    transform: none;
 }
 
 .access-side-card {
     border: 1px solid var(--border);
     border-radius: 16px;
     background: color-mix(in srgb, var(--card) 92%, transparent);
-    padding: 16px;
+    padding: 20px 22px;
     width: 100%;
 }
 
@@ -222,5 +289,6 @@
         height: 320px;
         min-height: 320px;
         max-height: 320px;
+        max-width: 100%;
     }
 }

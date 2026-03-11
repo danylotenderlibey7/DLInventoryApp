@@ -1,8 +1,8 @@
-﻿
-.admin-users-actions {
+﻿.admin-users-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    flex: 0 0 auto;
 }
 
 .admin-users-table-wrap {
@@ -26,21 +26,71 @@
 
     .admin-users-table th:nth-child(2),
     .admin-users-table td:nth-child(2) {
-        width: 58%;
+        width: 24%;
     }
 
     .admin-users-table th:nth-child(3),
-    .admin-users-table td:nth-child(3),
+    .admin-users-table td:nth-child(3) {
+        width: 30%;
+    }
+
     .admin-users-table th:nth-child(4),
     .admin-users-table td:nth-child(4),
     .admin-users-table th:nth-child(5),
-    .admin-users-table td:nth-child(5) {
-        width: 14%;
+    .admin-users-table td:nth-child(5),
+    .admin-users-table th:nth-child(6),
+    .admin-users-table td:nth-child(6) {
+        width: 12%;
+    }
+
+    .admin-users-table th:not(.col-check),
+    .admin-users-table td:not(.col-check) {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .admin-users-table th.col-check,
+    .admin-users-table td.col-check {
+        width: 52px;
+        min-width: 52px;
+        max-width: 52px;
+        text-align: left;
+        padding-left: 14px;
+        padding-right: 8px;
+        vertical-align: middle;
+    }
+
+    .admin-users-table .col-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
+        vertical-align: middle;
+        transform: none;
+    }
+
+.admin-user-name {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-user-link {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+    .admin-user-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
     }
 
 .admin-user-email {
     font-size: 15px;
     font-weight: 700;
+    overflow-wrap: anywhere;
     word-break: break-word;
 }
 
@@ -62,8 +112,6 @@
     line-height: 1;
 }
 
-
-
 @media (max-width: 900px) {
     .my-table-frame {
         height: 260px;
@@ -76,6 +124,6 @@
     }
 
     .admin-users-table {
-        min-width: 760px;
+        min-width: 900px;
     }
 }

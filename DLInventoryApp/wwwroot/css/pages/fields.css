@@ -205,3 +205,10 @@
             max-width: none;
         }
 }
+
+.field-description {
+    width: 100%;
+    margin-top: 6px;
+    font-size: 13px;
+    opacity: .85;
+}

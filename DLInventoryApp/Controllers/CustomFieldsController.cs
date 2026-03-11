@@ -42,8 +42,10 @@ namespace DLInventoryApp.Controllers
                 {
                     Id = f.Id,
                     Name = f.Name,
+                    Description = f.Description,
                     Type = f.Type,
-                    Order = f.Order
+                    Order = f.Order,
+                    ShowInTable = f.ShowInTable
                 })
                 .OrderBy(f=>f.Order)
                 .ToListAsync();
@@ -106,10 +108,10 @@ namespace DLInventoryApp.Controllers
             {
                 InventoryId = inventoryId,
                 Name = (vm.Name ?? string.Empty).Trim(),
+                Description = string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim(),
                 Type = vm.Type,
                 Order = nextOrder,
-                IsRequired = vm.IsRequired,
-                IsUnique = vm.IsUnique
+                ShowInTable = vm.ShowInTable
             };
             _context.CustomFields.Add(field);
             try
@@ -164,10 +166,10 @@ namespace DLInventoryApp.Controllers
             {
                 InventoryId = inventoryId,
                 Name = newName,
+                Description = null,
                 Type = defaultType,
                 Order = maxOrder + 1,
-                IsRequired = false,
-                IsUnique = false
+                ShowInTable = true
             };
             _context.CustomFields.Add(field);
             try
@@ -186,10 +188,10 @@ namespace DLInventoryApp.Controllers
                 {
                     id = field.Id,
                     name = field.Name,
+                    description = field.Description,
                     type = (int)field.Type,
                     order = field.Order,
-                    isRequired = field.IsRequired,
-                    isUnique = field.IsUnique
+                    showInTable = field.ShowInTable
                 }
             });
         }
@@ -230,9 +232,9 @@ namespace DLInventoryApp.Controllers
                 }
             }
             field.Name = name;
+            field.Description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
             field.Type = newType;
-            field.IsRequired = dto.IsRequired;
-            field.IsUnique = dto.IsUnique;
+            field.ShowInTable = dto.ShowInTable;
             try
             {
                 await _context.SaveChangesAsync();

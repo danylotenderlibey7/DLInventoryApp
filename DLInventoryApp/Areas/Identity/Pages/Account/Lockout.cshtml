@@ -1,0 +1,63 @@
+﻿@page
+@model LockoutModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Locked out";
+}
+
+<div class="workspace-inner auth-wide-page">
+    <section class="auth-wide-card">
+        <div class="auth-wide-grid">
+
+            <div class="auth-side">
+                <h1 class="auth-side-title">Account locked</h1>
+
+                <p class="auth-side-text">
+                    Too many unsuccessful attempts were detected for this account.
+                </p>
+
+                <div class="auth-side-actions">
+                    <a class="auth-action-card" asp-page="./Login">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <div>
+                            <div class="auth-action-title">Back to login</div>
+                            <div class="auth-action-text">Try signing in again later.</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card" asp-page="./ForgotPassword">
+                        <i class="bi bi-key"></i>
+                        <div>
+                            <div class="auth-action-title">Forgot password</div>
+                            <div class="auth-action-text">Reset access to your account.</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card" asp-page="./ResendEmailConfirmation">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <div class="auth-action-title">Resend confirmation</div>
+                            <div class="auth-action-text">Send confirmation email again.</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="auth-form-side">
+                <div class="auth-form-head">
+                    <h2 class="auth-form-title">Locked out</h2>
+                    <p class="auth-form-subtitle">
+                        This account has been temporarily locked. Please try again later.
+                    </p>
+                </div>
+
+                <div class="auth-form-block">
+                    <a class="app-btn app-btn-primary auth-submit" asp-page="./Login">
+                        Return to login
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>

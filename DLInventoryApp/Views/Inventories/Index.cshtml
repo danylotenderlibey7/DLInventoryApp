@@ -91,66 +91,65 @@
 else
 {
 
-    <div class="inv-table-wrap">
+    <div class="inv-table-wrap inv-table-card">
+        <div class="inv-table-scroll inv-main-table-scroll">
+            <table class="inv-table">
 
-        <table class="inv-table">
-
-            <thead>
-
-                <tr>
-
-                    <th class="inv-col-title">Inventory</th>
-                    <th class="inv-col-items">Items</th>
-                    <th class="inv-col-owner">Owner</th>
-                    <th class="inv-col-updated">Last update</th>
-                    <th class="inv-col-cat">Category</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                @foreach (var inv in Model.Items)
-                {
-
-                    <tr class="inv-row"
-                        data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
-
-                        <td>
-
-                            <div class="inv-title">
-                                @inv.Title
-                            </div>
-
-                        </td>
-
-                        <td class="inv-items">
-                            [@inv.ItemsCount]
-                        </td>
-
-                        <td class="inv-owner">
-                            @(inv.OwnerEmail ?? "-")
-                        </td>
-
-                        <td class="inv-updated">
-                            data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
-                        </td>
-
-                        <td class="inv-cat">
-                            @(inv.CategoryName ?? "-")
-                        </td>
-
+                <thead>
+                    <tr>
+                        <th class="inv-col-title">Inventory</th>
+                        <th class="inv-col-items">Items</th>
+                        <th class="inv-col-owner">Owner</th>
+                        <th class="inv-col-updated">Last update</th>
+                        <th class="inv-col-cat">Category</th>
                     </tr>
+                </thead>
 
-                }
+                <tbody>
+                    @foreach (var inv in Model.Items)
+                    {
+                        <tr class="inv-row"
+                            data-href="@Url.Action("Details", "Inventories", new { id = inv.Id })">
 
-            </tbody>
+                            <td>
+                                <div class="inv-title">
+                                    @inv.Title
+                                </div>
+                            </td>
 
-        </table>
+                            <td class="inv-items">
+                                [@inv.ItemsCount]
+                            </td>
 
+                            <td class="inv-owner">
+                                @if (!string.IsNullOrWhiteSpace(inv.OwnerId))
+                                {
+                                    <a class="inv-owner-link"
+                                       href="/profile/@inv.OwnerId"
+                                       onclick="event.stopPropagation();">
+                                        @(inv.OwnerUserName ?? "User")
+                                    </a>
+                                }
+                                else
+                                {
+                                    @(inv.OwnerUserName ?? "User")
+                                }
+                            </td>
+
+                            <td class="inv-updated"
+                                data-date="@((inv.UpdatedAt ?? inv.CreatedAt).ToString("o"))">
+                            </td>
+
+                            <td class="inv-cat">
+                                @(inv.CategoryName ?? "-")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
     </div>
-
 }
 
 

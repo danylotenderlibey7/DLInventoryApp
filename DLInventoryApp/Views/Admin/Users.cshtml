@@ -8,7 +8,7 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Users</h1>
+        <h1 class="page-title">User management</h1>
     </div>
 </div>
 
@@ -18,7 +18,6 @@
     <input type="hidden" name="pageSize" value="@Model.PageSize" />
     <div class="my-section">
         <div class="my-section-head">
-            <div class="my-section-title">User management</div>
 
             <nav class="pager-top my-section-pager" aria-label="Users pagination">
                 <div class="pager-right">
@@ -59,7 +58,7 @@
                         <button type="submit"
                                 formaction="@Url.Action("RemoveAdmin", "Admin")"
                                 id="removeAdminBtn"
-                                class="app-btn app-btn-danger app-btn-icon"
+                                class="app-btn app-btn-primary app-btn-icon"
                                 title="Remove admin role">
                             <i class="bi bi-shield-minus"></i>
                         </button>
@@ -74,9 +73,7 @@
                             ‹
                         </a>
 
-                        <span class="pager-info">
-                            @Model.Page / @Model.TotalPages
-                        </span>
+                        <span class="pager-info">@Model.Page / @Model.TotalPages</span>
 
                         <a class="pager-btn @(Model.HasNextPage ? "" : "disabled")"
                            asp-action="Users"
@@ -107,10 +104,11 @@
                                 <th class="col-check">
                                     <input type="checkbox" id="selectAll" aria-label="Select all users" />
                                 </th>
-                                <th>Email</th>
-                                <th align="center">Confirmed</th>
-                                <th align="center">Blocked</th>
-                                <th align="center">Role</th>
+                                <th class="col-username">User name</th>
+                                <th class="col-email">Email</th>
+                                <th class="col-status ta-center">Confirmed</th>
+                                <th class="col-status ta-center">Blocked</th>
+                                <th class="col-status ta-center">Role</th>
                             </tr>
                         </thead>
 
@@ -125,27 +123,35 @@
                                                class="user-checkbox" />
                                     </td>
 
-                                    <td>
+                                    <td class="col-username">
+                                        <div class="inv-title admin-user-name">
+                                            <a class="admin-user-link" href="/profile/@user.Id">
+                                                @user.UserName
+                                            </a>
+                                        </div>
+                                    </td>
+
+                                    <td class="col-email">
                                         <div class="inv-title admin-user-email">
                                             @user.Email
                                         </div>
                                     </td>
 
-                                    <td align="center">
+                                    <td class="col-status ta-center">
                                         <span class="admin-state-icon"
                                               title="@(user.EmailConfirmed ? "Email confirmed" : "Email not confirmed")">
                                             <i class="bi @(user.EmailConfirmed ? "bi-check-lg" : "bi-x-lg")"></i>
                                         </span>
                                     </td>
 
-                                    <td align="center">
+                                    <td class="col-status ta-center">
                                         <span class="admin-state-icon"
                                               title="@(user.IsBlocked ? "Blocked" : "Active")">
                                             <i class="bi @(user.IsBlocked ? "bi-lock-fill" : "bi-unlock")"></i>
                                         </span>
                                     </td>
 
-                                    <td align="center">
+                                    <td class="col-status ta-center">
                                         <span class="admin-state-icon"
                                               title="@(user.IsAdmin ? "Admin" : "User")">
                                             <i class="bi @(user.IsAdmin ? "bi-shield-fill-check" : "bi-person")"></i>

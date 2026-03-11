@@ -75,7 +75,7 @@
                 }
                 else
                 {
-                    <table class="inv-table"
+                    <table class="inv-table items-table"
                            id="itemsTable"
                            data-inventory-id="@Model.InventoryId"
                            data-can-write="@(Model.CanEditItems ? "1" : "0")"
@@ -97,6 +97,8 @@
                                     <th data-col-key="f:@col.Id">@col.Name</th>
                                 }
 
+                                <th data-col-key="__createdBy">Created by</th>
+                                <th data-col-key="__createdAt">Created</th>
                                 <th class="col-likes" data-col-key="__likes">Likes</th>
                             </tr>
                         </thead>
@@ -130,6 +132,13 @@
 
                                         <td class="cell-readonly">@display</td>
                                     }
+
+                                    <td class="cell-readonly">@(string.IsNullOrWhiteSpace(it.CreatedByName) ? "-" : it.CreatedByName)</td>
+
+                                    <td class="cell-readonly"
+                                        data-date="@it.CreatedAt.ToString("o")">
+                                        @it.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                    </td>
 
                                     <td class="col-likes likes-cell"
                                         data-liked="@(it.IsLikedByMe ? "1" : "0")">
@@ -354,6 +363,37 @@
           if (url) window.location.href = url;
         });
       }
+
+      table.querySelectorAll('[data-date]').forEach(el => {
+            const raw = el.dataset.date;
+            if (!raw) return;
+
+            const date = new Date(raw);
+            if (isNaN(date.getTime())) return;
+
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+
+            let text = "";
+
+            if (diff < 60) {
+                text = "just now";
+            } else if (diff < 3600) {
+                const m = Math.floor(diff / 60);
+                text = m + " min ago";
+            } else if (diff < 86400) {
+                const h = Math.floor(diff / 3600);
+                text = h + " hour" + (h > 1 ? "s" : "") + " ago";
+            } else if (diff < 604800) {
+                const d = Math.floor(diff / 86400);
+                text = d + " day" + (d > 1 ? "s" : "") + " ago";
+            } else {
+                const w = Math.floor(diff / 604800);
+                text = w + " week" + (w > 1 ? "s" : "") + " ago";
+            }
+
+            el.textContent = text;
+        });
 
       syncCheckAll();
       syncButtons();

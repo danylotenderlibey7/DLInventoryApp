@@ -1,0 +1,64 @@
+﻿@model ErrorViewModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Error";
+}
+
+<div class="workspace-inner auth-wide-page">
+    <section class="auth-wide-card">
+        <div class="auth-wide-grid">
+
+            <div class="auth-side">
+
+                <h1 class="auth-side-title">Something went wrong</h1>
+
+                <p class="auth-side-text">
+                    An error occurred while processing your request.
+                    Please try again or return to the main page.
+                </p>
+
+                <div class="auth-side-actions">
+
+                    <a class="auth-action-card"
+                       asp-controller="Inventories"
+                       asp-action="Index">
+                        <i class="bi bi-house"></i>
+                        <div>
+                            <div class="auth-action-title">Go to homepage</div>
+                            <div class="auth-action-text">Return to the main page</div>
+                        </div>
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="auth-form-side">
+
+                <div class="auth-form-head">
+                    <h2 class="auth-form-title">Error</h2>
+                    <p class="auth-form-subtitle">
+                        The request could not be processed.
+                    </p>
+                </div>
+
+                <div class="auth-form-block">
+
+                    @if (Model?.ShowRequestId == true)
+                    {
+                        <div class="auth-validation">
+                            Request ID: <code>@Model.RequestId</code>
+                        </div>
+                    }
+
+                    <p class="auth-side-text" style="margin-top:12px;">
+                        If the problem persists, please try again later.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+</div>

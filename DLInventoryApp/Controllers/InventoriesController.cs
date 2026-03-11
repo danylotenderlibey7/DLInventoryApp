@@ -53,10 +53,10 @@ namespace DLInventoryApp.Controllers
             _itemsTabBuilder = itemsTabBuilder;
         }
         [AllowAnonymous]
-        public async Task<IActionResult> Index(string? tag, string view = "latest", int page = 1, int pageSize = 5)
+        public async Task<IActionResult> Index(string? tag, string view = "latest", int page = 1, int pageSize = 6)
         {
             page = page < 1 ? 1 : page;
-            pageSize = pageSize is < 5 or > 50 ? 10 : pageSize;
+            pageSize = pageSize is < 6 or > 50 ? 10 : pageSize;
             var query = _context.Inventories.AsQueryable();
             if (!string.IsNullOrWhiteSpace(tag))
             {
@@ -89,7 +89,8 @@ namespace DLInventoryApp.Controllers
                 {
                     Id = inv.Id,
                     Title = inv.Title,
-                    OwnerEmail = inv.Owner.Email,
+                    OwnerId = inv.OwnerId,
+                    OwnerUserName = inv.Owner.UserName,
                     CreatedAt = inv.CreatedAt,
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
@@ -169,7 +170,8 @@ namespace DLInventoryApp.Controllers
                     Id = inv.Id,
                     Title = inv.Title,
                     IsPublic = inv.IsPublic,
-                    OwnerEmail = inv.Owner.Email,
+                    OwnerId = inv.OwnerId,
+                    OwnerUserName = inv.Owner.UserName,
                     CreatedAt = inv.CreatedAt,
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),

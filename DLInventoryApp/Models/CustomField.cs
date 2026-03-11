@@ -9,12 +9,13 @@ namespace DLInventoryApp.Models
         public Inventory Inventory { get; set; } = null!;
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; } = null!;
+        public string Name { get; set; } = null!; 
+        [MaxLength(255)]
+        public string? Description { get; set; }
         public CustomFieldType Type { get; set; }
         [Range(0, int.MaxValue)]
         public int Order { get; set; }
-        public bool IsRequired { get; set; }
-        public bool IsUnique { get; set; }
+        public bool ShowInTable { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
     }
 }

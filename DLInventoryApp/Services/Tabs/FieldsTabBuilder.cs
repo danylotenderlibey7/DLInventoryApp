@@ -20,10 +20,10 @@ namespace DLInventoryApp.Services.Tabs
                 {
                     Id = f.Id,
                     Name = f.Name,
+                    Description = f.Description,
                     Type = f.Type,
                     Order = f.Order,
-                    IsRequired = f.IsRequired,
-                    IsUnique = f.IsUnique
+                    ShowInTable = f.ShowInTable
                 }).ToListAsync();
             return new InventoryFieldsVm
             {

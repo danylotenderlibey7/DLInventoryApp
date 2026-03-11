@@ -14,19 +14,19 @@
 <div class="chat-feed">
 
     <div class="duo-layout cid-layout">
-        <div class="duo-top">
-            <div class="duo-preview-line">
-                <span class="duo-preview-label">Example:</span>
-                <span id="cidPreview" class="duo-preview-value">@Model.Preview</span>
-            </div>
-        </div>
+        
 
         <div class="duo-grid cid-grid">
 
             <div class="duo-left cid-left">
                 <div class="card-elements cid-card">
                     <div class="card-elements-head">
-                        <div class="card-elements-title">Elements</div>
+                        <div class="duo-top">
+                            <div class="duo-preview-line">
+                                <span class="duo-preview-label">Example:</span>
+                                <span id="cidPreview" class="duo-preview-value">@Model.Preview</span>
+                            </div>
+                        </div>
 
                     @if (Model.CanManage)
                     {

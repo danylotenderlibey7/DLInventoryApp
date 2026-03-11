@@ -23,6 +23,7 @@ namespace DLInventoryApp.Services.Tabs
                 {
                     Id = it.Id,
                     CustomId = it.CustomId,
+                    CreatedByName = it.CreatedBy.UserName ?? "User",
                     CreatedAt = it.CreatedAt,
                     UpdatedAt = it.UpdatedAt,
                     Version = it.Version
@@ -30,15 +31,15 @@ namespace DLInventoryApp.Services.Tabs
                 .OrderByDescending(vm => vm.UpdatedAt ?? vm.CreatedAt)
                 .ToListAsync();
             var cols = await _context.CustomFields
-                .Where(f => f.InventoryId == inventoryId)
+                .Where(f => f.InventoryId == inventoryId && f.ShowInTable)
                 .OrderBy(f => f.Order)
                 .Select(f => new CustomFieldColumnVm
                 {
                     Id = f.Id,
                     Name = f.Name,
+                    Description = f.Description,
                     Order = f.Order,
-                    IsRequired = f.IsRequired,
-                    IsUnique = f.IsUnique,
+                    ShowInTable = f.ShowInTable,
                     Type = f.Type
                 }).ToListAsync();
             var itemIds = items.Select(x => x.Id).ToList();

@@ -1,0 +1,62 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Register confirmation";
+}
+
+<div class="workspace-inner auth-wide-page">
+    <section class="auth-wide-card">
+        <div class="auth-wide-grid">
+
+            <div class="auth-side">
+                <h1 class="auth-side-title">Account created</h1>
+
+                <p class="auth-side-text">
+                    Your account has been created successfully.
+                    We sent a confirmation link to your email.
+                </p>
+
+                <div class="auth-side-actions">
+
+                    <a class="auth-action-card"
+                       asp-page="./Login">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <div>
+                            <div class="auth-action-title">Go to login</div>
+                            <div class="auth-action-text">Sign in after confirming email</div>
+                        </div>
+                    </a>
+
+                    <a class="auth-action-card"
+                       asp-page="./ResendEmailConfirmation">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <div class="auth-action-title">Resend confirmation</div>
+                            <div class="auth-action-text">Send confirmation email again</div>
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="auth-form-side">
+                <div class="auth-form-head">
+                    <h2 class="auth-form-title">Confirm your email</h2>
+
+                    <p class="auth-form-subtitle">
+                        Please check your email and click the confirmation link to activate your account.
+                    </p>
+                </div>
+
+                <div class="auth-form-block">
+                    <div class="auth-validation">
+                        If you don't see the email, check your spam folder or resend the confirmation.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+</div>
