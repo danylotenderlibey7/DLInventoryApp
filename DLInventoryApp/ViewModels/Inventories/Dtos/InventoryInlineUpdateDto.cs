@@ -4,7 +4,8 @@
     {
         public string? Title { get; set; }
         public string? Description { get; set; }
+        public int? CategoryId { get; set; }
         public bool IsPublic { get; set; }
-        public string? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

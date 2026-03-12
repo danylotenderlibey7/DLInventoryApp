@@ -4,6 +4,6 @@
     {
         public string Field { get; set; } = "";
         public object? Value { get; set; }
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

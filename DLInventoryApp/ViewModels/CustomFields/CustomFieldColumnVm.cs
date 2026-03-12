@@ -10,5 +10,6 @@ namespace DLInventoryApp.ViewModels.CustomFields
         public CustomFieldType Type { get; set; }
         public int Order { get; set; }
         public bool ShowInTable { get; set; }
+        public uint Version { get; set; }
     }
 }

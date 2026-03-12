@@ -10,6 +10,6 @@
         public List<string?> Cells { get; set; } = new(); 
         public int LikesCount { get; set; }
         public bool IsLikedByMe { get; set; }
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

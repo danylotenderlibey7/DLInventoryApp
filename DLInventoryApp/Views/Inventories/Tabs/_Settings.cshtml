@@ -129,7 +129,7 @@
 
         <input type="hidden"
                id="invVersion"
-               value="@Convert.ToBase64String(Model.Version ?? Array.Empty<byte>())" />
+               value="@Model.Version"/>
 
     </div>
 </div>
@@ -229,9 +229,17 @@
           dirtyMeta = false;
           setState("Saved", false);
           setTimeout(() => { if (stateEl && stateEl.textContent === "Saved") setState("", false); }, 900);
-        } catch (e) {
-          setState(e && e.message ? e.message : "Error", true);
-        } finally {
+        }
+          catch (e) {
+          const msg = e && e.message ? e.message : "Error";
+          setState(msg, true);
+
+          if (msg.toLowerCase().includes("refresh")) {
+            dirtyMeta = false;
+            dirtyTags = false;
+          }
+        }
+          finally {
           saving = false;
         }
       }
@@ -259,8 +267,15 @@
           dirtyTags = false;
           setState("Saved", false);
           setTimeout(() => { if (stateEl && stateEl.textContent === "Saved") setState("", false); }, 900);
-        } catch (e) {
-          setState(e && e.message ? e.message : "Error", true);
+            } 
+          catch (e) {
+          const msg = e && e.message ? e.message : "Error";
+          setState(msg, true);
+
+          if (msg.toLowerCase().includes("refresh")) {
+            dirtyMeta = false;
+            dirtyTags = false;
+          }
         } finally {
           saving = false;
         }
@@ -393,10 +408,11 @@
 
       renderTags();
 
-      document.addEventListener("visibilitychange", () => {
+      document.addEventListener("visibilitychange", async () => {
         if (document.visibilityState !== "hidden") return;
-        if (dirtyMeta) saveMeta();
-        if (dirtyTags) saveTags();
+        if (saving) return;
+        if (dirtyMeta) await saveMeta();
+        if (dirtyTags) await saveTags();
       });
     })();
 </script>

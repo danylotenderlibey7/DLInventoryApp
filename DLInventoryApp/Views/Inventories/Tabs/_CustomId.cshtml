@@ -56,17 +56,17 @@
                     {
                             <ul id="customIdList" class="elements-list">
                             @foreach (var el in Model.Elements)
-                            {
-                                    <li class="elements-item" data-id="@el.Id" data-row-id="@el.Id">
+                                {
+                                    <li class="elements-item" data-id="@el.Id" data-row-id="@el.Id" data-version="@el.Version">
                                         <div class="drag-handle" title="Drag">↕</div>
 
                                         <div class="item-main">
                                             <div class="item-line">
                                                 <select class="select-field" data-field="type" @(Model.CanManage ? "" : "disabled")>
-                                                @foreach (var t in Enum.GetValues(typeof(CustomIdElementType)).Cast<CustomIdElementType>())
-                                                {
+                                                    @foreach (var t in Enum.GetValues(typeof(CustomIdElementType)).Cast<CustomIdElementType>())
+                                                    {
                                                         <option value="@((int)t)" selected="@(t == el.Type)">@t</option>
-                                                }
+                                                    }
                                                 </select>
 
                                                 <input class="input-field"
@@ -74,7 +74,9 @@
                                                        value="@(el.Type == CustomIdElementType.FixedText ? (el.Text ?? "") : (el.Format ?? ""))"
                                                        placeholder="—"
                                                        title=""
-                                            @(Model.CanManage ? "" : "disabled") />
+                                                @(Model.CanManage ? "" : "disabled") />
+
+                                                <div class="cid-state" data-save-state="@el.Id"></div>
                                             </div>
                                         </div>
                                     </li>
@@ -202,7 +204,8 @@
         var dto = {
           type: typeInt,
           text: (typeInt === @((int)CustomIdElementType.FixedText)) ? value : "",
-          format: (typeInt === @((int)CustomIdElementType.FixedText)) ? "" : value
+          format: (typeInt === @((int)CustomIdElementType.FixedText)) ? "" : value,
+          version: Number(row.dataset.version || 0)
         };
 
         setRowState(rowId, "Saving…", false);
@@ -217,16 +220,28 @@
             body: JSON.stringify(dto)
           });
 
-          if (!resp.ok) {
-            setRowState(rowId, "Error", true);
-            return;
-          }
+            const text = await resp.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch { }
 
-          var data = await resp.json();
-          setRowState(rowId, "Saved", false);
+            if (!resp.ok) {
+              console.error("CustomId InlineUpdate failed:", resp.status, text);
+              setRowState(rowId, data?.error || `Error ${resp.status}`, true);
+              return;
+            }
 
-          if (previewEl && data.preview) previewEl.textContent = data.preview;
+            if (data && data.version !== undefined) {
+              row.dataset.version = data.version;
+            }
+
+            if (previewEl && data && data.preview) {
+              previewEl.textContent = data.preview;
+            }
+
+            setRowState(rowId, "Saved", false);
+            console.log("CustomId InlineUpdate OK:", data);
         } catch (e) {
+          console.error("CustomId saveRow exception:", e);
           setRowState(rowId, "Error", true);
         }
       }
@@ -321,7 +336,7 @@
         li.className = "elements-item";
         li.setAttribute("data-id", el.id);
         li.setAttribute("data-row-id", el.id);
-
+        li.setAttribute("data-version", el.version || 0);
         li.innerHTML = `
           <div class="drag-handle" title="Drag">↕</div>
           <div class="item-main">
@@ -365,32 +380,49 @@
 
       var sortableList, sortableTrash;
 
-      async function persistReorder() {
-        if (!listEl) return;
+          async function persistReorder() {
+          if (!listEl) return;
 
-        var ids = [];
-        listEl.querySelectorAll('li[data-id]').forEach(function (li) {
-          ids.push(parseInt(li.getAttribute("data-id"), 10));
-        });
-
-        try {
-          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "RequestVerificationToken": getToken()
-            },
-            body: JSON.stringify(ids)
+          var ids = [];
+          listEl.querySelectorAll('li[data-id]').forEach(function (li) {
+            ids.push(parseInt(li.getAttribute("data-id"), 10));
           });
-          if (!resp.ok) return;
 
-          var p = await fetch(`/Inventories/${inventoryId}/CustomId/Preview`);
-          if (p.ok) {
-            var pdata = await p.json();
-            if (previewEl && pdata.preview) previewEl.textContent = pdata.preview;
+          try {
+            var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": getToken()
+              },
+              body: JSON.stringify(ids)
+            });
+
+            const text = await resp.text();
+            let data = null;
+            try { data = JSON.parse(text); } catch {}
+
+            if (!resp.ok) {
+              console.error("Reorder failed:", resp.status, text);
+              return;
+            }
+
+            if (data && data.preview && previewEl) {
+              previewEl.textContent = data.preview;
+            }
+
+            if (data && data.versions) {
+              data.versions.forEach(function (v) {
+                var row = document.querySelector('li[data-row-id="' + v.id + '"]');
+                if (row) {
+                  row.dataset.version = v.version;
+                }
+              });
+            }
+          } catch (e) {
+            console.error("persistReorder exception:", e);
           }
-        } catch (e) { }
-      }
+        }
 
       async function deleteElement(id) {
         try {

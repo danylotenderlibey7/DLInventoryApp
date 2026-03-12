@@ -261,16 +261,13 @@ namespace DLInventoryApp.Controllers
                 .Where(it => it.Id == itemId && it.InventoryId == inventoryId)
                 .SingleOrDefaultAsync();
             if (item == null) return NotFound();
-            await _context.Items
-                .Where(i => i.Id == itemId)
-                .ExecuteUpdateAsync(s => s
-                .SetProperty(i => i.ViewsTotal, i => i.ViewsTotal + 1));
             var vm = new EditItemVm
             {
                 InventoryId = inventoryId,
                 ItemId = itemId,
                 CustomId = item.CustomId,
-                CanEditItems = canEditItems
+                CanEditItems = canEditItems,
+                Version = item.Version
             };
             await FillEditVm(inventoryId, itemId, vm);
             return View(vm);
@@ -293,8 +290,10 @@ namespace DLInventoryApp.Controllers
             var item = await _context.Items
                 .Where(it => it.Id == itemId && it.InventoryId == inventoryId)
                 .SingleOrDefaultAsync();
-            if (item == null) return NotFound();
-            item.CustomId = vm.CustomId;
+            if (item == null) return NotFound(); 
+            _context.Entry(item).Property(x => x.Version).OriginalValue = vm.Version;
+            item.CustomId = (vm.CustomId ?? "").Trim();
+            item.UpdatedAt = DateTime.UtcNow;
             var dbValues = await _context.ItemFieldValues
                 .Where(v => v.ItemId == itemId)
                 .ToListAsync();
@@ -309,14 +308,29 @@ namespace DLInventoryApp.Controllers
                         CustomFieldId = f.CustomFieldId
                     };
                     _context.ItemFieldValues.Add(db);
-                    dbValues.Add(db); 
+                    dbValues.Add(db);
                 }
                 db.TextValue = f.TextValue;
                 db.NumberValue = f.NumberValue;
                 db.LinkValue = f.LinkValue;
                 db.BoolValue = f.BoolValue;
             }
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                ModelState.AddModelError("", "The item has been updated by someone else. Please refresh the page and apply your changes again.");
+                await FillEditVm(inventoryId, itemId, vm);
+                var freshVersion = await _context.Items
+                    .AsNoTracking()
+                    .Where(x => x.Id == itemId)
+                    .Select(x => x.Version)
+                    .SingleOrDefaultAsync(); 
+                vm.Version = freshVersion;
+                return View(vm);
+            }
             await _searchService.IndexItemAsync(itemId);
             return RedirectToAction("Details", "Inventories", new { id = vm.InventoryId, tab = "items" });
         }

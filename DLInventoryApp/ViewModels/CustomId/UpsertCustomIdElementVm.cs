@@ -14,6 +14,6 @@ namespace DLInventoryApp.ViewModels.CustomId
         public string? Text { get; set; }
         [MaxLength(50)]
         public string? Format { get; set; }
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

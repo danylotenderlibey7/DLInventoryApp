@@ -13,6 +13,7 @@ using DLInventoryApp.ViewModels.Inventories.Inline;
 using DLInventoryApp.ViewModels.Inventories.Tabs.Settings.Dtos;
 using DLInventoryApp.ViewModels.Common.Pagination;
 using DLInventoryApp.ViewModels.Categories;
+using Humanizer;
 
 namespace DLInventoryApp.Controllers
 {
@@ -222,7 +223,6 @@ namespace DLInventoryApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateInventoryVm vm)
         {
-            if (!ModelState.IsValid) return View(vm);
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Challenge();
             if (!ModelState.IsValid)
@@ -246,7 +246,6 @@ namespace DLInventoryApp.Controllers
                 CreatedAt = DateTime.UtcNow
             };
             _context.Inventories.Add(entity);
-            await _context.SaveChangesAsync();
             _context.CustomIdElements.AddRange(
                 new InventoryCustomIdElement
                 {
@@ -263,15 +262,14 @@ namespace DLInventoryApp.Controllers
                     Format = "D4"
                 }
             );
-            await _context.SaveChangesAsync();
             var sequence = new InventorySequence
             {
                 InventoryId = entity.Id,
                 NextValue = 1
             };
             await _context.InventorySequences.AddAsync(sequence);
-            await _context.SaveChangesAsync();
             await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
+            await _context.SaveChangesAsync();
             await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction("Details", "Inventories", new { id = entity.Id, tab = "items" });
         }
@@ -283,26 +281,26 @@ namespace DLInventoryApp.Controllers
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return NotFound();
             var vm = await _context.Inventories
-        .Where(inv => inv.Id == inventoryId)
-        .Select(inv => new EditInventoryVm
-        {
-            InventoryId = inv.Id,
-            Title = inv.Title,
-            Description = inv.Description,
-            IsPublic = inv.IsPublic,
-            CategoryId = inv.CategoryId,
-            Tags = inv.InventoryTags
-                .Select(it => it.Tag.Name)
-                .ToList(),
-            Version = inv.Version,
-            Categories = _context.Categories
-                .OrderBy(c => c.Name)
-                .Select(c => new CategoryOptionVm
+                .Where(inv => inv.Id == inventoryId)
+                .Select(inv => new EditInventoryVm
                 {
-                    Id = c.Id,
-                    Name = c.Name
-                }).ToList()
-        }).SingleOrDefaultAsync();
+                    InventoryId = inv.Id,
+                    Title = inv.Title,
+                    Description = inv.Description,
+                    IsPublic = inv.IsPublic,
+                    CategoryId = inv.CategoryId,
+                    Tags = inv.InventoryTags
+                        .Select(it => it.Tag.Name)
+                        .ToList(),
+                    Version = inv.Version,
+                    Categories = _context.Categories
+                        .OrderBy(c => c.Name)
+                        .Select(c => new CategoryOptionVm
+                        {
+                            Id = c.Id,
+                            Name = c.Name
+                        }).ToList()
+                }).SingleOrDefaultAsync();
             if (vm == null) return NotFound();
             return View(vm);
         }
@@ -322,12 +320,13 @@ namespace DLInventoryApp.Controllers
             }
             var entity = await _context.Inventories.SingleOrDefaultAsync(inv => inv.Id == inventoryId);
             if (entity == null) return NotFound();
-            entity.Title = vm.Title;
-            entity.Description = vm.Description;
+            _context.Entry(entity).Property(x => x.Version).OriginalValue = vm.Version;
+            entity.Title = vm.Title.Trim();
+            entity.Description = vm.Description?.Trim() ?? "";
             entity.IsPublic = vm.IsPublic;
             entity.CategoryId = vm.CategoryId;
             entity.UpdatedAt = DateTime.UtcNow;
-            _context.Entry(entity).Property(x => x.Version).OriginalValue = vm.Version;
+            await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
             try
             {
                 await _context.SaveChangesAsync();
@@ -336,9 +335,14 @@ namespace DLInventoryApp.Controllers
             {
                 ModelState.AddModelError("", "The inventory has been updated by someone else. Please refresh the page and apply your changes again.");
                 await FillEditInventoryVmAsync(vm);
+                var dbValues = await _context.Inventories
+                    .AsNoTracking()
+                    .Where(x => x.Id == inventoryId)
+                    .Select(x => new { x.Version })
+                    .SingleOrDefaultAsync(); 
+                vm.Version = dbValues.Version;
                 return View(vm);
             }
-            await _tagService.SyncInventoryTagsAsync(entity.Id, vm.Tags);
             await _searchService.IndexInventoryAsync(entity.Id);
             return RedirectToAction(nameof(My));
         }
@@ -450,7 +454,6 @@ namespace DLInventoryApp.Controllers
                 .Select(x => new { x.Id, x.OwnerId })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
-            var isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
             var field = (dto.Field ?? "").Trim().ToLowerInvariant();
@@ -458,9 +461,7 @@ namespace DLInventoryApp.Controllers
                 return BadRequest(new { ok = false, error = "Field is required." });
             var entity = await _context.Inventories.SingleOrDefaultAsync(x => x.Id == inventoryId);
             if (entity == null) return NotFound();
-            if (dto.Version != null)
-                _context.Entry(entity).Property(x => x.Version).OriginalValue = dto.Version;
-
+            _context.Entry(entity).Property(x => x.Version).OriginalValue = dto.Version;
             try
             {
                 switch (field)
@@ -503,9 +504,8 @@ namespace DLInventoryApp.Controllers
                                 .Take(30)
                                 .ToList();
                             entity.UpdatedAt = DateTime.UtcNow;
-                            await _context.SaveChangesAsync();
-
                             await _tagService.SyncInventoryTagsAsync(entity.Id, tags);
+                            await _context.SaveChangesAsync();
                             await _searchService.IndexInventoryAsync(entity.Id);
                             var normalized = string.Join(", ", tags);
                             return Ok(new
@@ -551,15 +551,13 @@ namespace DLInventoryApp.Controllers
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
-            var isAdmin = User.IsInRole("Admin");
             var inv = await _context.Inventories
                 .Where(x => x.Id == inventoryId)
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
-            if (!string.IsNullOrWhiteSpace(dto.Version))
-                _context.Entry(inv).Property(x => x.Version).OriginalValue = Convert.FromBase64String(dto.Version);
+            _context.Entry(inv).Property(x => x.Version).OriginalValue = dto.Version;
             var title = (dto.Title ?? "").Trim();
             if (string.IsNullOrWhiteSpace(title))
                 return BadRequest(new { error = "Title is required." });
@@ -567,6 +565,7 @@ namespace DLInventoryApp.Controllers
                 return BadRequest(new { error = "Title is too long (max 250)." });
             inv.Title = title;
             inv.Description = (dto.Description ?? "").Trim();
+            inv.CategoryId = dto.CategoryId;
             inv.IsPublic = dto.IsPublic;
             inv.UpdatedAt = DateTime.UtcNow;
             try
@@ -575,13 +574,13 @@ namespace DLInventoryApp.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                return Conflict(new { error = "Inventory was updated by someone else. Refresh the page." });
+                return Conflict(new { ok = false, error = "Inventory was updated by someone else. Refresh the page." });
             }
             await _searchService.IndexInventoryAsync(inv.Id);
             return Ok(new
             {
                 ok = true,
-                version = Convert.ToBase64String(inv.Version ?? Array.Empty<byte>()),
+                version = inv.Version,
                 updatedAt = inv.UpdatedAt?.ToString("yyyy-MM-dd HH:mm")
             });
         }
@@ -591,15 +590,13 @@ namespace DLInventoryApp.Controllers
         {
             var userId = _userManager.GetUserId(User);
             if (userId == null) return Unauthorized();
-            var isAdmin = User.IsInRole("Admin");
             var inv = await _context.Inventories
                 .Where(x => x.Id == inventoryId)
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
-            if (!string.IsNullOrWhiteSpace(dto.Version))
-                _context.Entry(inv).Property(x => x.Version).OriginalValue = Convert.FromBase64String(dto.Version);
+            _context.Entry(inv).Property(x => x.Version).OriginalValue = dto.Version;
             var normalized = (dto.Tags ?? new List<string>())
                 .Select(t => (t ?? "").Trim().ToLower())
                 .Where(t => !string.IsNullOrWhiteSpace(t))
@@ -608,21 +605,20 @@ namespace DLInventoryApp.Controllers
                 .ToList();
             try
             {
-                await _tagService.SyncInventoryTagsAsync(inventoryId, normalized);
-
                 inv.UpdatedAt = DateTime.UtcNow;
+                await _tagService.SyncInventoryTagsAsync(inventoryId, normalized);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                return Conflict(new { error = "Inventory was updated by someone else. Refresh the page." });
+                return Conflict(new { ok = false, error = "Inventory was updated by someone else. Refresh the page." });
             }
             await _searchService.IndexInventoryAsync(inv.Id);
             return Ok(new
             {
                 ok = true,
                 tags = normalized,
-                version = Convert.ToBase64String(inv.Version ?? Array.Empty<byte>()),
+                version = inv.Version,
                 updatedAt = inv.UpdatedAt?.ToString("yyyy-MM-dd HH:mm")
             });
         }

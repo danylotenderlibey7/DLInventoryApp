@@ -13,5 +13,7 @@ namespace DLInventoryApp.Models
         public string? Text { get; set; }
         [MaxLength(50)]
         public string? Format { get; set; }
+        [Timestamp]
+        public uint Version { get; set; }
     }
 }

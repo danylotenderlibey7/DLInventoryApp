@@ -16,6 +16,6 @@ namespace DLInventoryApp.ViewModels.Inventories.Tabs.Settings
         public List<string> Tags { get; set; } = new();
         public int? CategoryId { get; set; }
         public List<CategoryOptionVm> Categories { get; set; } = new();
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

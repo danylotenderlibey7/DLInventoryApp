@@ -47,7 +47,8 @@ namespace DLInventoryApp.Controllers
                     Order = e.Order,
                     Type = e.Type,
                     Text = e.Text,
-                    Format = e.Format
+                    Format = e.Format,
+                    Version = e.Version
                 }).ToListAsync();
             string preview = "";
             try
@@ -103,7 +104,8 @@ namespace DLInventoryApp.Controllers
                     order = entity.Order,
                     type = (int)entity.Type,
                     text = entity.Text,
-                    format = entity.Format
+                    format = entity.Format,
+                    version = entity.Version
                 },
                 preview
             });
@@ -136,32 +138,65 @@ namespace DLInventoryApp.Controllers
             return Ok(new { ok = true, preview });
         }
         [HttpPost("Reorder")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reorder(Guid inventoryId, [FromBody] List<int> orderedIds)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null) return Challenge();
+            if (userId == null) return Unauthorized();
+            var invBase = await _context.Inventories
+                .Where(x => x.Id == inventoryId)
+                .Select(x => new { x.Id, x.OwnerId })
+                .SingleOrDefaultAsync();
+            if (invBase == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
-            if (!canManage) return NotFound();
+            if (!canManage) return Forbid();
+            if (orderedIds == null || orderedIds.Count == 0) return BadRequest(new { ok = false, error = "Empty reorder payload." });
             var elements = await _context.CustomIdElements
                 .Where(e => e.InventoryId == inventoryId)
                 .ToListAsync();
-            //if (elements.Count != orderedIds.Count) return BadRequest();
-            var elementIds = elements.Select(e => e.Id).OrderBy(x => x);
-            var incomingIds = orderedIds.OrderBy(x => x);
-            if (!elementIds.SequenceEqual(incomingIds)) return BadRequest();
-            int temp = 1000;
-            for (int i = 0; i < elements.Count(); i++) 
+            if (elements.Count != orderedIds.Count) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            var current = elements.Select(e => e.Id).OrderBy(x => x).ToList();
+            var incoming = orderedIds.OrderBy(x => x).ToList();
+            if (!current.SequenceEqual(incoming)) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            try
             {
-                elements[i].Order = temp + i;
+                var tempBase = 1000;
+                for (int i = 0; i < orderedIds.Count; i++)
+                {
+                    var element = elements.Single(x => x.Id == orderedIds[i]);
+                    element.Order = tempBase + i + 1;
+                }
+                await _context.SaveChangesAsync();
+                for (int i = 0; i < orderedIds.Count; i++)
+                {
+                    var element = elements.Single(x => x.Id == orderedIds[i]);
+                    element.Order = i + 1;
+                }
+                await _context.SaveChangesAsync();
+                string preview;
+                try
+                {
+                    preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId;
+                }
+                catch
+                {
+                    preview = "(no template)";
+                }
+                return Ok(new
+                {
+                    ok = true,
+                    preview,
+                    versions = elements.Select(e => new
+                    {
+                        id = e.Id,
+                        version = e.Version
+                    }).ToList()
+                });
             }
-            await _context.SaveChangesAsync();
-            for (int i = 0; i < orderedIds.Count(); i++)
+            catch (DbUpdateConcurrencyException)
             {
-                var element = elements.Single(e => e.Id == orderedIds[i]);
-                element.Order = i + 1;
+                return Conflict(new { ok = false, error = "Custom ID elements were modified by another user. Reload the page." });
             }
-            await _context.SaveChangesAsync();
-            return NoContent();
         }
         [HttpPost("{id:int}/InlineUpdate")]
         [ValidateAntiForgeryToken]
@@ -175,10 +210,18 @@ namespace DLInventoryApp.Controllers
                 .Where(e => e.InventoryId == inventoryId && e.Id == id)
                 .SingleOrDefaultAsync();
             if (entity == null) return NotFound();
+            _context.Entry(entity).Property(x => x.Version).OriginalValue = dto.Version;
             entity.Type = dto.Type;
             entity.Text = string.IsNullOrWhiteSpace(dto.Text) ? null : dto.Text.Trim();
             entity.Format = string.IsNullOrWhiteSpace(dto.Format) ? null : dto.Format.Trim();
-            await _context.SaveChangesAsync(); 
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new { ok = false, error = "Custom ID element was updated by someone else. Refresh the page." });
+            }
             await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
             try
@@ -189,7 +232,7 @@ namespace DLInventoryApp.Controllers
             {
                 preview = "(no template)";
             }
-            return Ok(new { ok = true, preview });
+            return Ok(new { ok = true, preview, version = entity.Version });
         }
         [HttpGet("Preview")]
         public async Task<IActionResult> Preview(Guid inventoryId)

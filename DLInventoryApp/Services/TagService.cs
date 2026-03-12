@@ -2,7 +2,6 @@
 using DLInventoryApp.Models;
 using DLInventoryApp.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace DLInventoryApp.Services
 {
@@ -17,79 +16,49 @@ namespace DLInventoryApp.Services
         {
             var normalized = (tags ?? Enumerable.Empty<string>())
                 .Where(t => !string.IsNullOrWhiteSpace(t))
-                .Select(t => t!.Trim())
-                .Where(t => t.Length > 0)
-                .Select(t => t.ToLowerInvariant())
+                .Select(t => t.Trim().ToLowerInvariant())
                 .Distinct()
+                .Take(30)
                 .ToList();
+            var currentLinks = await _context.InventoryTags
+                .Include(it => it.Tag)
+                .Where(it => it.InventoryId == inventoryId)
+                .ToListAsync();
             if (normalized.Count == 0)
             {
-                var links = await _context.InventoryTags
-                    .Where(l => l.InventoryId == inventoryId)
-                    .ToListAsync();
-                if (links.Count > 0)
-                {
-                    _context.InventoryTags.RemoveRange(links);
-                    await _context.SaveChangesAsync();
-                }
+                if (currentLinks.Count > 0)
+                    _context.InventoryTags.RemoveRange(currentLinks);
                 return;
             }
             var existingTags = await _context.Tags
                 .Where(t => normalized.Contains(t.Name))
                 .ToListAsync();
-            var existingNormalized = existingTags
+            var existingNames = existingTags
                 .Select(t => t.Name)
                 .ToHashSet(StringComparer.Ordinal);
-            var missing = normalized
-                .Where(n => !existingNormalized.Contains(n))
+            var missingNames = normalized
+                .Where(name => !existingNames.Contains(name))
                 .ToList();
-            if (missing.Count > 0)
-            {
-                var newTags = missing
-                    .Select(n => new Tag 
-                    {
-                        Name = n
-                    }).ToList();
-                _context.Tags.AddRange(newTags);
-                try
+            var newTags = missingNames
+                .Select(name => new Tag { Name = name })
+                .ToList();
+            if (newTags.Count > 0) _context.Tags.AddRange(newTags);
+            var allDesiredTags = existingTags.Concat(newTags).ToList();
+            var currentNames = currentLinks
+                .Select(x => x.Tag.Name)
+                .ToHashSet(StringComparer.Ordinal);
+            var linksToAdd = allDesiredTags
+                .Where(t => !currentNames.Contains(t.Name))
+                .Select(t => new InventoryTag
                 {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateException)
-                { }
-                existingTags = await _context.Tags
-                    .Where(t => normalized.Contains(t.Name))
-                    .ToListAsync();
-            }
-            var desiredTagIds = existingTags
-                .Select(t => t.Id)
-                .ToHashSet();
-            var currentLinks = await _context.InventoryTags
-                .Where(it => it.InventoryId == inventoryId)
-                .ToListAsync();
-            var currentTagIds = currentLinks
-                .Select(l => l.TagId)
-                .ToHashSet();
-            var toAddIds = desiredTagIds
-                .Where(id => !currentTagIds.Contains(id))
+                    InventoryId = inventoryId,
+                    Tag = t
+                }).ToList();
+            var linksToRemove = currentLinks
+                .Where(link => !normalized.Contains(link.Tag.Name))
                 .ToList();
-            var toRemoveLinks = currentLinks
-                .Where(l => !desiredTagIds.Contains(l.TagId))
-                .ToList();
-            if (toAddIds.Count > 0)
-            {
-                _context.InventoryTags.AddRange(
-                    toAddIds.Select(id => new InventoryTag { InventoryId = inventoryId, TagId = id })
-                );
-            }
-            if (toRemoveLinks.Count > 0)
-            {
-                _context.InventoryTags.RemoveRange(toRemoveLinks);
-            }
-            if (toAddIds.Count > 0 || toRemoveLinks.Count > 0)
-            {
-                await _context.SaveChangesAsync();
-            }
+            if (linksToAdd.Count > 0) _context.InventoryTags.AddRange(linksToAdd);
+            if (linksToRemove.Count > 0) _context.InventoryTags.RemoveRange(linksToRemove);
         }
     }
 }

@@ -45,7 +45,8 @@ namespace DLInventoryApp.Controllers
                     Description = f.Description,
                     Type = f.Type,
                     Order = f.Order,
-                    ShowInTable = f.ShowInTable
+                    ShowInTable = f.ShowInTable,
+                    Version = f.Version
                 })
                 .OrderBy(f=>f.Order)
                 .ToListAsync();
@@ -191,7 +192,8 @@ namespace DLInventoryApp.Controllers
                     description = field.Description,
                     type = (int)field.Type,
                     order = field.Order,
-                    showInTable = field.ShowInTable
+                    showInTable = field.ShowInTable,
+                    version = field.Version
                 }
             });
         }
@@ -212,24 +214,19 @@ namespace DLInventoryApp.Controllers
                 .Where(f => f.InventoryId == inventoryId && f.Id == fieldId)
                 .SingleOrDefaultAsync();
             if (field == null) return NotFound();
+            _context.Entry(field).Property(x => x.Version).OriginalValue = dto.Version;
             var name = (dto.Name ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(name))
-            {
-                return BadRequest(new { error = "Name is required." });
-            }
+                return BadRequest(new { ok = false, error = "Name is required." });
             if (!Enum.IsDefined(typeof(CustomFieldType), dto.Type))
-            {
-                return BadRequest(new { error = "Invalid field type." });
-            }
+                return BadRequest(new { ok = false, error = "Invalid field type." });
             var newType = (CustomFieldType)dto.Type;
             if (newType != field.Type)
             {
                 var sameTypeCount = await _context.CustomFields
                     .CountAsync(f => f.InventoryId == inventoryId && f.Type == newType && f.Id != fieldId);
                 if (sameTypeCount >= 3)
-                {
-                    return BadRequest(new { error = "You can create up to 3 fields of this type in one inventory." });
-                }
+                    return BadRequest(new { ok = false, error = "You can create up to 3 fields of this type in one inventory." });
             }
             field.Name = name;
             field.Description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
@@ -240,11 +237,15 @@ namespace DLInventoryApp.Controllers
                 await _context.SaveChangesAsync();
                 await _searchService.ReindexInventoryItemsAsync(inventoryId);
             }
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new { ok = false, error = "Field was updated by someone else. Refresh the page." });
+            }
             catch (DbUpdateException)
             {
-                return BadRequest(new { error = "Field name already exists in this inventory." });
+                return BadRequest(new { ok = false, error = "Field name already exists in this inventory." });
             }
-            return Ok(new { ok = true });
+            return Ok(new { ok = true, version = field.Version });
         }
         [HttpPost("Reorder")]
         [ValidateAntiForgeryToken]
@@ -259,23 +260,43 @@ namespace DLInventoryApp.Controllers
             if (invBase == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
+            if (orderedIds == null || orderedIds.Count == 0) return BadRequest(new { ok = false, error = "Empty reorder payload." });
             var fields = await _context.CustomFields
                 .Where(f => f.InventoryId == inventoryId)
                 .ToListAsync();
-            if (fields.Count != orderedIds.Count) return BadRequest();
-            var current = fields.Select(f => f.Id).OrderBy(x => x);
-            var incoming = orderedIds.OrderBy(x => x);
-            if (!current.SequenceEqual(incoming)) return BadRequest();
-            int temp = 1000;
-            for (int i = 0; i < fields.Count; i++) fields[i].Order = temp + i;
-            await _context.SaveChangesAsync();
-            for (int i = 0; i < orderedIds.Count; i++)
+            if (fields.Count != orderedIds.Count) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            var current = fields.Select(f => f.Id).OrderBy(x => x).ToList();
+            var incoming = orderedIds.OrderBy(x => x).ToList();
+            if (!current.SequenceEqual(incoming)) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            try
             {
-                var f = fields.Single(x => x.Id == orderedIds[i]);
-                f.Order = i + 1;
+                var tempBase = 1000;
+                for (int i = 0; i < orderedIds.Count; i++)
+                {
+                    var field = fields.Single(x => x.Id == orderedIds[i]);
+                    field.Order = tempBase + i + 1;
+                }
+                await _context.SaveChangesAsync();
+                for (int i = 0; i < orderedIds.Count; i++)
+                {
+                    var field = fields.Single(x => x.Id == orderedIds[i]);
+                    field.Order = i + 1;
+                }
+                await _context.SaveChangesAsync();
+                return Ok(new
+                {
+                    ok = true,
+                    versions = fields.Select(f => new
+                    {
+                        id = f.Id,
+                        version = f.Version
+                    }).ToList()
+                });
             }
-            await _context.SaveChangesAsync();
-            return NoContent();
+            catch (DbUpdateConcurrencyException)
+            {
+                return Conflict(new { ok = false, error = "Fields were modified by another user. Reload the page." });
+            }
         }
         [HttpPost("{fieldId:int}/Delete")]
         [ValidateAntiForgeryToken]

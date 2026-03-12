@@ -57,7 +57,8 @@
                                 {
                                     <li class="elements-item field-row"
                                         data-id="@f.Id"
-                                        data-row-id="@f.Id">
+                                        data-row-id="@f.Id"
+                                        data-version="@f.Version">
 
                                         <div class="drag-handle" title="Drag">↕</div>
 
@@ -216,13 +217,17 @@
               name: nameEl ? nameEl.value : "",
               type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
               description: descEl ? descEl.value : "",
-              showInTable: showEl ? !!showEl.checked : false
+              showInTable: showEl ? !!showEl.checked : false,
+              version: Number(row.dataset.version || 0)
             };
 
             setRowState(rowId, "Saving…", false);
 
             try {
-                await postJson(`/Inventories/${inventoryId}/Fields/${rowId}/InlineUpdate`, dto);
+                const data = await postJson(`/Inventories/${inventoryId}/Fields/${rowId}/InlineUpdate`, dto);
+                if (data && data.version !== undefined) {
+                    row.dataset.version = data.version;
+                }
                 setRowState(rowId, "Saved", false);
             } catch (e) {
                 console.error(e);
@@ -286,6 +291,7 @@
             li.className = "elements-item field-row";
             li.setAttribute("data-id", field.id);
             li.setAttribute("data-row-id", field.id);
+            li.setAttribute("data-version", field.version || "");
 
             li.innerHTML = `
                 <div class="drag-handle" title="Drag">↕</div>
@@ -357,7 +363,7 @@
         let sortableList = null;
         let sortableTrash = null;
 
-        async function persistReorder() {
+          async function persistReorder() {
             if (!listEl) return;
 
             const ids = Array.from(listEl.querySelectorAll('li[data-id]'))
@@ -365,7 +371,17 @@
                 .filter(n => Number.isFinite(n));
 
             try {
-                await postJson(`/Inventories/${inventoryId}/Fields/Reorder`, ids);
+                const data = await postJson(`/Inventories/${inventoryId}/Fields/Reorder`, ids);
+
+                if (data && Array.isArray(data.versions)) {
+                    data.versions.forEach(v => {
+                        const row = document.querySelector('li[data-row-id="' + v.id + '"]');
+                        if (row) {
+                            row.dataset.version = v.version;
+                        }
+                    });
+                }
+
                 refreshOrders();
             } catch (e) {
                 console.error(e);

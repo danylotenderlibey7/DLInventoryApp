@@ -16,7 +16,7 @@ namespace DLInventoryApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         [Timestamp]
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
         public List<ItemLike> Likes { get; set; } = new();
         public int ViewsTotal { get; set; } = 0;

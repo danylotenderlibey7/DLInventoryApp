@@ -17,5 +17,7 @@ namespace DLInventoryApp.Models
         public int Order { get; set; }
         public bool ShowInTable { get; set; }
         public List<ItemFieldValue> FieldValues { get; set; } = new();
+        [Timestamp]
+        public uint Version { get; set; }
     }
 }

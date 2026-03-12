@@ -11,6 +11,6 @@ namespace DLInventoryApp.ViewModels.Items.Pages
         public string CustomId { get; set; } = string.Empty;
         public List<FieldValueInputVm> Fields { get; set; } = new();
         public bool CanEditItems { get; set; }
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

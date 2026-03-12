@@ -3,6 +3,6 @@
     public class InventoryInlineTagsDto
     {
         public List<string> Tags { get; set; } = new();
-        public string? Version { get; set; }
+        public uint Version { get; set; }
     }
 }

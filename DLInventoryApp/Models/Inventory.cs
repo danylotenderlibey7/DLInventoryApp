@@ -21,7 +21,7 @@ namespace DLInventoryApp.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         [Timestamp]
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
         public List<Item> Items { get; set; } = new();
         public List<CustomField> CustomFields { get; set; } = new();
         public ICollection<InventoryWriteAccess> WriteAccesses { get; set; } = new List<InventoryWriteAccess>();

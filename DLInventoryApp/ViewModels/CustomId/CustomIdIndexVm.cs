@@ -7,6 +7,6 @@
         public bool CanManage { get; set; }
         public string Preview { get; set; } = "";
         public List<CustomIdElementRowVm> Elements { get; set; } = new();
-        public byte[]? Version { get; set; }
+        public uint Version { get; set; }
     }
 }
