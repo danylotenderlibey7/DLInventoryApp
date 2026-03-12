@@ -1,12 +1,14 @@
 ﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 <div class="tab-section">
 
     @if (Model.Items == null)
     {
         <div class="empty-state">
-            <div class="empty-title">Items</div>
-            <div class="empty-sub">No data</div>
+            <div class="empty-title">@LocalizerShared["Items"]</div>
+            <div class="empty-sub">@LocalizerShared["NoData"]</div>
         </div>
         return;
     }
@@ -69,8 +71,8 @@
                 @if (Model.Items.Items == null || Model.Items.Items.Count == 0)
                 {
                     <div class="empty-state">
-                        <div class="empty-title">No items yet</div>
-                        <div class="empty-sub">Create the first item for this inventory.</div>
+                        <div class="empty-title">@LocalizerInv["NoItemsYet"]</div>
+                        <div class="empty-sub">@LocalizerInv["CreateFirstItemForInventory"]</div>
                     </div>
                 }
                 else
@@ -90,16 +92,16 @@
                                     </th>
                                 }
 
-                                <th class="col-id" data-col-key="__customId">Custom ID</th>
+                                <th class="col-id" data-col-key="__customId">@LocalizerShared["CustomId"]</th>
 
                                 @foreach (var col in Model.Items.Columns)
                                 {
                                     <th data-col-key="f:@col.Id">@col.Name</th>
                                 }
 
-                                <th data-col-key="__createdBy">Created by</th>
-                                <th data-col-key="__createdAt">Created</th>
-                                <th class="col-likes" data-col-key="__likes">Likes</th>
+                                <th data-col-key="__createdBy">@LocalizerShared["CreatedBy"]</th>
+                                <th data-col-key="__createdAt">@LocalizerShared["Created"]</th>
+                                <th class="col-likes" data-col-key="__likes">@LocalizerShared["Likes"] </th>
                             </tr>
                         </thead>
 

@@ -1,5 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<DLInventoryApp.Models.ApplicationUser> SignInManager
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
 
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
@@ -7,15 +8,15 @@
 
 <div class="manage-nav-card">
     <div class="manage-nav-head">
-        <div class="manage-nav-title">Account</div>
-        <div class="manage-nav-subtitle">Manage your profile and security</div>
+        <div class="manage-nav-title">@LocalizerU["Account"]</div>
+        <div class="manage-nav-subtitle">@LocalizerU["ManageProfileSecurity"]</div>
     </div>
 
     <nav class="manage-nav-list">
         <a class="manage-nav-link @ManageNavPages.IndexNavClass(ViewContext)"
            asp-page="./Index">
             <i class="bi bi-person-circle"></i>
-            <span>Profile</span>
+            <span>@LocalizerU["Profile"]</span>
         </a>
 
         <a class="manage-nav-link @ManageNavPages.EmailNavClass(ViewContext)"
@@ -27,7 +28,7 @@
         <a class="manage-nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)"
            asp-page="./ChangePassword">
             <i class="bi bi-key"></i>
-            <span>Password</span>
+            <span>@LocalizerU["Password"]</span>
         </a>
 
         @if (hasExternalLogins)
@@ -35,7 +36,7 @@
             <a class="manage-nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)"
                asp-page="./ExternalLogins">
                 <i class="bi bi-box-arrow-in-right"></i>
-                <span>External logins</span>
+                <span>@LocalizerU["ExternalLogins"]</span>
             </a>
         }
     </nav>

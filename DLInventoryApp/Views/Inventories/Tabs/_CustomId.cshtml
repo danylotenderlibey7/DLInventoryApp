@@ -1,10 +1,12 @@
 ﻿@using DLInventoryApp.ViewModels.CustomId
 @using DLInventoryApp.Models
 @model CustomIdIndexVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @if (Model == null)
 {
-    <div class="empty-block">No data</div>
+    <div class="empty-block">@LocalizerShared["NoData"]</div>
     return;
 }
 
@@ -23,7 +25,7 @@
                     <div class="card-elements-head">
                         <div class="duo-top">
                             <div class="duo-preview-line">
-                                <span class="duo-preview-label">Example:</span>
+                                <span class="duo-preview-label">@LocalizerShared["Example"]</span>
                                 <span id="cidPreview" class="duo-preview-value">@Model.Preview</span>
                             </div>
                         </div>
@@ -42,14 +44,14 @@
 
                 @if (!Model.CanManage)
                 {
-                        <div class="note-block" style="margin-bottom:10px;">You have read-only access.</div>
+                        <div class="note-block" style="margin-bottom:10px;">@LocalizerShared["HaveReadOnlyAccess"]</div>
                 }
 
                     <div id="cidElementsScroll" class="elements-scroll cid-scroll">
                     @if (Model.Elements == null || Model.Elements.Count == 0)
                     {
                             <div class="empty-block" style="margin:10px;" id="cidEmptyState">
-                                No elements configured yet.
+                                @LocalizerShared["NoElementsConfiguredYet"]
                             </div>
                     }
                     else
@@ -90,8 +92,8 @@
             <div class="duo-right cid-right">
                 <div id="cidTrash" class="trash-zone">
                     <div class="trash-head">
-                        <div class="trash-title">Delete</div>
-                        <div class="trash-sub">Drop here to delete</div>
+                        <div class="trash-title">@LocalizerShared["Delete"]</div>
+                        <div class="trash-sub">@LocalizerShared["Delete"]</div>
                     </div>
 
                     <div id="cidTrashDrop" class="trash-drop"></div>

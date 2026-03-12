@@ -1,5 +1,7 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories.Pages
 @model CreateInventoryVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 <form asp-action="Create"
       method="post"
@@ -12,10 +14,8 @@
 
         <div class="inv-page-head">
             <div>
-                <div class="inv-page-title">Create inventory</div>
-                <div class="inv-page-subtitle">
-                    Set basic info now. You can configure custom IDs, fields and access after saving.
-                </div>
+                <div class="inv-page-title">@LocalizerInv["CreateInventory"]</div>
+                <div class="inv-page-subtitle">@LocalizerInv["SetBasicInfoNowETC"]</div>
             </div>
 
             <div class="inv-page-actions">
@@ -39,7 +39,7 @@
         <div class="inv-settings-grid">
 
             <div class="inv-settings-row">
-                <div class="inv-settings-label">Title</div>
+                <div class="inv-settings-label">@LocalizerShared["Title"]</div>
                 <div class="inv-settings-field">
                     <input asp-for="Title"
                            class="inv-settings-input"
@@ -48,20 +48,20 @@
             </div>
 
             <div class="inv-settings-row">
-                <div class="inv-settings-label">Description</div>
+                <div class="inv-settings-label">@LocalizerShared["Description"]</div>
                 <div class="inv-settings-field">
                     <textarea asp-for="Description"
                               class="inv-settings-textarea"
                               rows="6"
-                              placeholder="Markdown supported..."></textarea>
+                              placeholder="@LocalizerShared["MarkdownSupported"]"></textarea>
                 </div>
             </div>
             <div class="inv-settings-row">
-                <div class="inv-settings-label">Category</div>
+                <div class="inv-settings-label">@LocalizerShared["Category"]</div>
                 <div class="inv-settings-field">
                     <select asp-for="CategoryId"
                             class="inv-settings-input">
-                        <option value="">Select category...</option>
+                        <option value="">@LocalizerShared["SelectCategory"]</option>
 
                         @foreach (var c in Model.Categories)
                         {
@@ -73,19 +73,17 @@
                 </div>
             </div>
             <div class="inv-settings-row">
-                <div class="inv-settings-label">Public</div>
+                <div class="inv-settings-label">@LocalizerShared["Public"]</div>
                 <div class="inv-settings-field">
                     <label class="create-inv-bool-line">
                         <input asp-for="IsPublic" type="checkbox" />
-                        <span class="inv-muted">
-                            If public, all authenticated users can add items.
-                        </span>
+                        <span class="inv-muted">@LocalizerInv["IfPublic"]</span>
                     </label>
                 </div>
             </div>
 
             <div class="inv-settings-row">
-                <div class="inv-settings-label">Tags</div>
+                <div class="inv-settings-label">@LocalizerShared["Tags"]</div>
 
                 <div class="inv-settings-field inv-settings-tags-field">
                     <div class="tag-input-wrap position-relative">
@@ -93,7 +91,7 @@
                             <input type="text"
                                    id="tagInput"
                                    class="inv-settings-input"
-                                   placeholder="Type tag and press Add" />
+                                   placeholder="@LocalizerShared["TypeTagPressAdd"]" />
 
                             <button type="button"
                                     id="addTagBtn"
@@ -112,9 +110,7 @@
                     <div id="tagsChips" class="tags-chips mt-2"></div>
                     <div id="tagsHidden"></div>
 
-                    <div class="inv-settings-save">
-                        Start typing to see tag suggestions. Press Enter to add quickly.
-                    </div>
+                    <div class="inv-settings-save">@LocalizerInv["StartTypingTagSuggestionsETC"]</div>
                 </div>
             </div>
 

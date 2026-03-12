@@ -5,6 +5,7 @@
     ViewData["Title"] = "External logins";
     ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
 
 <div class="workspace-inner profile-page">
     <div class="manage-layout">
@@ -17,9 +18,9 @@
 
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">External logins</h1>
+                    <h1 class="page-title">@LocalizerU["ExternalLogins"]</h1>
                     <p class="page-subtitle">
-                        Connect or remove external authentication providers.
+                        @LocalizerU["ConnectRemoveExternalETC"]
                     </p>
                 </div>
             </div>
@@ -29,7 +30,7 @@
             @if (Model.CurrentLogins?.Count > 0)
             {
                 <div class="manage-form-card">
-                    <div class="manage-section-title">Connected accounts</div>
+                    <div class="manage-section-title">@LocalizerU["ConnectedAccounts"]</div>
 
                     <div class="external-login-list">
                         @foreach (var login in Model.CurrentLogins)
@@ -71,7 +72,7 @@
             @if (Model.OtherLogins?.Count > 0)
             {
                 <div class="manage-form-card">
-                    <div class="manage-section-title">Add login provider</div>
+                    <div class="manage-section-title">@LocalizerU["AddLoginProvider"]</div>
 
                     <form asp-page-handler="LinkLogin" method="post">
                         <div class="external-login-add">

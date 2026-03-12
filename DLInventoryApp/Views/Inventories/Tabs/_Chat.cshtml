@@ -1,5 +1,6 @@
 ﻿@using DLInventoryApp.ViewModels.Discussions
 @model DiscussionIndexVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @if (Model == null)
 {
@@ -11,7 +12,7 @@
         <div id="posts">
             @if (Model.Posts == null || !Model.Posts.Any())
             {
-                <div class="chat-empty" id="emptyState">No comments yet.</div>
+                <div class="chat-empty" id="emptyState">@LocalizerInv["NoCommentsYet"]</div>
             }
             else
             {
@@ -39,7 +40,7 @@
                                     @if (p.UpdatedAt != null)
                                     {
                                         <span class="chat-edited">
-                                            (edited <span class="js-rel-time" data-iso="@p.UpdatedAt.Value.ToString("o")">@p.UpdatedAt</span>)
+                                            (@LocalizerInv["edited"] <span class="js-rel-time" data-iso="@p.UpdatedAt.Value.ToString("o")">@p.UpdatedAt</span>)
                                         </span>
                                     }
                                 </div>
@@ -126,14 +127,14 @@
                   method="post">
                 @Html.AntiForgeryToken()
 
-                <div class="chat-composer-title">Write a comment</div>
+                <div class="chat-composer-title">@LocalizerInv["WriteComment"]</div>
 
                 <div class="chat-compose-row">
                     <textarea class="chat-textarea chat-textarea-small"
                               name="text"
                               rows="2"
                               maxlength="2048"
-                              placeholder="Write a comment... (Markdown supported)"></textarea>
+                              placeholder="@LocalizerInv["WriteCommentMarkdownSupported"]"></textarea>
 
                     <button type="submit"
                             class="app-btn app-btn-primary app-btn-icon chat-sendbtn"
@@ -146,8 +147,8 @@
         }
         else
         {
-            <div class="chat-composer-title">Write a comment</div>
-            <div class="chat-muted">You must sign in to post comments.</div>
+            <div class="chat-composer-title">@LocalizerInv["WriteComment"]</div>
+            <div class="chat-muted">@LocalizerInv["YouMustSignInPostComments"]</div>
         }
     </div>
 </div>

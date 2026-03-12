@@ -1,5 +1,7 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories.Tabs.Settings
 @model InventorySettingsVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 <form id="invSettingsAntiForgery" method="post" style="display:none;">
     @Html.AntiForgeryToken()
@@ -11,10 +13,10 @@
      data-can-write="@(Model.CanManage ? "1" : "0")">
 
     <div class="inv-settings-head">
-        <div class="inv-settings-title">Inventory settings</div>
+        <div class="inv-settings-title">@LocalizerInv["InventorySettings"]</div>
 
         <div class="inv-settings-note">
-            <span>Autosave</span>
+            <span>@LocalizerShared["Autosave"]</span>
             <span class="inv-dot">•</span>
             <span id="invSettingsState" class="inv-settings-save"></span>
         </div>
@@ -23,21 +25,21 @@
     <div class="inv-settings-grid">
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Created</div>
+            <div class="inv-settings-label">@LocalizerShared["Created"]</div>
             <div class="inv-settings-readonly">
                 @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")
             </div>
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Owner</div>
+            <div class="inv-settings-label">@LocalizerShared["Owner"]</div>
             <div class="inv-settings-readonly">
                 @Model.OwnerName
             </div>
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Title</div>
+            <div class="inv-settings-label">@LocalizerShared["Title"]</div>
             <div class="inv-settings-field">
                 <input id="invTitle"
                        class="inv-settings-input"
@@ -47,24 +49,24 @@
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Description</div>
+            <div class="inv-settings-label">@LocalizerShared["Description"]</div>
             <div class="inv-settings-field">
                 <textarea id="invDescription"
                           class="inv-settings-textarea"
                           rows="5"
-                          placeholder="Markdown supported..."
+                          placeholder="@LocalizerShared["MarkdownSupported"]"
                 @(Model.CanManage ? "" : "disabled")>@Model.Description</textarea>
             </div>
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Category</div>
+            <div class="inv-settings-label">@LocalizerShared["Category"]</div>
             <div class="inv-settings-field">
                 <select id="invCategory"
                         class="inv-settings-input"
                 @(Model.CanManage ? "" : "disabled")>
 
-                    <option value="">Select category...</option>
+                    <option value="">@LocalizerInv["SelectCategory"]</option>
 
                     @foreach (var c in Model.Categories)
                     {
@@ -82,7 +84,7 @@
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Public</div>
+            <div class="inv-settings-label">@LocalizerShared["Public"]</div>
             <div class="inv-settings-field">
                 <label style="display:flex; gap:10px; align-items:center;">
                     <input id="invIsPublic"
@@ -90,14 +92,14 @@
                     @(Model.IsPublic ? "checked" : "")
                     @(Model.CanManage ? "" : "disabled") />
                     <span class="inv-muted">
-                        If public, all authenticated users can add items.
+                        @LocalizerInv["IfPublic"]
                     </span>
                 </label>
             </div>
         </div>
 
         <div class="inv-settings-row">
-            <div class="inv-settings-label">Tags</div>
+            <div class="inv-settings-label">@LocalizerShared["Tags"]</div>
 
             <div class="inv-settings-field" style="grid-template-columns:1fr;">
                 <div class="tag-input-wrap position-relative">
@@ -105,7 +107,7 @@
                         <input type="text"
                                id="tagInputSettings"
                                class="inv-settings-input"
-                               placeholder="Type tag and press Add"
+                               placeholder="@LocalizerShared["TypeTagPressAdd"]"
                         @(Model.CanManage ? "" : "disabled") />
 
                         <button type="button"

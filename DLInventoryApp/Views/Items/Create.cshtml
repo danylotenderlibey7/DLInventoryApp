@@ -1,6 +1,8 @@
 ﻿@using DLInventoryApp.ViewModels.Items.Pages
 @using DLInventoryApp.Models
 @model CreateItemVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.ItemResource> LocalizerIt
 
 <form asp-action="Create"
       asp-route-inventoryId="@Model.InventoryId"
@@ -15,7 +17,7 @@
 
         <div class="inv-page-head">
             <div>
-                <div class="inv-page-title">Create item</div>
+                <div class="inv-page-title">@LocalizerIt["CreateItem"]</div>
                 <div class="inv-page-subtitle">@Model.InventoryTitle</div>
             </div>
 
@@ -41,14 +43,14 @@
 
         <div class="item-basic-grid">
             <div class="item-basic-field item-basic-field-full">
-                <label asp-for="CustomId" class="inv-settings-label">Custom ID</label>
+                <label asp-for="CustomId" class="inv-settings-label">@LocalizerShared["CustomId"]</label>
 
                 <input asp-for="CustomId"
                        class="inv-settings-input"
                        placeholder="@Model.PreviewCustomId" />
 
                 <div class="item-field-hint">
-                    Leave empty to generate automatically.
+                    @LocalizerIt["LeaveEmptyGenerateAutomatically"]
                 </div>
 
                 <span asp-validation-for="CustomId" class="text-danger"></span>
@@ -62,7 +64,7 @@
             <div class="item-section-head">
                 <div class="item-section-title">Item fields</div>
                 <div class="item-section-note">
-                    Fill the fields configured for this inventory.
+                    @LocalizerIt["FillFieldsConfiguredInventory"]
                 </div>
             </div>
 
@@ -106,7 +108,7 @@
                         {
                             <label class="item-bool-line">
                                 <input asp-for="Fields[@i].BoolValue" type="checkbox" />
-                                <span class="inv-muted">Enabled</span>
+                                <span class="inv-muted">@LocalizerShared["Enabled"]</span>
                             </label>
                         }
 

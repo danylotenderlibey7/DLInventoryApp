@@ -1,6 +1,8 @@
 ﻿@using DLInventoryApp.ViewModels.Items.Pages
 @using DLInventoryApp.Models
 @model EditItemVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.ItemResource> LocalizerIt
 
 <form asp-action="Edit"
       asp-route-itemId="@Model.ItemId"
@@ -19,7 +21,7 @@
 
         <div class="inv-page-head">
             <div>
-                <div class="inv-page-title">Edit item</div>
+                <div class="inv-page-title">@LocalizerIt["EditItem"]</div>
                 <div class="inv-page-subtitle">@Model.InventoryTitle</div>
             </div>
 
@@ -46,14 +48,13 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <div class="item-basic-grid">
             <div class="item-basic-field item-basic-field-full">
-                <label asp-for="CustomId" class="inv-settings-label">Custom ID</label>
+                <label asp-for="CustomId" class="inv-settings-label">@LocalizerShared["CustomId"]</label>
 
                 <input asp-for="CustomId"
-                       class="inv-settings-input"
-                       placeholder="Will be auto-generated" />
+                       class="inv-settings-input"/>
 
                 <div class="item-field-hint">
-                    You can keep this value or overwrite it manually.
+                    @LocalizerIt["LeaveEmptyGenerateAutomatically"]
                 </div>
 
                 <span asp-validation-for="CustomId" class="text-danger"></span>
@@ -65,9 +66,9 @@
             <div class="item-section-divider"></div>
 
             <div class="item-section-head">
-                <div class="item-section-title">Item fields</div>
+                <div class="item-section-title">@LocalizerIt["ItemFields"]</div>
                 <div class="item-section-note">
-                    Update the fields configured for this inventory.
+                    @LocalizerIt["UpdateFieldsConfiguredForInventory"]
                 </div>
             </div>
 
@@ -111,7 +112,7 @@
                         {
                             <label class="item-bool-line">
                                 <input asp-for="Fields[@i].BoolValue" type="checkbox" />
-                                <span class="inv-muted">Enabled</span>
+                                <span class="inv-muted">@LocalizerShared["Enabled"]</span>
                             </label>
                         }
 

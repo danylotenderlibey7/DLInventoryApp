@@ -1,8 +1,9 @@
 ﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
 
 <div class="page-header">
         <h1 class="page-title">@Model.Title</h1>
-        <p class="page-subtitle">All changes saved</p>
+    <p class="page-subtitle">@LocalizerShared["AllChangesSaved"]</p>
 </div>
 
 <div class="details-tabs-mobile-wrap">

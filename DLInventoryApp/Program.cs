@@ -8,8 +8,14 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using DLInventoryApp.Middleware;
 using DLInventoryApp.Hubs;
 using DLInventoryApp.Services.Tabs;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddLocalization(options =>
+{
+    options.ResourcesPath = "Resources";
+});
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -44,7 +50,10 @@ builder.Services.AddAuthentication()
         ?? throw new Exception("Facebook AppSecret not configured");
     });
 
-builder.Services.AddControllersWithViews(); 
+builder.Services
+    .AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 builder.Services.AddSignalR();
 builder.Services.AddScoped<ICustomIdGenerator, CustomIdGenerator>();
 builder.Services.AddScoped<CustomIdTabBuilder>();
@@ -62,6 +71,22 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<IMarkdownService, MarkdownService>();
 
 var app = builder.Build();
+var supportedCultures = new[]
+{
+    new CultureInfo("en"),
+    new CultureInfo("uk")
+};
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+};
+localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
+{
+    new CookieRequestCultureProvider()
+};
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -81,7 +106,7 @@ else
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseRequestLocalization(localizationOptions);
 app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<BlockedUserMiddleware>();

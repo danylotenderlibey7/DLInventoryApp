@@ -1,11 +1,13 @@
 ﻿@using DLInventoryApp.ViewModels.Common.Pagination
 @using DLInventoryApp.ViewModels.Inventories.Pages
 @model MyInventoriesPageVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 @using System.Linq
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">My Inventories</h1>
+        <h1 class="page-title">@LocalizerShared["MyInventories"]</h1>
     </div>
 </div>
 
@@ -18,7 +20,7 @@
 
     <div class="my-section">
         <div class="my-section-head">
-            <div class="my-section-title">Owned by me</div>
+            <div class="my-section-title">@LocalizerShared["OwnedByMe"]</div>
 
             <nav class="pager-top my-section-pager" aria-label="Owned inventories pagination">
                 <div class="pager-right">
@@ -75,8 +77,8 @@
         @if (!Model.My.Items.Any())
         {
             <div class="empty-state">
-                <div class="empty-title">No inventories yet</div>
-                <div class="empty-sub">Create your first inventory to get started.</div>
+                <div class="empty-title">@LocalizerInv["NoInventoriesYet"]</div>
+                <div class="empty-sub">@LocalizerInv["CreateYourFirstInventoryStart"]</div>
             </div>
         }
         else
@@ -90,10 +92,10 @@
                                     <input id="checkAllOwned" type="checkbox" aria-label="Select all inventories" />
                                 </th>
 
-                                <th class="inv-col-title">Inventory</th>
-                                <th class="inv-col-items" >Items</th>
-                                <th class="inv-col-updated" >Last update</th>
-                                <th class="inv-col-cat" >Category</th>
+                                <th class="inv-col-title">@LocalizerShared["Inventories"] </th>
+                                <th class="inv-col-items">@LocalizerShared["Items"]</th>
+                                <th class="inv-col-updated">@LocalizerShared["LastUpdate"]</th>
+                                <th class="inv-col-cat">@LocalizerShared["Category"]</th>
                             </tr>
                         </thead>
 
@@ -140,7 +142,7 @@
 
 <div class="my-section">
     <div class="my-section-head">
-        <div class="my-section-title">Shared with me</div>
+        <div class="my-section-title">@LocalizerInv["SharedWithMe"]</div>
 
         @if (Model.Shared.TotalPages > 1)
         {
@@ -173,8 +175,8 @@
     @if (!Model.Shared.Items.Any())
     {
         <div class="empty-state">
-            <div class="empty-title">No shared inventories</div>
-            <div class="empty-sub">Inventories where you have write access will appear here.</div>
+            <div class="empty-title">@LocalizerInv["NoSharedInventories"]</div>
+            <div class="empty-sub">@LocalizerInv["InventoriesWhereYouHaveWriteAccessWillAppear"]</div>
         </div>
     }
     else
@@ -184,11 +186,11 @@
                 <table class="inv-table my-inv-table">
                     <thead>
                         <tr>
-                            <th class="inv-col-title">Inventory</th>
-                            <th class="inv-col-items" align="center">Items</th>
-                            <th class="inv-col-owner" align="center">Owner</th>
-                            <th class="inv-col-updated" align="center">Last update</th>
-                            <th class="inv-col-cat" align="center">Category</th>
+                            <th class="inv-col-title">@LocalizerShared["Inventories"]</th>
+                            <th class="inv-col-items" align="center">@LocalizerShared["Items"]</th>
+                            <th class="inv-col-owner" align="center">@LocalizerShared["Owner"]</th>
+                            <th class="inv-col-updated" align="center">@LocalizerShared["LastUpdate"]</th>
+                            <th class="inv-col-cat" align="center">@LocalizerShared["Category"]</th>
                         </tr>
                     </thead>
 

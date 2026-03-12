@@ -5,6 +5,7 @@
     ViewData["Title"] = "Manage Email";
     ViewData["ActivePage"] = ManageNavPages.Email;
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
 
 <div class="workspace-inner profile-page">
     <div class="manage-layout">
@@ -17,8 +18,8 @@
 
             <div class="page-header">
                 <div>
-                    <h1 class="page-title">Manage Email</h1>
-                    <p class="page-subtitle">Check your current email, send verification, or change it.</p>
+                    <h1 class="page-title">@LocalizerU["ManageEmail"]</h1>
+                    <p class="page-subtitle">@LocalizerU["CheckCurrentEmailETC"]</p>
                 </div>
             </div>
 
@@ -31,26 +32,26 @@
                     <div class="manage-form-grid">
 
                         <div class="auth-field">
-                            <label asp-for="Email" class="auth-label">Current email</label>
+                            <label asp-for="Email" class="auth-label">@LocalizerU["CurrentEmail"]</label>
 
                             <div class="email-current-row">
                                 <input asp-for="Email"
                                        class="auth-input"
-                                       placeholder="Current email"
+                                       placeholder="@LocalizerU["CurrentEmail"]"
                                        disabled />
 
                                 @if (Model.IsEmailConfirmed)
                                 {
                                     <span class="email-badge email-badge-ok">
                                         <i class="bi bi-check-lg"></i>
-                                        <span>Confirmed</span>
+                                        <span>@LocalizerU["Confirmed"]</span>
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="email-badge">
                                         <i class="bi bi-envelope-exclamation"></i>
-                                        <span>Not confirmed</span>
+                                        <span>@LocalizerU["NotConfirmed"]</span>
                                     </span>
                                 }
                             </div>
@@ -64,18 +65,18 @@
                                         asp-page-handler="SendVerificationEmail"
                                         class="app-btn app-btn-primary auth-submit">
                                     <i class="bi bi-envelope"></i>
-                                    <span>Send verification email</span>
+                                    <span>@LocalizerU["SendVerificationEmail"]</span>
                                 </button>
                             </div>
                         }
 
                         <div class="auth-field">
-                            <label asp-for="Input.NewEmail" class="auth-label"></label>
+                            <label asp-for="Input.NewEmail" class="auth-label">@LocalizerU["EnterNewEmail"]</label>
                             <input asp-for="Input.NewEmail"
                                    class="auth-input"
                                    autocomplete="email"
                                    aria-required="true"
-                                   placeholder="Enter new email" />
+                                   placeholder="@LocalizerU["EnterNewEmail"]" />
                             <span asp-validation-for="Input.NewEmail" class="auth-field-error"></span>
                         </div>
 
@@ -85,7 +86,7 @@
                                     asp-page-handler="ChangeEmail"
                                     class="app-btn app-btn-primary auth-submit">
                                 <i class="bi bi-arrow-repeat"></i>
-                                <span>Change email</span>
+                                <span>@LocalizerU["ChangeEmail"]</span>
                             </button>
                         </div>
 

@@ -5,6 +5,9 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Confirm email";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
@@ -12,11 +15,10 @@
 
             <div class="auth-side">
 
-                <h1 class="auth-side-title">Email confirmation</h1>
+                <h1 class="auth-side-title">@LocalizerA["EmailConfirmation"]</h1>
 
                 <p class="auth-side-text">
-                    Your email verification is being processed.
-                    Once confirmed, your account will be fully activated.
+                    @LocalizerA["YouEmailVerificationProcessed"]
                 </p>
 
                 <div class="auth-side-actions">
@@ -24,24 +26,24 @@
                     <a class="auth-action-card" asp-page="./Login">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Go to login</div>
-                            <div class="auth-action-text">Sign in to your account.</div>
+                            <div class="auth-action-title">@LocalizerA["LogIn"]</div>
+                            <div class="auth-action-text">@LocalizerA["SignInYourAccount"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-page="./Register">
                         <i class="bi bi-person-plus"></i>
                         <div>
-                            <div class="auth-action-title">Create another account</div>
-                            <div class="auth-action-text">Register a new user account.</div>
+                            <div class="auth-action-title">@LocalizerA["CreateAccount"]</div>
+                            <div class="auth-action-text">@LocalizerA["RegisterNewAccount"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-page="./ResendEmailConfirmation">
                         <i class="bi bi-envelope"></i>
                         <div>
-                            <div class="auth-action-title">Resend confirmation</div>
-                            <div class="auth-action-text">Send the confirmation email again.</div>
+                            <div class="auth-action-title">@LocalizerA["ResendConfirmation"]</div>
+                            <div class="auth-action-text">@LocalizerA["SendConfirmationAgain"]</div>
                         </div>
                     </a>
 
@@ -52,9 +54,9 @@
             <div class="auth-form-side">
 
                 <div class="auth-form-head">
-                    <h2 class="auth-form-title">Confirmation result</h2>
+                    <h2 class="auth-form-title">@LocalizerA["ConfirmationResult"]</h2>
                     <p class="auth-form-subtitle">
-                        Your email confirmation status
+                        @LocalizerA["YourEmailConfirmationStatus"]
                     </p>
                 </div>
 
@@ -64,7 +66,7 @@
 
                 <div style="margin-top:20px;">
                     <a asp-page="./Login" class="app-btn app-btn-accent auth-submit">
-                        Log in
+                        @LocalizerA["LogIn"]
                     </a>
                 </div>
 

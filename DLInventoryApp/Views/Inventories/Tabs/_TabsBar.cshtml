@@ -1,4 +1,5 @@
 ﻿@model DLInventoryApp.ViewModels.Inventories.Pages.InventoryDetailsShellVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
 
 @{
     var tab = (Model.ActiveTab ?? "items").ToLowerInvariant();
@@ -8,31 +9,31 @@
 <div class="inv-tabs inv-tabs-under-title">
         <a class="@TabClass("items")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="items">
-            Items
+            @LocalizerShared["Items"]
         </a>
 
         <a class="@TabClass("chat")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="chat">
-            Chat
+            @LocalizerShared["Chat"]
         </a>
 
         <a class="@TabClass("settings")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="settings">
-            Settings
+            @LocalizerShared["Settings"]
         </a>
 
         <a class="@TabClass("customid")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="customid">
-            Custom ID
+            @LocalizerShared["CustomId"]
         </a>
 
         <a class="@TabClass("fields")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="fields">
-            Fields
+            @LocalizerShared["Fields"]
         </a>
 
         <a class="@TabClass("access")"
            asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="access">
-            Access
+            @LocalizerShared["Access"]
         </a>
 </div>

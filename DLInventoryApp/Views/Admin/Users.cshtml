@@ -1,6 +1,9 @@
 ﻿@using DLInventoryApp.ViewModels.Common.Pagination
 @using DLInventoryApp.ViewModels.Admin
 @model PagedVm<UserAdminVm>
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AdminResource> LocalizerAd
+
 
 @{
     ViewData["Title"] = "Users";
@@ -8,7 +11,7 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">User management</h1>
+        <h1 class="page-title">@LocalizerAd["UserManagement"]</h1>
     </div>
 </div>
 
@@ -90,8 +93,8 @@
         @if (Model == null || !Model.Items.Any())
         {
             <div class="empty-state">
-                <div class="empty-title">No users found</div>
-                <div class="empty-sub">User accounts will appear here.</div>
+                <div class="empty-title">@LocalizerAd["NoUsersFound"]</div>
+                <div class="empty-sub">@LocalizerAd["UserAccountsWillAppearHere"]</div>
             </div>
         }
         else
@@ -104,11 +107,11 @@
                                 <th class="col-check">
                                     <input type="checkbox" id="selectAll" aria-label="Select all users" />
                                 </th>
-                                <th class="col-username">User name</th>
+                                <th class="col-username">@LocalizerShared["User"]</th>
                                 <th class="col-email">Email</th>
-                                <th class="col-status ta-center">Confirmed</th>
-                                <th class="col-status ta-center">Blocked</th>
-                                <th class="col-status ta-center">Role</th>
+                                <th class="col-status ta-center">@LocalizerShared["Confirmed"]</th>
+                                <th class="col-status ta-center">@LocalizerShared["Blocked"]</th>
+                                <th class="col-status ta-center">@LocalizerShared["Role"]</th>
                             </tr>
                         </thead>
 

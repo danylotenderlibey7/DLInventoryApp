@@ -5,40 +5,43 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Resend email confirmation";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
         <div class="auth-wide-grid">
 
             <div class="auth-side">
-                <h1 class="auth-side-title">Resend confirmation</h1>
+                <h1 class="auth-side-title">@LocalizerA["ResendConfirmation"]</h1>
 
                 <p class="auth-side-text">
-                    Enter your email address and we will send a new confirmation link.
+                    @LocalizerA["EnterEmailWillSendConfirmation"]
                 </p>
 
                 <div class="auth-side-actions">
                     <a class="auth-action-card" asp-page="./Login">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Back to login</div>
-                            <div class="auth-action-text">Return to the login page.</div>
+                            <div class="auth-action-title">@LocalizerA["BackToLogin"]</div>
+                            <div class="auth-action-text">@LocalizerA["ReturnToTheMainPage"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-page="./Register">
                         <i class="bi bi-person-plus"></i>
                         <div>
-                            <div class="auth-action-title">Create account</div>
-                            <div class="auth-action-text">Register a new account.</div>
+                            <div class="auth-action-title">@LocalizerA["CreateAccount"]</div>
+                            <div class="auth-action-text">@LocalizerA["RegisterNewAccount"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-page="./ForgotPassword">
                         <i class="bi bi-key"></i>
                         <div>
-                            <div class="auth-action-title">Forgot password</div>
-                            <div class="auth-action-text">Request a password reset link.</div>
+                            <div class="auth-action-title">@LocalizerA["ForgotPassword"]</div>
+                            <div class="auth-action-text">@LocalizerA["RequestPasswordResetLink"]</div>
                         </div>
                     </a>
                 </div>
@@ -46,15 +49,15 @@
 
             <div class="auth-form-side">
                 <div class="auth-form-head">
-                    <h2 class="auth-form-title">Send again</h2>
-                    <p class="auth-form-subtitle">We will send a new email confirmation link</p>
+                    <h2 class="auth-form-title">@LocalizerA["SendAgain"]</h2>
+                    <p class="auth-form-subtitle">@LocalizerA["WeSendNewEmailConfirmation"]</p>
                 </div>
 
                 <form method="post" class="auth-form-block">
                     <div asp-validation-summary="All" class="auth-validation"></div>
 
                     <div class="auth-field">
-                        <label asp-for="Input.Email" class="auth-label"></label>
+                        <label asp-for="Input.Email" class="auth-label">Email</label>
                         <input asp-for="Input.Email"
                                class="auth-input"
                                aria-required="true"
@@ -63,7 +66,7 @@
                     </div>
 
                     <button type="submit" class="app-btn app-btn-primary auth-submit">
-                        Resend confirmation
+                        @LocalizerA["ResendConfirmation"]
                     </button>
                 </form>
             </div>

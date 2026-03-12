@@ -4,40 +4,43 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Log out";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
         <div class="auth-wide-grid">
 
             <div class="auth-side">
-                <h1 class="auth-side-title">Log out</h1>
+                <h1 class="auth-side-title">@LocalizerA["LogOut"]</h1>
 
                 <p class="auth-side-text">
-                    End the current session or return back to the application.
+                    @LocalizerA["EndCurrentSessionETC"]
                 </p>
 
                 <div class="auth-side-actions">
                     <a class="auth-action-card" asp-page="/Account/Login" asp-area="Identity">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Back to login</div>
-                            <div class="auth-action-text">Sign in with another account.</div>
+                            <div class="auth-action-title">@LocalizerA["BackToLogin"]</div>
+                            <div class="auth-action-text">@LocalizerA["SignInWithAnotherAccount"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-page="/Account/Register" asp-area="Identity">
                         <i class="bi bi-person-plus"></i>
                         <div>
-                            <div class="auth-action-title">Create account</div>
-                            <div class="auth-action-text">Register a new user account.</div>
+                            <div class="auth-action-title">@LocalizerA["CreateAccount"]</div>
+                            <div class="auth-action-text">@LocalizerA["RegisterNewAccount"]</div>
                         </div>
                     </a>
 
                     <a class="auth-action-card" asp-controller="Inventories" asp-action="Index">
                         <i class="bi bi-house-door"></i>
                         <div>
-                            <div class="auth-action-title">Go home</div>
-                            <div class="auth-action-text">Return to the main page.</div>
+                            <div class="auth-action-title">@LocalizerA["GoHome"]</div>
+                            <div class="auth-action-text">@LocalizerA["ReturnToTheMainPage"].</div>
                         </div>
                     </a>
                 </div>
@@ -47,8 +50,8 @@
                 @if (User.Identity?.IsAuthenticated ?? false)
                 {
                     <div class="auth-form-head">
-                        <h2 class="auth-form-title">Confirm logout</h2>
-                        <p class="auth-form-subtitle">You are about to end your current session</p>
+                        <h2 class="auth-form-title">@LocalizerA["ConfirmLogout"]</h2>
+                        <p class="auth-form-subtitle">@LocalizerA["YouAboutEndSession"]</p>
                     </div>
 
                     <form class="auth-form-block"
@@ -57,22 +60,22 @@
                           asp-route-returnUrl="@Url.Page("/", new { area = "" })"
                           method="post">
                         <button type="submit" class="app-btn app-btn-primary auth-submit">
-                            Log out
+                            @LocalizerA["LogOut"]
                         </button>
                     </form>
                 }
                 else
                 {
                     <div class="auth-form-head">
-                        <h2 class="auth-form-title">Logged out</h2>
-                        <p class="auth-form-subtitle">You have successfully logged out of the application</p>
+                        <h2 class="auth-form-title">@LocalizerA["LoggedOut"]</h2>
+                        <p class="auth-form-subtitle">@LocalizerA["YouHaveSuccessfullyLoggedOut"]</p>
                     </div>
 
                     <div class="auth-form-block">
                         <a class="app-btn app-btn-primary auth-submit"
                            asp-controller="Inventories"
                            asp-action="Index">
-                            Go to home page
+                            @LocalizerA["GoHome"]
                         </a>
                     </div>
                 }

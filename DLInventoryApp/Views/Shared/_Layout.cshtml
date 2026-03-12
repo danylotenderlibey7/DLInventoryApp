@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -65,7 +66,7 @@
                         <input type="text"
                                id="searchBox"
                                name="query"
-                               placeholder="Search..."
+                               placeholder="@Localizer["SearchPlaceholder"]"
                                class="form-control form-control-sm sidebar-search-input"
                                value="@Context.Request.Query["query"]" />
 
@@ -96,7 +97,7 @@
                    asp-controller="Inventories"
                    asp-action="Index">
                     <i class="bi bi-archive"></i>
-                    <span>All Inventories</span>
+                    <span>@Localizer["AllInventories"]</span>
                 </a>
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -105,14 +106,14 @@
                        asp-controller="Inventories"
                        asp-action="My">
                         <i class="bi bi-person"></i>
-                        <span>My Inventories</span>
+                        <span>@Localizer["MyInventories"]</span>
                     </a>
 
                     <a class="nav-item nav-item-accent @Active("Inventories","Create")"
                        asp-controller="Inventories"
                        asp-action="Create">
                         <i class="bi bi-plus-lg"></i>
-                        <span>New Inventory</span>
+                        <span>@Localizer["NewInventory"]</span>
                     </a>
                 }
 
@@ -120,7 +121,7 @@
                    asp-controller="Tags"
                    asp-action="Index">
                     <i class="bi bi-tags"></i>
-                    <span>All tags</span>
+                    <span>@Localizer["AllTags"]</span>
                 </a>
 
                 @if (User.IsInRole("Admin"))
@@ -129,7 +130,7 @@
                        asp-controller="Admin"
                        asp-action="Users">
                         <i class="bi bi-shield-lock"></i>
-                        <span>Users</span>
+                        <span>@Localizer["Users"]</span>
                     </a>
                 }
 
@@ -158,7 +159,15 @@
                             <i class="bi bi-moon"></i>
                         </button>
                     </div>
-
+                    <form id="langForm"
+                          asp-controller="Language"
+                          asp-action="Set"
+                          method="post"
+                          style="display:none;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="culture" id="cultureInput" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                    </form>
                     <div class="sidebar-switch" id="langSwitch" role="group" aria-label="Language switch">
                         <button type="button"
                                 class="sidebar-switch-btn is-active"
@@ -186,7 +195,7 @@
                     <div class="sidebar-account-block">
                         <a href="/profile" class="nav-item">
                             <i class="bi bi-person-circle"></i>
-                            <span>Personal page</span>
+                            <span>@Localizer["PersonalPage"]</span>
                         </a>
 
                         <form asp-area="Identity"
@@ -197,7 +206,7 @@
 
                             <button type="submit" class="nav-item sidebar-logout-navbtn">
                                 <i class="bi bi-door-open"></i>
-                                <span>Logout</span>
+                                <span>@Localizer["Logout"]</span>
                             </button>
                         </form>
                     </div>
@@ -209,7 +218,7 @@
                            asp-page="/Account/Login"
                            class="sidebar-account-link">
                             <i class="bi bi-box-arrow-in-right"></i>
-                            <span>Login</span>
+                            <span>@Localizer["Login"]</span>
                         </a>
                     </div>
                 }
@@ -364,15 +373,24 @@
             }
 
             function applyLang(lang) {
-                localStorage.setItem("ui-lang-preview", lang);
+                const form = document.getElementById("langForm");
+                const input = document.getElementById("cultureInput");
+
+                if (!form || !input) return;
+
                 syncLangButtons(lang);
+                input.value = lang;
+
+                setTimeout(() => {
+                    form.submit();
+                }, 120);
             }
 
             langEnBtn?.addEventListener("click", () => applyLang("en"));
             langUkBtn?.addEventListener("click", () => applyLang("uk"));
 
-            const savedLang = localStorage.getItem("ui-lang-preview") || "en";
-            syncLangButtons(savedLang);
+            const currentLang = "@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName";
+            syncLangButtons(currentLang);
         })();
     </script>
 

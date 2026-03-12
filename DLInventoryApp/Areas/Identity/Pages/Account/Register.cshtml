@@ -5,16 +5,19 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Register";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
         <div class="auth-wide-grid">
 
             <div class="auth-side">
-                <h1 class="auth-side-title">Create account</h1>
+                <h1 class="auth-side-title">@LocalizerA["CreateAccount"]</h1>
 
                 <p class="auth-side-text">
-                    Register to create inventories and manage your personal page.
+                    @LocalizerA["RegisterTextETC"]
                 </p>
 
                 <div class="auth-side-actions">
@@ -23,8 +26,8 @@
                        asp-route-returnUrl="@Model.ReturnUrl">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Already have account</div>
-                            <div class="auth-action-text">Go to login page.</div>
+                            <div class="auth-action-title">@LocalizerA["AlreadyHaveAccount"]</div>
+                            <div class="auth-action-text">@LocalizerA["GoLoginPage"]</div>
                         </div>
                     </a>
 
@@ -32,8 +35,8 @@
                        asp-page="./ForgotPassword">
                         <i class="bi bi-key"></i>
                         <div>
-                            <div class="auth-action-title">Forgot password</div>
-                            <div class="auth-action-text">Reset your access.</div>
+                            <div class="auth-action-title">@LocalizerA["ForgotPassword"]</div>
+                            <div class="auth-action-text">@LocalizerA["ResetYourAccess"]</div>
                         </div>
                     </a>
 
@@ -41,8 +44,8 @@
                        asp-page="./ResendEmailConfirmation">
                         <i class="bi bi-envelope"></i>
                         <div>
-                            <div class="auth-action-title">Resend confirmation</div>
-                            <div class="auth-action-text">Send confirmation again.</div>
+                            <div class="auth-action-title">@LocalizerA["ResendConfirmation"]</div>
+                            <div class="auth-action-text">@LocalizerA["SendConfirmationAgain"]</div>
                         </div>
                     </a>
                 </div>
@@ -78,8 +81,8 @@
 
             <div class="auth-form-side">
                 <div class="auth-form-head">
-                    <h2 class="auth-form-title">Register</h2>
-                    <p class="auth-form-subtitle">Create a new account</p>
+                    <h2 class="auth-form-title">@LocalizerA["Register"]</h2>
+                    <p class="auth-form-subtitle">@LocalizerA["CreateAccount"]</p>
                 </div>
 
                 <form method="post"
@@ -88,15 +91,15 @@
                     <div asp-validation-summary="ModelOnly" class="auth-validation"></div>
 
                     <div class="auth-field">
-                        <label asp-for="Input.UserName" class="auth-label"></label>
+                        <label asp-for="Input.UserName" class="auth-label">@LocalizerS["User"]</label>
                         <input asp-for="Input.UserName"
                                class="auth-input"
-                               placeholder="User name" />
+                               placeholder="@LocalizerS["User"]" />
                         <span asp-validation-for="Input.UserName" class="auth-field-error"></span>
                     </div>
 
                     <div class="auth-field">
-                        <label asp-for="Input.Email" class="auth-label"></label>
+                        <label asp-for="Input.Email" class="auth-label">Email</label>
                         <input asp-for="Input.Email"
                                class="auth-input"
                                placeholder="name@email.com" />
@@ -104,23 +107,23 @@
                     </div>
 
                     <div class="auth-field">
-                        <label asp-for="Input.Password" class="auth-label"></label>
+                        <label asp-for="Input.Password" class="auth-label">@LocalizerU["Password"]</label>
                         <input asp-for="Input.Password"
                                class="auth-input"
-                               placeholder="Password" />
+                               placeholder="@LocalizerU["Password"]" />
                         <span asp-validation-for="Input.Password" class="auth-field-error"></span>
                     </div>
 
                     <div class="auth-field">
-                        <label asp-for="Input.ConfirmPassword" class="auth-label"></label>
+                        <label asp-for="Input.ConfirmPassword" class="auth-label">@LocalizerA["RepeatPassword"]</label>
                         <input asp-for="Input.ConfirmPassword"
                                class="auth-input"
-                               placeholder="Repeat password" />
+                               placeholder="@LocalizerA["RepeatPassword"]" />
                         <span asp-validation-for="Input.ConfirmPassword" class="auth-field-error"></span>
                     </div>
 
                     <button type="submit" class="app-btn app-btn-primary auth-submit">
-                        Create account
+                        @LocalizerA["CreateAccount"]
                     </button>
                 </form>
             </div>

@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CreateYourInv" xml:space="preserve">
+    <value>Create your first inventory to get started.</value>
+    <comment>Create your first inventory to get started.</comment>
+  </data>
+  <data name="InventorySettings" xml:space="preserve">
+    <value>Inventory settings</value>
+    <comment>Inventory settings</comment>
+  </data>
+  <data name="NewInventory" xml:space="preserve">
+    <value>New Inventory</value>
+    <comment>New Inventory</comment>
+  </data>
+  <data name="NoCommentsYet" xml:space="preserve">
+    <value>No comments yet</value>
+    <comment>No comments yet</comment>
+  </data>
+  <data name="NoInventoriesYet" xml:space="preserve">
+    <value>No inventories yet</value>
+    <comment>No inventories yet</comment>
+  </data>
+  <data name="WriteComment" xml:space="preserve">
+    <value>Write a comment</value>
+  </data>
+  <data name="WriteCommentMarkdownSupported" xml:space="preserve">
+    <value>Write a comment... (Markdown supported)</value>
+  </data>
+  <data name="YouMustSignInPostComments" xml:space="preserve">
+    <value>You must sign in to post comments.</value>
+    <comment>You must sign in to post comments.</comment>
+  </data>
+  <data name="edited" xml:space="preserve">
+    <value>edited</value>
+    <comment>edited</comment>
+  </data>
+  <data name="SelectCategory" xml:space="preserve">
+    <value>Select category...</value>
+    <comment>Select category...</comment>
+  </data>
+  <data name="IfPublic" xml:space="preserve">
+    <value>If public, all authenticated users can add items.</value>
+  </data>
+  <data name="AllInventories" xml:space="preserve">
+    <value>All Inventories</value>
+  </data>
+  <data name="ManageUsersWhoHaveAccess" xml:space="preserve">
+    <value>Manage users who have write access to this inventory.</value>
+    <comment>Manage users who have write access to this inventory.</comment>
+  </data>
+  <data name="NoUsersHaveWriteAccess" xml:space="preserve">
+    <value>No users have write access</value>
+    <comment>No users have write access</comment>
+  </data>
+  <data name="AddUser" xml:space="preserve">
+    <value>Add user</value>
+  </data>
+  <data name="GrantWriteAccess" xml:space="preserve">
+    <value>Grant write access</value>
+    <comment>Grant write access</comment>
+  </data>
+  <data name="UserMustExistInTheSystem" xml:space="preserve">
+    <value>User must exist in the system.</value>
+    <comment>User must exist in the system.</comment>
+  </data>
+  <data name="UsersWithWriteAccess" xml:space="preserve">
+    <value>Users with write access</value>
+    <comment>Users with write access</comment>
+  </data>
+  <data name="NoItemsYet" xml:space="preserve">
+    <value>No items yet</value>
+  </data>
+  <data name="CreateFirstItemForInventory" xml:space="preserve">
+    <value>Create the first item for this inventory.</value>
+  </data>
+  <data name="CreateYourFirstInventoryStart" xml:space="preserve">
+    <value>Create your first inventory to get started.</value>
+  </data>
+  <data name="NoSharedInventories" xml:space="preserve">
+    <value>No shared inventories</value>
+  </data>
+  <data name="InventoriesWhereYouHaveWriteAccessWillAppear" xml:space="preserve">
+    <value>Inventories where you have write access will appear here.</value>
+  </data>
+  <data name="SharedWithMe" xml:space="preserve">
+    <value>Shared with me</value>
+  </data>
+  <data name="CreateInventory" xml:space="preserve">
+    <value>Create inventory</value>
+  </data>
+  <data name="SetBasicInfoNowETC" xml:space="preserve">
+    <value>Set basic info now. You can configure custom IDs, fields and access after saving.</value>
+  </data>
+  <data name="StartTypingTagSuggestionsETC" xml:space="preserve">
+    <value>Start typing to see tag suggestions. Press Enter to add quickly.</value>
+  </data>
+  <data name="EditInventory" xml:space="preserve">
+    <value>Edit inventory</value>
+  </data>
+  <data name="UpdateInventorySettingsAndMetadata" xml:space="preserve">
+    <value>Update inventory settings and metadata</value>
+  </data>
+</root>

@@ -1,5 +1,7 @@
 ﻿@using DLInventoryApp.ViewModels.Items.Search
 @model SearchResultVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SearchResource> LocalizerS
 
 @{
     ViewData["Title"] = "Search";
@@ -7,11 +9,11 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Search</h1>
+        <h1 class="page-title">@LocalizerS["Search"]</h1>
         @if (!string.IsNullOrWhiteSpace(Model.Query))
         {
             <div class="page-subtitle">
-                Results for: <span class="page-meta">@Model.Query</span>
+                @LocalizerS["ResultsFor"] <span class="page-meta">@Model.Query</span>
             </div>
         }
     </div>
@@ -20,22 +22,22 @@
 @if (string.IsNullOrWhiteSpace(Model.Query))
 {
     <div class="empty-state">
-        <div class="empty-title">Enter a search query</div>
-        <div class="empty-sub">Use the search box in the sidebar to find inventories and items.</div>
+        <div class="empty-title">@LocalizerS["EnterSearchQuery"]</div>
+        <div class="empty-sub">@LocalizerS["UseSearchBoxETC"]</div>
     </div>
     return;
 }
 
 <div class="my-section">
     <div class="my-section-head">
-        <div class="my-section-title">Inventories</div>
+        <div class="my-section-title">@LocalizerShared["Inventories"]</div>
     </div>
 
     @if (Model.Inventories == null || Model.Inventories.Count == 0)
     {
         <div class="empty-state">
-            <div class="empty-title">No inventories found</div>
-            <div class="empty-sub">Try another query.</div>
+            <div class="empty-title">@LocalizerS["NoInventoriesFound"]</div>
+            <div class="empty-sub">@LocalizerS["TryAnotherQuery"]</div>
         </div>
     }
     else
@@ -44,8 +46,8 @@
             <table class="inv-table">
                 <thead>
                     <tr>
-                        <th class="inv-col-title">Inventory</th>
-                        <th>Description</th>
+                        <th class="inv-col-title">@LocalizerShared["Inventory"]</th>
+                        <th>@LocalizerShared["Description"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -69,14 +71,14 @@
 
 <div class="my-section">
     <div class="my-section-head">
-        <div class="my-section-title">Items</div>
+        <div class="my-section-title">@LocalizerShared["Items"]</div>
     </div>
 
     @if (Model.Items == null || Model.Items.Count == 0)
     {
         <div class="empty-state">
-            <div class="empty-title">No items found</div>
-            <div class="empty-sub">Try another query.</div>
+            <div class="empty-title">@LocalizerS["NoItemsFound"]</div>
+            <div class="empty-sub">@LocalizerS["TryAnotherQuery"]</div>
         </div>
     }
     else
@@ -85,9 +87,9 @@
             <table class="inv-table">
                 <thead>
                     <tr>
-                        <th>Custom ID</th>
-                        <th>Inventory</th>
-                        <th>Snippet</th>
+                        <th>@LocalizerShared["CustomId"]</th>
+                        <th>@LocalizerShared["Inventory"]</th>
+                        <th>@LocalizerShared["Snippet"]</th>
                     </tr>
                 </thead>
                 <tbody>

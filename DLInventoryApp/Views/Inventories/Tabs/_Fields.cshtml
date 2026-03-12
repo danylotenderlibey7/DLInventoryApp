@@ -1,5 +1,7 @@
 ﻿@using DLInventoryApp.Models
 @model DLInventoryApp.ViewModels.CustomFields.InventoryFieldsVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @{
     var vm = Model;
@@ -20,7 +22,7 @@
             <div class="duo-left fields-left">
                 <div class="card-elements fields-card">
                     <div class="card-elements-head">
-                        <div class="card-elements-title">Fields</div>
+                        <div class="card-elements-title">@LocalizerShared["Fields"]</div>
 
                         @if (canManage)
                         {
@@ -36,7 +38,7 @@
 
                     @if (!canManage)
                     {
-                        <div class="note-block fields-readonly-note">You have read-only access.</div>
+                        <div class="note-block fields-readonly-note">@LocalizerShared["HaveReadOnlyAccess"]</div>
                     }
 
                     <div id="fieldsState" class="save-text fields-state"></div>
@@ -45,7 +47,7 @@
                         @if (vm.Fields == null || vm.Fields.Count == 0)
                         {
                             <div class="empty-block fields-empty">
-                                No fields yet.
+                                @LocalizerShared["NoElementsConfiguredYet"]
                             </div>
 
                             <ul id="fieldsList" class="elements-list" style="display:none;"></ul>
@@ -67,7 +69,7 @@
                                                 <input class="input-field"
                                                        data-field="name"
                                                        value="@f.Name"
-                                                       placeholder="Field name"
+                                                       placeholder="@LocalizerShared["FieldName"]"
                                                 @(canManage ? "" : "disabled") />
 
                                                 <select class="select-field"
@@ -81,7 +83,7 @@
                                             </div>
                                             <textarea class="input-field field-description"
                                                       data-field="description"
-                                                      placeholder="Description (optional)"
+                                                      placeholder="@LocalizerShared["Description"]"
                                             @(canManage ? "" : "disabled")>@f.Description</textarea>
 
                                             <div class="field-flags">
@@ -90,7 +92,7 @@
                                                            data-field="showInTable"
                                                     @(f.ShowInTable ? "checked" : "")
                                                     @(canManage ? "" : "disabled") />
-                                                    Show in table
+                                                    @LocalizerShared["ShowInTable"]
                                                 </label>
 
                                                 <div class="save-text field-save-state" data-save-state="@f.Id"></div>
@@ -107,8 +109,8 @@
             <div class="duo-right fields-right">
                 <div id="fieldsTrash" class="trash-zone">
                     <div class="trash-head">
-                        <div class="trash-title">Delete</div>
-                        <div class="trash-sub">Drop here to delete</div>
+                        <div class="trash-title">@LocalizerShared["Delete"]</div>
+                        <div class="trash-sub">@LocalizerShared["Delete"]</div>
                     </div>
 
                     <div id="fieldsTrashDrop" class="trash-drop"></div>

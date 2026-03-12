@@ -1,6 +1,7 @@
 ﻿@using DLInventoryApp.ViewModels.Common.Pagination
 @using DLInventoryApp.ViewModels.Tags
 @model PagedVm<TagListItemVm>
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
 
 @{
     ViewData["Title"] = "Tags";
@@ -8,7 +9,7 @@
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Tags</h1>
+        <h1 class="page-title">@LocalizerShared["Tags"]</h1>
     </div>
 </div>
 
@@ -44,8 +45,8 @@
     @if (Model.Items == null || !Model.Items.Any())
     {
         <div class="empty-state">
-            <div class="empty-title">No tags yet</div>
-            <div class="empty-sub">Tags will appear here when inventories are created.</div>
+            <div class="empty-title">@LocalizerShared["NoTagsYet"]</div>
+            <div class="empty-sub">@LocalizerShared["TagsWillAppearHereETC"]</div>
         </div>
     }
     else
@@ -54,8 +55,8 @@
             <table class="inv-table">
                 <thead>
                     <tr>
-                        <th>Tag</th>
-                        <th align="center">Inventories</th>
+                        <th>@LocalizerShared["Tags"]</th>
+                        <th align="center">@LocalizerShared["Inventories"]</th>
                     </tr>
                 </thead>
 

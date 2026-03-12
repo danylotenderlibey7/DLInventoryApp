@@ -1,0 +1,321 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccessRestricted" xml:space="preserve">
+    <value>Доступ обмежено</value>
+  </data>
+  <data name="AccountBlocked" xml:space="preserve">
+    <value>Обліковий запис заблоковано</value>
+  </data>
+  <data name="AccountCreated" xml:space="preserve">
+    <value>Обліковий запис створено</value>
+  </data>
+  <data name="AllSet" xml:space="preserve">
+    <value>Все готово</value>
+  </data>
+  <data name="AlreadyHaveAccount" xml:space="preserve">
+    <value>Вже є обліковий запис</value>
+  </data>
+  <data name="AssociateYour" xml:space="preserve">
+    <value>Зв'яжіть свій</value>
+  </data>
+  <data name="BackToLogin" xml:space="preserve">
+    <value>Назад до входу</value>
+  </data>
+  <data name="CheckYourEmail" xml:space="preserve">
+    <value>Перевірте свою електронну пошту</value>
+  </data>
+  <data name="ConfirmationResult" xml:space="preserve">
+    <value>Результат підтвердження</value>
+  </data>
+  <data name="ConfirmEmail" xml:space="preserve">
+    <value>Підтвердьте свою електронну адресу</value>
+  </data>
+  <data name="ConfirmLogout" xml:space="preserve">
+    <value>Підтвердити вихід</value>
+  </data>
+  <data name="ContactSupport" xml:space="preserve">
+    <value>Зверніться до служби підтримки</value>
+  </data>
+  <data name="ContinueWith" xml:space="preserve">
+    <value>Продовжити з</value>
+  </data>
+  <data name="CreateAccount" xml:space="preserve">
+    <value>Створити обліковий запис</value>
+  </data>
+  <data name="EmailConfirmation" xml:space="preserve">
+    <value>Підтвердження електронною поштою</value>
+  </data>
+  <data name="EndCurrentSessionETC" xml:space="preserve">
+    <value>Завершіть поточний сеанс або поверніться до програми.</value>
+  </data>
+  <data name="EnterConfirmedEmailETC" xml:space="preserve">
+    <value>Введіть свою підтверджену адресу електронної пошти, і ми надішлемо вам посилання для скидання пароля</value>
+  </data>
+  <data name="EnterEmailWillSendConfirmation" xml:space="preserve">
+    <value>Введіть свою адресу електронної пошти, і ми надішлемо вам нове посилання для підтвердження</value>
+  </data>
+  <data name="EnterYourCredentials" xml:space="preserve">
+    <value>Введіть свої облікові дані</value>
+  </data>
+  <data name="FillFieldsBelow" xml:space="preserve">
+    <value>Заповніть поля нижче</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Забули пароль</value>
+  </data>
+  <data name="GoHome" xml:space="preserve">
+    <value>Додому</value>
+  </data>
+  <data name="GoLoginPage" xml:space="preserve">
+    <value>Перейти на сторінку входу</value>
+  </data>
+  <data name="IfDonSeeEmail" xml:space="preserve">
+    <value>Якщо ви не бачите електронного листа, перевірте папку зі спамом або надішліть підтвердження ще раз.</value>
+  </data>
+  <data name="IfEmailAddressConfirmed" xml:space="preserve">
+    <value>Якщо обліковий запис із цією електронною адресою існує, і адресу підтверджено, посилання для скидання пароля буде надіслано на вашу електронну пошту</value>
+  </data>
+  <data name="LoggedOut" xml:space="preserve">
+    <value>Вийшов з системи</value>
+  </data>
+  <data name="LogIn" xml:space="preserve">
+    <value>Увійти</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>Вийти</value>
+  </data>
+  <data name="PasswordUpdated" xml:space="preserve">
+    <value>Пароль оновлено</value>
+  </data>
+  <data name="PleaseCheckEmailConfirmationLink" xml:space="preserve">
+    <value>Будь ласка, перевірте свою електронну пошту та натисніть посилання підтвердження, щоб активувати свій обліковий запис</value>
+  </data>
+  <data name="PleaseCheckEmailInstructions" xml:space="preserve">
+    <value>Будь ласка, перевірте свою електронну пошту та дотримуйтесь інструкцій, щоб скинути пароль</value>
+  </data>
+  <data name="PleaseEnterEmail" xml:space="preserve">
+    <value>Будь ласка, введіть свою електронну адресу</value>
+  </data>
+  <data name="PleaseEnterEmailETC" xml:space="preserve">
+    <value>Будь ласка, введіть адресу електронної пошти для цього сайту нижче та натисніть кнопку «Зареєструватися», щоб завершити вхід.</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Зареєструватися</value>
+  </data>
+  <data name="RegisterNewAccount" xml:space="preserve">
+    <value>Зареєструйте новий обліковий запис</value>
+  </data>
+  <data name="RegisterTextETC" xml:space="preserve">
+    <value>Зареєструйтесь, щоб створювати інвентаризації та керувати своєю особистою сторінкою</value>
+  </data>
+  <data name="RememberMe" xml:space="preserve">
+    <value>Запам'ятати мене</value>
+  </data>
+  <data name="RepeatPassword" xml:space="preserve">
+    <value>Повторіть пароль</value>
+  </data>
+  <data name="RequestPasswordResetLink" xml:space="preserve">
+    <value>Запит посилання для скидання пароля</value>
+  </data>
+  <data name="ResendConfirmation" xml:space="preserve">
+    <value>Повторно надіслати підтвердження</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Скинути пароль</value>
+  </data>
+  <data name="ResetTakeMinuteETC" xml:space="preserve">
+    <value>Посилання для скидання може надійти через хвилину. Також перевірте папку зі спамом.</value>
+  </data>
+  <data name="ResetYourAccess" xml:space="preserve">
+    <value>Скинути доступ</value>
+  </data>
+  <data name="ReturnLoginPage" xml:space="preserve">
+    <value>Повернутися на сторінку входу</value>
+  </data>
+  <data name="ReturnToTheMainPage" xml:space="preserve">
+    <value>Повернутися на головну сторінку</value>
+  </data>
+  <data name="SendAgain" xml:space="preserve">
+    <value>Надіслати ще раз</value>
+  </data>
+  <data name="SendConfirmationAgain" xml:space="preserve">
+    <value>Надіслати підтвердження ще раз</value>
+  </data>
+  <data name="SendEmaiWillReview" xml:space="preserve">
+    <value>Надішліть нам електронного листа, і ми перевіримо ваш обліковий запис</value>
+  </data>
+  <data name="SendResetLink" xml:space="preserve">
+    <value>Надіслати посилання для скидання</value>
+  </data>
+  <data name="SetNewPassword" xml:space="preserve">
+    <value>Встановити новий пароль</value>
+  </data>
+  <data name="SignAfterConfirming" xml:space="preserve">
+    <value>Увійдіть після підтвердження email</value>
+  </data>
+  <data name="SignContinueWorkingETC" xml:space="preserve">
+    <value>Увійдіть, щоб продовжити роботу зі своїми інвентарями та предметами.</value>
+  </data>
+  <data name="SignInWithAnotherAccount" xml:space="preserve">
+    <value>Увійти, використовуючи інший обліковий запис</value>
+  </data>
+  <data name="SignInYourAccount" xml:space="preserve">
+    <value>Увійдіть у свій обліковий запис</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Ласкаво просимо</value>
+  </data>
+  <data name="WeSendNewEmailConfirmation" xml:space="preserve">
+    <value>Ми надішлемо нове посилання для підтвердження електронною поштою</value>
+  </data>
+  <data name="YouAboutEndSession" xml:space="preserve">
+    <value>Ви збираєтеся завершити поточний сеанс</value>
+  </data>
+  <data name="YouEmailVerificationProcessed" xml:space="preserve">
+    <value>Ваша електронна адреса підтверджена. Після підтвердження ваш обліковий запис буде повністю активовано.</value>
+  </data>
+  <data name="YouHaveSuccessfullyLoggedOut" xml:space="preserve">
+    <value>Ви успішно вийшли з програми</value>
+  </data>
+  <data name="YourAccountCreatedSuccessfully" xml:space="preserve">
+    <value>Ваш обліковий запис успішно створено. Ми надіслали посилання для підтвердження на вашу електронну адресу.</value>
+  </data>
+  <data name="YourBeenBlockedETC" xml:space="preserve">
+    <value>Ваш обліковий запис тимчасово заблоковано адміністраторами.</value>
+  </data>
+  <data name="YourCurrentlyAllowedAccess" xml:space="preserve">
+    <value>Ваш обліковий запис наразі не має доступу до системи</value>
+  </data>
+  <data name="YourEmailConfirmationStatus" xml:space="preserve">
+    <value>Статус підтвердження вашої електронної пошти</value>
+  </data>
+  <data name="YourPasswordChangedSuccessfully" xml:space="preserve">
+    <value>Пароль вашого облікового запису успішно змінено</value>
+  </data>
+  <data name="YourPasswordSuccessfullyReset" xml:space="preserve">
+    <value>Ваш пароль успішно скинуто. Тепер ви можете увійти, використовуючи свій новий пароль.</value>
+  </data>
+  <data name="YouSafelySignWithPassword" xml:space="preserve">
+    <value>Тепер ви можете безпечно входити, використовуючи свій новий пароль</value>
+  </data>
+  <data name="YouSuccessfullyAuthenticatedWith" xml:space="preserve">
+    <value>Ви успішно пройшли автентифікацію за допомогою</value>
+  </data>
+</root>

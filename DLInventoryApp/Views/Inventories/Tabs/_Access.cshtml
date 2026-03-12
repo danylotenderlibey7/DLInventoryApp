@@ -1,9 +1,11 @@
 ﻿@using DLInventoryApp.ViewModels.Inventories.Tabs.Access
 @model InventoryAccessVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @if (Model == null)
 {
-    <div class="empty-block">No data</div>
+    <div class="empty-block">@LocalizerShared["NoData"]</div>
     return;
 }
 
@@ -14,9 +16,9 @@
     <div class="access-main-grid">
         <div class="access-left">
             <div class="access-toolbar">
-                <div class="my-section-title access-section-title">Users with write access</div>
+                <div class="my-section-title access-section-title">@LocalizerInv["UsersWithWriteAccess"]</div>
                 <div class="page-subtitle">
-                    Manage users who have write access to this inventory.
+                    @LocalizerInv["ManageUsersWhoHaveAccess"]
                 </div>
                 <button id="deleteSelectedAccessBtn"
                         type="button"
@@ -34,7 +36,7 @@
             @if (Model.Users == null || !Model.Users.Any())
             {
                 <div id="accessEmpty" class="empty-state">
-                    <div class="empty-title">No users have write access</div>
+                    <div class="empty-title">@LocalizerInv["NoUsersHaveWriteAccess"]</div>
                 </div>
 
                 <div id="accessTableWrap" class="inv-table-wrap access-table-wrap" style="display:none;">
@@ -45,7 +47,7 @@
                                     <th class="col-check">
                                         <input id="checkAllAccess" type="checkbox" aria-label="Select all users" />
                                     </th>
-                                    <th>User</th>
+                                    <th>@LocalizerShared["User"]</th>
                                     <th>Email</th>
                                 </tr>
                             </thead>
@@ -57,7 +59,7 @@
             else
             {
                 <div id="accessEmpty" class="empty-state" style="display:none;">
-                    <div class="empty-title">No users have write access</div>
+                    <div class="empty-title">@LocalizerInv["NoUsersHaveWriteAccess"]</div>
                 </div>
 
                 <div id="accessTableWrap" class="inv-table-wrap access-table-wrap">
@@ -68,7 +70,7 @@
                                     <th class="col-check">
                                         <input id="checkAllAccess" type="checkbox" aria-label="Select all users" />
                                     </th>
-                                    <th>User</th>
+                                    <th>@LocalizerShared["User"]</th>
                                     <th>Email</th>
                                 </tr>
                             </thead>
@@ -105,12 +107,12 @@
         <div class="access-right">
             <div class="access-side-card">
                 <div class="access-side-head">
-                    <div class="card-elements-title">Add user</div>
-                    <div class="hint-text">Grant write access</div>
+                    <div class="card-elements-title">@LocalizerInv["AddUser"]</div>
+                    <div class="hint-text">@LocalizerInv["GrantWriteAccess"]</div>
                 </div>
 
                 <form id="accessAddForm" method="post" autocomplete="off">
-                    <div class="duo-preview-label access-side-label">User or email</div>
+                    <div class="duo-preview-label access-side-label">@LocalizerShared["UserOrEmail"]</div>
 
                     <div class="access-input-row">
                         <input id="accessEmail"
@@ -131,7 +133,7 @@
                 </form>
 
                 <div id="accessSideMessage" class="access-msg">
-                    User must exist in the system.
+                    @LocalizerInv["UserMustExistInTheSystem"]
                 </div>
             </div>
         </div>

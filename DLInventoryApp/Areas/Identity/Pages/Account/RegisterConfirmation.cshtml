@@ -4,17 +4,19 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Register confirmation";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
         <div class="auth-wide-grid">
 
             <div class="auth-side">
-                <h1 class="auth-side-title">Account created</h1>
+                <h1 class="auth-side-title">@LocalizerA["AccountCreated"]</h1>
 
                 <p class="auth-side-text">
-                    Your account has been created successfully.
-                    We sent a confirmation link to your email.
+                    @LocalizerA["YourAccountCreatedSuccessfully"]
                 </p>
 
                 <div class="auth-side-actions">
@@ -23,8 +25,8 @@
                        asp-page="./Login">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Go to login</div>
-                            <div class="auth-action-text">Sign in after confirming email</div>
+                            <div class="auth-action-title">@LocalizerA["GoLoginPage"]</div>
+                            <div class="auth-action-text">@LocalizerA["SignAfterConfirming"]</div>
                         </div>
                     </a>
 
@@ -32,8 +34,8 @@
                        asp-page="./ResendEmailConfirmation">
                         <i class="bi bi-envelope"></i>
                         <div>
-                            <div class="auth-action-title">Resend confirmation</div>
-                            <div class="auth-action-text">Send confirmation email again</div>
+                            <div class="auth-action-title">@LocalizerA["ResendConfirmation"]</div>
+                            <div class="auth-action-text">@LocalizerA["SendConfirmationAgain"]</div>
                         </div>
                     </a>
 
@@ -42,16 +44,16 @@
 
             <div class="auth-form-side">
                 <div class="auth-form-head">
-                    <h2 class="auth-form-title">Confirm your email</h2>
+                    <h2 class="auth-form-title">@LocalizerA["ConfirmEmail"]</h2>
 
                     <p class="auth-form-subtitle">
-                        Please check your email and click the confirmation link to activate your account.
+                        @LocalizerA["PleaseCheckEmailConfirmationLink"]
                     </p>
                 </div>
 
                 <div class="auth-form-block">
                     <div class="auth-validation">
-                        If you don't see the email, check your spam folder or resend the confirmation.
+                        @LocalizerA["IfDonSeeEmail"]
                     </div>
                 </div>
 

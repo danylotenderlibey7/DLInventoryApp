@@ -4,6 +4,9 @@
     Layout = "/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Account blocked";
 }
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerS
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.AuthResource> LocalizerA
 
 <div class="workspace-inner auth-wide-page">
     <section class="auth-wide-card">
@@ -11,11 +14,10 @@
 
             <div class="auth-side">
 
-                <h1 class="auth-side-title">Account blocked</h1>
+                <h1 class="auth-side-title">@LocalizerA["AccountBlocked"]</h1>
 
                 <p class="auth-side-text">
-                    Your account has been temporarily blocked by the administrators.
-                    If you believe this is a mistake, please contact support.
+                    @LocalizerA["YourBeenBlockedETC"]
                 </p>
 
                 <div class="auth-side-actions">
@@ -23,9 +25,9 @@
                     <a class="auth-action-card" href="mailto:support@yourapp.com">
                         <i class="bi bi-envelope"></i>
                         <div>
-                            <div class="auth-action-title">Contact support</div>
+                            <div class="auth-action-title">@LocalizerA["ContactSupport"]</div>
                             <div class="auth-action-text">
-                                Send us an email and we will review your account.
+                                @LocalizerA["SendEmaiWillReview"]
                             </div>
                         </div>
                     </a>
@@ -33,9 +35,9 @@
                     <a class="auth-action-card" asp-area="Identity" asp-page="/Account/Login">
                         <i class="bi bi-box-arrow-in-right"></i>
                         <div>
-                            <div class="auth-action-title">Back to login</div>
+                            <div class="auth-action-title">@LocalizerA["BackToLogin"]</div>
                             <div class="auth-action-text">
-                                Try signing in with another account.
+                                @LocalizerA["SignInWithAnotherAccount"]
                             </div>
                         </div>
                     </a>
@@ -43,9 +45,9 @@
                     <a class="auth-action-card" asp-page="/Index">
                         <i class="bi bi-house"></i>
                         <div>
-                            <div class="auth-action-title">Go to home</div>
+                            <div class="auth-action-title">@LocalizerA["GoHome"]</div>
                             <div class="auth-action-text">
-                                Return to the main page of the application.
+                                @LocalizerA["ReturnToTheMainPage"]
                             </div>
                         </div>
                     </a>
@@ -57,15 +59,14 @@
             <div class="auth-form-side">
 
                 <div class="auth-form-head">
-                    <h2 class="auth-form-title">Access restricted</h2>
+                    <h2 class="auth-form-title">@LocalizerA["AccessRestricted"]</h2>
                     <p class="auth-form-subtitle">
-                        Your account is currently not allowed to access the system.
+                        @LocalizerA["YourCurrentlyAllowedAccess"]
                     </p>
                 </div>
 
                 <div class="auth-validation">
-                    Your account has been blocked.
-                    If you think this is an error, please contact support.
+                    @LocalizerA["YourBeenBlockedETC"]
                 </div>
 
             </div>
