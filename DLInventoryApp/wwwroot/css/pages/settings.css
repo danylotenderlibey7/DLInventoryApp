@@ -102,3 +102,120 @@ body[data-theme="dark"] .inv-settings-textarea:disabled {
         opacity: 1;
         font-weight: 600;
     }
+
+@media (max-width: 700px) {
+    .inv-settings-card {
+        padding: 12px;
+        border-radius: 12px;
+    }
+
+    .inv-settings-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .inv-settings-title {
+        font-size: 15px;
+    }
+
+    .inv-settings-note {
+        font-size: 12px;
+    }
+
+    .inv-settings-grid {
+        gap: 10px;
+    }
+
+    .inv-settings-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .inv-settings-label {
+        padding-top: 0;
+        font-size: 12px;
+    }
+
+    .inv-settings-field {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .inv-settings-input,
+    .inv-settings-textarea {
+        font-size: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+
+    .inv-settings-textarea {
+        min-height: 88px;
+    }
+
+    .inv-settings-readonly {
+        padding: 4px 0 0 0;
+        font-size: 14px;
+    }
+
+    .inv-settings-save {
+        font-size: 11px;
+    }
+
+    #tagInputSettings {
+        width: 100%;
+    }
+
+    #addTagBtnSettings {
+        width: 100%;
+        min-height: 40px;
+        border-radius: 10px;
+    }
+
+    .tag-input-wrap .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    #tagSuggestListSettings {
+        max-height: 180px;
+        overflow-y: auto;
+    }
+
+    #tagsChipsSettings {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .tag-chip {
+        max-width: 100%;
+    }
+
+    .tag-chip-x {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 420px) {
+    .inv-settings-card {
+        padding: 10px;
+    }
+
+    .inv-settings-input,
+    .inv-settings-textarea {
+        font-size: 13px;
+        padding: 9px 10px;
+    }
+
+    .inv-settings-title {
+        font-size: 14px;
+    }
+
+    .inv-settings-note,
+    .inv-settings-save {
+        font-size: 11px;
+    }
+}

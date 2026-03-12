@@ -11,7 +11,9 @@
 
 .admin-users-table-scroll {
     max-height: 490px;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .admin-users-table {
@@ -22,16 +24,19 @@
     .admin-users-table th:nth-child(1),
     .admin-users-table td:nth-child(1) {
         width: 52px;
+        min-width: 52px;
     }
 
     .admin-users-table th:nth-child(2),
     .admin-users-table td:nth-child(2) {
-        width: 24%;
+        width: 220px;
+        min-width: 220px;
     }
 
     .admin-users-table th:nth-child(3),
     .admin-users-table td:nth-child(3) {
-        width: 30%;
+        width: 260px;
+        min-width: 260px;
     }
 
     .admin-users-table th:nth-child(4),
@@ -40,7 +45,8 @@
     .admin-users-table td:nth-child(5),
     .admin-users-table th:nth-child(6),
     .admin-users-table td:nth-child(6) {
-        width: 12%;
+        width: 110px;
+        min-width: 110px;
     }
 
     .admin-users-table th:not(.col-check),
@@ -119,11 +125,107 @@
         max-height: 260px;
     }
 
+    .admin-users-actions {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+        .admin-users-actions .app-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 0 10px;
+            border-radius: 10px;
+        }
+
+            .admin-users-actions .app-btn i {
+                font-size: 15px;
+            }
+
+    .admin-users-table-wrap {
+        width: 100%;
+        overflow: hidden;
+    }
+
     .admin-users-table-scroll {
         max-height: 360px;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .admin-users-table {
-        min-width: 900px;
+        width: max-content;
+        min-width: 862px;
+        table-layout: fixed;
+    }
+
+        .admin-users-table th,
+        .admin-users-table td {
+            white-space: nowrap;
+            word-break: normal;
+            overflow-wrap: normal;
+        }
+
+    .admin-user-name,
+    .admin-user-email {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: normal;
+        overflow-wrap: normal;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-users-actions {
+        gap: 6px;
+    }
+
+        .admin-users-actions .app-btn {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 8px;
+            border-radius: 9px;
+        }
+
+            .admin-users-actions .app-btn i {
+                font-size: 14px;
+            }
+
+    .admin-users-table-scroll {
+        max-height: 320px;
+    }
+}
+@media (max-width: 900px) {
+    .my-section-pager {
+        width: 100%;
+    }
+
+        .my-section-pager .pager-right {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+    .admin-users-actions {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .admin-users-table-wrap {
+        width: calc(100% + 12px);
+        margin-right: -12px;
+    }
+
+    .admin-users-table-scroll {
+        max-height: 360px;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
     }
 }

@@ -5,7 +5,11 @@
         <p class="page-subtitle">All changes saved</p>
 </div>
 
-<partial name="Tabs/_TabsBar" model="Model" />
+<div class="details-tabs-mobile-wrap">
+    <div class="details-tabs-scroll" id="detailsTabsScroll">
+        <partial name="Tabs/_TabsBar" model="Model" />
+    </div>
+</div>
 
 <div class="tab-body">
     @switch (Model.ActiveTab)

@@ -127,11 +127,19 @@
         const canWrite = root.dataset.canWrite === "1";
         const inventoryId = root.dataset.inventoryId;
 
+        let listEl = document.getElementById("fieldsList");
         const addBtn = document.getElementById("fieldsAddBtn");
-        const listEl = document.getElementById("fieldsList");
         const trashEl = document.getElementById("fieldsTrashDrop");
         const stateEl = document.getElementById("fieldsState");
         const countEl = document.getElementById("fieldsCount");
+
+        let sortableList = null;
+        let sortableTrash = null;
+
+        const dirtyRows = new Set();
+        const savingRows = new Set();
+        const autosaveIntervalMs = 8000;
+        let autosaveHandle = null;
 
         function updateCount() {
             if (!countEl) return;
@@ -168,6 +176,16 @@
             if (!el) return;
             el.textContent = text || "";
             el.classList.toggle("is-error", !!isErr);
+            el.classList.toggle("is-ok", !isErr && !!text && text.toLowerCase().indexOf("saved") >= 0);
+            el.classList.toggle("is-wip", !isErr && !!text && (text.toLowerCase().indexOf("saving") >= 0 || text.toLowerCase().indexOf("unsaved") >= 0));
+        }
+
+        function markDirty(rowId) {
+            if (!rowId) return;
+            dirtyRows.add(String(rowId));
+            if (!savingRows.has(String(rowId))) {
+                setRowState(rowId, "Unsaved", false);
+            }
         }
 
         async function postJson(url, body) {
@@ -183,7 +201,7 @@
 
             const text = await resp.text();
             let data = null;
-            try { data = JSON.parse(text); } catch { }
+            try { data = JSON.parse(text); } catch {}
 
             if (!resp.ok) {
                 const msg = (data && (data.error || data.title)) ? (data.error || data.title) : `HTTP ${resp.status}`;
@@ -193,20 +211,13 @@
             return data;
         }
 
-        const timers = new Map();
-
-        function scheduleSave(rowId) {
-            if (!canWrite) return;
-            if (timers.has(rowId)) clearTimeout(timers.get(rowId));
-            timers.set(rowId, setTimeout(() => {
-                timers.delete(rowId);
-                saveRow(rowId);
-            }, 450));
-        }
-
         async function saveRow(rowId) {
             const row = document.querySelector('li[data-row-id="' + rowId + '"]');
-            if (!row) return;
+            if (!row) {
+                dirtyRows.delete(String(rowId));
+                savingRows.delete(String(rowId));
+                return;
+            }
 
             const nameEl = row.querySelector('[data-field="name"]');
             const typeEl = row.querySelector('[data-field="type"]');
@@ -214,26 +225,49 @@
             const showEl = row.querySelector('[data-field="showInTable"]');
 
             const dto = {
-              name: nameEl ? nameEl.value : "",
-              type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
-              description: descEl ? descEl.value : "",
-              showInTable: showEl ? !!showEl.checked : false,
-              version: Number(row.dataset.version || 0)
+                name: nameEl ? nameEl.value : "",
+                type: typeEl ? parseInt(typeEl.value || "0", 10) : 0,
+                description: descEl ? descEl.value : "",
+                showInTable: showEl ? !!showEl.checked : false,
+                version: Number(row.dataset.version || 0)
             };
 
+            savingRows.add(String(rowId));
             setRowState(rowId, "Saving…", false);
 
             try {
                 const data = await postJson(`/Inventories/${inventoryId}/Fields/${rowId}/InlineUpdate`, dto);
+
                 if (data && data.version !== undefined) {
                     row.dataset.version = data.version;
                 }
+
+                dirtyRows.delete(String(rowId));
                 setRowState(rowId, "Saved", false);
             } catch (e) {
                 console.error(e);
                 setRowState(rowId, "Error", true);
                 setState("Error: " + e.message, true);
+            } finally {
+                savingRows.delete(String(rowId));
             }
+        }
+
+        async function flushDirtyRows() {
+            if (dirtyRows.size === 0) return;
+
+            const ids = Array.from(dirtyRows);
+            for (const rowId of ids) {
+                if (savingRows.has(String(rowId))) continue;
+                await saveRow(rowId);
+            }
+        }
+
+        function startAutosave() {
+            if (autosaveHandle) clearInterval(autosaveHandle);
+            autosaveHandle = setInterval(function () {
+                flushDirtyRows();
+            }, autosaveIntervalMs);
         }
 
         document.addEventListener("input", function (e) {
@@ -243,7 +277,7 @@
             const row = e.target.closest('li[data-row-id]');
             if (!row) return;
 
-            scheduleSave(row.getAttribute("data-row-id"));
+            markDirty(row.getAttribute("data-row-id"));
         });
 
         document.addEventListener("change", function (e) {
@@ -253,7 +287,7 @@
             const row = e.target.closest('li[data-row-id]');
             if (!row) return;
 
-            scheduleSave(row.getAttribute("data-row-id"));
+            markDirty(row.getAttribute("data-row-id"));
         });
 
         function escapeHtml(s) {
@@ -314,8 +348,7 @@
                     <textarea class="input-field field-description"
                       data-field="description"
                       placeholder="Description (optional)"
-                      ${canWrite ? "" : "disabled"}>${escapeHtml(field.description || "")}
-                    </textarea>
+                      ${canWrite ? "" : "disabled"}>${escapeHtml(field.description || "")}</textarea>
 
                     <div class="field-flags">
                       <label class="fields3-flag">
@@ -360,10 +393,7 @@
             });
         }
 
-        let sortableList = null;
-        let sortableTrash = null;
-
-          async function persistReorder() {
+        async function persistReorder() {
             if (!listEl) return;
 
             const ids = Array.from(listEl.querySelectorAll('li[data-id]'))
@@ -394,6 +424,7 @@
         }
 
         function initSortables() {
+            listEl = document.getElementById("fieldsList");
             if (!listEl || !trashEl) return;
 
             if (sortableList) sortableList.destroy();
@@ -416,6 +447,9 @@
                     if (!li) return;
 
                     const id = parseInt(li.getAttribute("data-id"), 10);
+                    dirtyRows.delete(String(id));
+                    savingRows.delete(String(id));
+
                     setState("Deleting…", false);
 
                     try {
@@ -439,6 +473,7 @@
 
         initSortables();
         refreshOrders();
+        startAutosave();
 
         if (!canWrite) {
             if (sortableList) sortableList.option("disabled", true);

@@ -123,28 +123,20 @@
         switch (typeInt) {
           case @((int)CustomIdElementType.FixedText):
             return { title: "Fixed text. Type the exact text here.", placeholder: "Text (e.g. INV-)", usesValue: true };
-
           case @((int)CustomIdElementType.Sequence):
             return { title: "Sequence. Use format like D, D3, D6 (leading zeros).", placeholder: "Format (e.g. D3)", usesValue: true };
-
           case @((int)CustomIdElementType.DateTime):
             return { title: "Date/time. Use format like yyyy, yyyyMMdd, yyyyMMddHHmmss.", placeholder: "Format (e.g. yyyyMMdd)", usesValue: true };
-
           case @((int)CustomIdElementType.Guid):
             return { title: "GUID. Use N, D, etc. (default N).", placeholder: "Format (e.g. N)", usesValue: true };
-
           case @((int)CustomIdElementType.Random6Digits):
             return { title: "Random 6 digits (000000–999999). Format not used.", placeholder: "—", usesValue: false };
-
           case @((int)CustomIdElementType.Random9Digits):
             return { title: "Random 9 digits (000000000–999999999). Format not used.", placeholder: "—", usesValue: false };
-
           case @((int)CustomIdElementType.Random20Bit):
             return { title: "Random 20-bit integer. Format not used.", placeholder: "—", usesValue: false };
-
           case @((int)CustomIdElementType.Random32Bit):
             return { title: "Random 32-bit integer. Format not used.", placeholder: "—", usesValue: false };
-
           default:
             return { title: "Configure this element.", placeholder: "—", usesValue: true };
         }
@@ -153,7 +145,7 @@
       function applyMetaForRow(rowEl) {
         if (!rowEl) return;
         var typeEl = rowEl.querySelector('[data-field="type"]');
-        var valEl  = rowEl.querySelector('[data-field="value"]');
+        var valEl = rowEl.querySelector('[data-field="value"]');
         if (!typeEl || !valEl) return;
 
         var t = parseInt(typeEl.value || "0", 10);
@@ -180,23 +172,39 @@
 
       if (!canWrite) return;
 
-      var timers = new Map();
+      var dirtyRows = new Set();
+      var savingRows = new Set();
+      var autosaveIntervalMs = 8000;
+      var autosaveHandle = null;
+      var sortableList, sortableTrash;
 
       function setRowState(rowId, text, isError) {
         var el = document.querySelector('[data-save-state="' + rowId + '"]');
         if (!el) return;
         el.textContent = text || "";
         el.classList.toggle("is-error", !!isError);
-        el.classList.toggle("is-ok", !isError && !!text && (text.toLowerCase().indexOf("saved") >= 0));
-        el.classList.toggle("is-wip", !isError && !!text && (text.toLowerCase().indexOf("saving") >= 0));
+        el.classList.toggle("is-ok", !isError && !!text && text.toLowerCase().indexOf("saved") >= 0);
+        el.classList.toggle("is-wip", !isError && !!text && (text.toLowerCase().indexOf("saving") >= 0 || text.toLowerCase().indexOf("unsaved") >= 0));
+      }
+
+      function markDirty(rowId) {
+        if (!rowId) return;
+        dirtyRows.add(String(rowId));
+        if (!savingRows.has(String(rowId))) {
+          setRowState(rowId, "Unsaved", false);
+        }
       }
 
       async function saveRow(rowId) {
         var row = document.querySelector('li[data-row-id="' + rowId + '"]');
-        if (!row) return;
+        if (!row) {
+          dirtyRows.delete(String(rowId));
+          savingRows.delete(String(rowId));
+          return;
+        }
 
         var typeEl = row.querySelector('[data-field="type"]');
-        var valEl  = row.querySelector('[data-field="value"]');
+        var valEl = row.querySelector('[data-field="value"]');
 
         var typeInt = parseInt((typeEl && typeEl.value) ? typeEl.value : "0", 10);
         var value = valEl ? (valEl.value || "") : "";
@@ -208,6 +216,7 @@
           version: Number(row.dataset.version || 0)
         };
 
+        savingRows.add(String(rowId));
         setRowState(rowId, "Saving…", false);
 
         try {
@@ -220,38 +229,50 @@
             body: JSON.stringify(dto)
           });
 
-            const text = await resp.text();
-            let data = null;
-            try { data = JSON.parse(text); } catch { }
+          var text = await resp.text();
+          var data = null;
+          try { data = JSON.parse(text); } catch {}
 
-            if (!resp.ok) {
-              console.error("CustomId InlineUpdate failed:", resp.status, text);
-              setRowState(rowId, data?.error || `Error ${resp.status}`, true);
-              return;
-            }
+          if (!resp.ok) {
+            console.error("CustomId InlineUpdate failed:", resp.status, text);
+            setRowState(rowId, (data && data.error) ? data.error : `Error ${resp.status}`, true);
+            return;
+          }
 
-            if (data && data.version !== undefined) {
-              row.dataset.version = data.version;
-            }
+          if (data && data.version !== undefined) {
+            row.dataset.version = data.version;
+          }
 
-            if (previewEl && data && data.preview) {
-              previewEl.textContent = data.preview;
-            }
+          if (previewEl && data && data.preview) {
+            previewEl.textContent = data.preview;
+          }
 
-            setRowState(rowId, "Saved", false);
-            console.log("CustomId InlineUpdate OK:", data);
+          dirtyRows.delete(String(rowId));
+          setRowState(rowId, "Saved", false);
         } catch (e) {
           console.error("CustomId saveRow exception:", e);
           setRowState(rowId, "Error", true);
+        } finally {
+          savingRows.delete(String(rowId));
         }
       }
 
-      function scheduleSave(rowId) {
-        if (timers.has(rowId)) clearTimeout(timers.get(rowId));
-        timers.set(rowId, setTimeout(function () {
-          saveRow(rowId);
-          timers.delete(rowId);
-        }, 450));
+      async function flushDirtyRows() {
+        if (dirtyRows.size === 0) return;
+
+        var ids = Array.from(dirtyRows);
+        for (var i = 0; i < ids.length; i++) {
+          var rowId = ids[i];
+          if (savingRows.has(String(rowId))) continue;
+          await saveRow(rowId);
+        }
+      }
+
+      function startAutosave() {
+        if (autosaveHandle) clearInterval(autosaveHandle);
+        autosaveHandle = setInterval(function () {
+          flushDirtyRows();
+        }, autosaveIntervalMs);
       }
 
       document.addEventListener("change", function (e) {
@@ -271,7 +292,7 @@
           }
         }
 
-        scheduleSave(row.getAttribute("data-row-id"));
+        markDirty(row.getAttribute("data-row-id"));
       });
 
       document.addEventListener("input", function (e) {
@@ -281,7 +302,7 @@
         var row = e.target.closest('li[data-row-id]');
         if (!row) return;
 
-        scheduleSave(row.getAttribute("data-row-id"));
+        markDirty(row.getAttribute("data-row-id"));
       });
 
       function ensureListExists() {
@@ -303,14 +324,14 @@
 
       function buildTypeOptions(selectedType) {
         var options = [
-          { v: @((int)CustomIdElementType.FixedText),  t: "FixedText" },
-          { v: @((int)CustomIdElementType.Sequence),   t: "Sequence" },
-          { v: @((int)CustomIdElementType.DateTime),   t: "DateTime" },
-          { v: @((int)CustomIdElementType.Guid),       t: "Guid" },
+          { v: @((int)CustomIdElementType.FixedText), t: "FixedText" },
+          { v: @((int)CustomIdElementType.Sequence), t: "Sequence" },
+          { v: @((int)CustomIdElementType.DateTime), t: "DateTime" },
+          { v: @((int)CustomIdElementType.Guid), t: "Guid" },
           { v: @((int)CustomIdElementType.Random6Digits), t: "Random6Digits" },
           { v: @((int)CustomIdElementType.Random9Digits), t: "Random9Digits" },
-          { v: @((int)CustomIdElementType.Random20Bit),   t: "Random20Bit" },
-          { v: @((int)CustomIdElementType.Random32Bit),   t: "Random32Bit" }
+          { v: @((int)CustomIdElementType.Random20Bit), t: "Random20Bit" },
+          { v: @((int)CustomIdElementType.Random32Bit), t: "Random32Bit" }
         ];
 
         return options.map(function (o) {
@@ -361,6 +382,7 @@
               method: "POST",
               headers: { "RequestVerificationToken": getToken() }
             });
+
             if (!resp.ok) return;
 
             var data = await resp.json();
@@ -374,55 +396,53 @@
 
             var scroll = document.getElementById("cidElementsScroll");
             if (scroll) scroll.scrollTop = scroll.scrollHeight;
-          } catch (e) { }
+          } catch (e) {
+            console.error("CustomId add exception:", e);
+          }
         });
       }
 
-      var sortableList, sortableTrash;
+      async function persistReorder() {
+        if (!listEl) return;
 
-          async function persistReorder() {
-          if (!listEl) return;
+        var ids = [];
+        listEl.querySelectorAll('li[data-id]').forEach(function (li) {
+          ids.push(parseInt(li.getAttribute("data-id"), 10));
+        });
 
-          var ids = [];
-          listEl.querySelectorAll('li[data-id]').forEach(function (li) {
-            ids.push(parseInt(li.getAttribute("data-id"), 10));
+        try {
+          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "RequestVerificationToken": getToken()
+            },
+            body: JSON.stringify(ids)
           });
 
-          try {
-            var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "RequestVerificationToken": getToken()
-              },
-              body: JSON.stringify(ids)
-            });
+          var text = await resp.text();
+          var data = null;
+          try { data = JSON.parse(text); } catch {}
 
-            const text = await resp.text();
-            let data = null;
-            try { data = JSON.parse(text); } catch {}
-
-            if (!resp.ok) {
-              console.error("Reorder failed:", resp.status, text);
-              return;
-            }
-
-            if (data && data.preview && previewEl) {
-              previewEl.textContent = data.preview;
-            }
-
-            if (data && data.versions) {
-              data.versions.forEach(function (v) {
-                var row = document.querySelector('li[data-row-id="' + v.id + '"]');
-                if (row) {
-                  row.dataset.version = v.version;
-                }
-              });
-            }
-          } catch (e) {
-            console.error("persistReorder exception:", e);
+          if (!resp.ok) {
+            console.error("Reorder failed:", resp.status, text);
+            return;
           }
+
+          if (data && data.preview && previewEl) {
+            previewEl.textContent = data.preview;
+          }
+
+          if (data && data.versions) {
+            data.versions.forEach(function (v) {
+              var row = document.querySelector('li[data-row-id="' + v.id + '"]');
+              if (row) row.dataset.version = v.version;
+            });
+          }
+        } catch (e) {
+          console.error("persistReorder exception:", e);
         }
+      }
 
       async function deleteElement(id) {
         try {
@@ -442,6 +462,9 @@
         listEl = document.getElementById("customIdList");
         if (!listEl || !trashEl) return;
 
+        if (sortableList) sortableList.destroy();
+        if (sortableTrash) sortableTrash.destroy();
+
         sortableList = Sortable.create(listEl, {
           animation: 150,
           handle: ".drag-handle",
@@ -459,15 +482,20 @@
             if (!li) return;
 
             var id = parseInt(li.getAttribute("data-id"), 10);
+            dirtyRows.delete(String(id));
+            savingRows.delete(String(id));
+
             li.parentNode && li.parentNode.removeChild(li);
 
             var data = await deleteElement(id);
             if (data && previewEl && data.preview) previewEl.textContent = data.preview;
+
             await persistReorder();
           }
         });
       }
 
       initSortables();
+      startAutosave();
     })();
 </script>

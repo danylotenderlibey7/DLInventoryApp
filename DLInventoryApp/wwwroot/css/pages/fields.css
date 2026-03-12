@@ -212,3 +212,144 @@
     font-size: 13px;
     opacity: .85;
 }
+
+@media (max-width: 900px) {
+    .fields-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .fields-card {
+        min-height: 0;
+        height: auto;
+    }
+
+    .card-elements-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .fields-state {
+        margin: 0 10px 8px;
+    }
+
+    .fields-scroll {
+        min-height: 260px;
+        max-height: none;
+        height: auto;
+        padding: 10px;
+    }
+
+    .field-row {
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .field-main {
+        min-width: 0;
+    }
+
+    .field-line {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+        .field-line .input-field,
+        .field-line .select-field {
+            width: 100%;
+            max-width: none;
+            flex: none;
+        }
+
+    .field-description {
+        margin-top: 8px;
+        min-height: 84px;
+    }
+
+    .field-flags {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .field-save-state {
+        margin-left: 0;
+    }
+
+    .fields-right {
+        height: auto;
+    }
+
+        .fields-right .trash-zone {
+            min-height: 180px;
+            max-height: none;
+            height: auto;
+            padding: 12px;
+        }
+
+        .fields-right .trash-head {
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .fields-right .trash-drop {
+            min-height: 120px;
+        }
+}
+
+@media (max-width: 640px) {
+    .fields-scroll {
+        padding: 8px;
+    }
+
+        .fields-scroll .elements-list {
+            gap: 8px;
+        }
+
+    .field-row {
+        gap: 6px;
+    }
+
+    .drag-handle {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .field-description {
+        min-height: 76px;
+        font-size: 13px;
+    }
+
+    .fields3-flag {
+        font-size: 12px;
+    }
+
+    .fields-right .trash-zone {
+        min-height: 150px;
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .fields-right .trash-drop {
+        min-height: 96px;
+        border-radius: 12px;
+    }
+
+    #fieldsAddBtn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        padding: 0;
+        border-radius: 10px;
+    }
+}

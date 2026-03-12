@@ -292,3 +292,149 @@
         max-width: 100%;
     }
 }
+@media (max-width: 900px) {
+    .access-page {
+        min-width: 0;
+    }
+
+    .access-main-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .access-left,
+    .access-right {
+        min-width: 0;
+    }
+
+    .access-right {
+        width: 100%;
+    }
+
+    .access-toolbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px 10px;
+        align-items: start;
+    }
+
+        .access-toolbar .page-subtitle {
+            grid-column: 1 / -1;
+            margin: 0;
+        }
+
+    .access-delete-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .access-table-wrap {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: hidden;
+    }
+
+    .access-table-scroll {
+        max-height: 320px;
+        overflow-x: auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .access-users-table {
+        width: max-content;
+        min-width: 520px;
+        table-layout: fixed;
+    }
+
+        .access-users-table th,
+        .access-users-table td {
+            white-space: nowrap;
+        }
+
+            .access-users-table th:nth-child(2),
+            .access-users-table td:nth-child(2) {
+                width: 200px;
+                min-width: 200px;
+            }
+
+            .access-users-table th:nth-child(3),
+            .access-users-table td:nth-child(3) {
+                width: 260px;
+                min-width: 260px;
+            }
+
+    .access-side-card {
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .access-side-head {
+        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .access-input-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .access-icon-btn {
+        width: 100%;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .access-msg {
+        margin-top: 10px;
+    }
+
+    #accessSuggest {
+        max-height: 180px;
+    }
+}
+
+@media (max-width: 640px) {
+    .access-toolbar {
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+
+    .access-section-title {
+        font-size: 16px;
+    }
+
+    .access-toolbar .page-subtitle {
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .access-delete-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .access-table-scroll {
+        max-height: 280px;
+    }
+
+    .access-users-table {
+        min-width: 480px;
+    }
+
+    .access-side-card {
+        padding: 12px;
+    }
+
+    .access-icon-btn {
+        height: 38px;
+    }
+
+    .access-msg {
+        font-size: 12px;
+    }
+}

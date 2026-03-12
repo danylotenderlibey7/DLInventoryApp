@@ -24,10 +24,17 @@
 </head>
 
 <body data-theme="light">
-
+    <button id="mobileSidebarToggle"
+            class="mobile-sidebar-toggle"
+            type="button"
+            aria-label="Open menu"
+            aria-controls="appSidebar"
+            aria-expanded="false">
+        <i class="bi bi-list"></i>
+    </button>
     <div class="app-shell" id="appShell">
 
-        <aside class="app-sidebar">
+        <aside class="app-sidebar" id="appSidebar">
 
             <div class="sidebar-top">
 
@@ -209,7 +216,7 @@
 
             </div>
         </aside>
-
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
         <main class="app-workspace">
             <div class="workspace-inner">
                 @RenderBody()
@@ -229,7 +236,8 @@
             const suggestBox = document.getElementById("searchSuggest");
             const collapseBtn = document.getElementById("sidebarCollapseBtn");
             const shell = document.getElementById("appShell");
-
+            const mobileToggleBtn = document.getElementById("mobileSidebarToggle");
+            const sidebarOverlay = document.getElementById("sidebarOverlay");
             if (collapseBtn) {
                 const saved = localStorage.getItem("sidebarCollapsed");
                 if (saved === "true") shell.classList.add("sidebar-collapsed");
@@ -242,7 +250,26 @@
                     );
                 };
             }
+            function closeMobileSidebar() {
+                shell.classList.remove("sidebar-mobile-open");
+                mobileToggleBtn?.setAttribute("aria-expanded", "false");
+            }
 
+            function openMobileSidebar() {
+                shell.classList.add("sidebar-mobile-open");
+                mobileToggleBtn?.setAttribute("aria-expanded", "true");
+            }
+
+            mobileToggleBtn?.addEventListener("click", () => {
+                if (shell.classList.contains("sidebar-mobile-open")) closeMobileSidebar();
+                else openMobileSidebar();
+            });
+
+            sidebarOverlay?.addEventListener("click", closeMobileSidebar);
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 900) closeMobileSidebar();
+            });
             if (searchInput && suggestBox) {
                 let timer = null;
                 let controller = null;

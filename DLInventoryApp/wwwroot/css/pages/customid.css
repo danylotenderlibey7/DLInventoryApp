@@ -65,7 +65,7 @@ body[data-theme="dark"] #cidElementsScroll::-webkit-scrollbar-thumb {
 }
 .cid-right {
     display: flex;
-    height: 100%;
+    height: 90%;
 }
 .cid-card {
     display: flex;
@@ -210,5 +210,154 @@ body[data-theme="dark"] .cid-scroll::-webkit-scrollbar-thumb {
         max-height: none;
         height: auto;
         min-height: 260px;
+    }
+}
+
+@media (max-width: 900px) {
+    .cid-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .cid-card {
+        min-height: 0;
+        height: auto;
+    }
+
+    .card-elements-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .duo-top {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .duo-preview-line {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .duo-preview-value {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .cid-scroll,
+    #cidElementsScroll.elements-scroll,
+    #cidElementsScroll {
+        min-height: 260px;
+        max-height: none;
+        height: auto;
+        padding: 10px;
+    }
+
+    .elements-item {
+        padding: 10px;
+    }
+
+    .item-line {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+        .item-line .select-field {
+            flex: none;
+            width: 100%;
+            max-width: none;
+        }
+
+        .item-line .input-field {
+            width: 100%;
+        }
+
+    .cid-state {
+        margin-left: 0;
+        min-width: 0;
+        text-align: left;
+        line-height: 1.2;
+    }
+
+    .drag-handle {
+        flex: 0 0 36px;
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cid-right {
+        height: auto;
+    }
+
+        .cid-right #cidTrash.trash-zone {
+            min-height: 180px;
+            max-height: none;
+            height: auto;
+            padding: 12px;
+        }
+
+        .cid-right #cidTrashDrop.trash-drop {
+            min-height: 120px;
+        }
+}
+
+@media (max-width: 640px) {
+    .cid-card {
+        border-radius: 14px;
+    }
+
+    .card-elements-head {
+        gap: 8px;
+    }
+
+    .btn-add,
+    #cidAddBtn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        padding: 0;
+        border-radius: 10px;
+    }
+
+    .cid-scroll,
+    #cidElementsScroll.elements-scroll,
+    #cidElementsScroll {
+        padding: 8px;
+    }
+
+        .cid-scroll .elements-list {
+            gap: 8px;
+        }
+
+    .elements-item {
+        padding: 8px;
+        border-radius: 12px;
+    }
+
+    .drag-handle {
+        width: 32px;
+        height: 32px;
+        flex-basis: 32px;
+    }
+
+    .cid-right #cidTrash.trash-zone {
+        min-height: 150px;
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .cid-right #cidTrashDrop.trash-drop {
+        min-height: 96px;
+        border-radius: 12px;
     }
 }
