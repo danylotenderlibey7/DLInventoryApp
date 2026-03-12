@@ -92,6 +92,13 @@ namespace DLInventoryApp.Controllers
             _context.CustomIdElements.Add(entity);
             await _context.SaveChangesAsync();
             await NormalizeOrdersAsync(inventoryId); 
+            var versions = await _context.CustomIdElements
+                .Where(e => e.InventoryId == inventoryId)
+                .Select(e => new
+                {
+                    id = e.Id,
+                    version = e.Version
+                }).ToListAsync();
             await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
             try { preview = (await _customIdGenerator.PreviewAsync(inventoryId)).CustomId; }
@@ -107,7 +114,8 @@ namespace DLInventoryApp.Controllers
                     format = entity.Format,
                     version = entity.Version
                 },
-                preview
+                preview,
+                versions
             });
         }
         [HttpPost("{id:int}/Delete")]
@@ -124,7 +132,14 @@ namespace DLInventoryApp.Controllers
             if (entity == null) return NotFound();
             _context.CustomIdElements.Remove(entity);
             await _context.SaveChangesAsync();
-            await NormalizeOrdersAsync(inventoryId); 
+            await NormalizeOrdersAsync(inventoryId);
+            var versions = await _context.CustomIdElements
+                .Where(e => e.InventoryId == inventoryId)
+                .Select(e => new
+                {
+                    id = e.Id,
+                    version = e.Version
+                }).ToListAsync();
             await _searchService.ReindexInventoryItemsAsync(inventoryId);
             string preview;
             try 
@@ -135,7 +150,7 @@ namespace DLInventoryApp.Controllers
             { 
                 preview = "(no template)"; 
             }
-            return Ok(new { ok = true, preview });
+            return Ok(new { ok = true, preview, versions });
         }
         [HttpPost("Reorder")]
         [ValidateAntiForgeryToken]
@@ -150,14 +165,17 @@ namespace DLInventoryApp.Controllers
             if (invBase == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
             if (!canManage) return Forbid();
-            if (orderedIds == null || orderedIds.Count == 0) return BadRequest(new { ok = false, error = "Empty reorder payload." });
+            if (orderedIds == null || orderedIds.Count == 0)
+                return BadRequest(new { ok = false, error = "Empty reorder payload." });
             var elements = await _context.CustomIdElements
                 .Where(e => e.InventoryId == inventoryId)
                 .ToListAsync();
-            if (elements.Count != orderedIds.Count) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            if (elements.Count != orderedIds.Count)
+                return BadRequest(new { ok = false, error = "Invalid reorder payload." });
             var current = elements.Select(e => e.Id).OrderBy(x => x).ToList();
             var incoming = orderedIds.OrderBy(x => x).ToList();
-            if (!current.SequenceEqual(incoming)) return BadRequest(new { ok = false, error = "Invalid reorder payload." });
+            if (!current.SequenceEqual(incoming))
+                return BadRequest(new { ok = false, error = "Invalid reorder payload." });
             try
             {
                 var tempBase = 1000;
@@ -252,9 +270,17 @@ namespace DLInventoryApp.Controllers
                 .Where(e => e.InventoryId == inventoryId)
                 .OrderBy(e => e.Order)
                 .ToListAsync();
+            var changed = false;
             for (int i = 0; i < elements.Count; i++)
-                elements[i].Order = i + 1;
-            await _context.SaveChangesAsync();
+            {
+                var newOrder = i + 1;
+                if (elements[i].Order != newOrder)
+                {
+                    elements[i].Order = newOrder;
+                    changed = true;
+                }
+            }
+            if (changed) await _context.SaveChangesAsync();
         }
     }
 }

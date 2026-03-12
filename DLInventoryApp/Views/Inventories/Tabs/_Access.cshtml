@@ -331,14 +331,15 @@
             setSideMessage("Removing selected users...");
 
             try {
-                for (const cb of selected) {
-                    const tr = cb.closest("tr[data-user-id]");
-                    if (!tr) continue;
+                const rows = selected
+                    .map(cb => cb.closest("tr[data-user-id]"))
+                    .filter(tr => tr != null);
 
-                    const userId = tr.getAttribute("data-user-id");
-                    await postJson(`/Inventories/${invId}/Access/Remove`, { userId });
-                    tr.remove();
-                }
+                const userIds = rows.map(tr => tr.getAttribute("data-user-id"));
+
+                await postJson(`/Inventories/${invId}/Access/Remove`, { userIds });
+
+                rows.forEach(tr => tr.remove());
 
                 setSideMessage("Selected users were removed.");
                 syncEmptyState();

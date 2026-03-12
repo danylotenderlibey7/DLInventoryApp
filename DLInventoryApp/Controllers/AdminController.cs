@@ -15,14 +15,11 @@ namespace DLInventoryApp.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
-        private readonly ISearchService _search;
         const string AdminRole = "Admin";
-        public AdminController(UserManager<ApplicationUser> userManager, 
-            ApplicationDbContext context, ISearchService search)
+        public AdminController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _context = context;
-            _search = search;
         }
         public async Task<IActionResult> Users(int page = 1, int pageSize = 6)
         {
@@ -62,28 +59,18 @@ namespace DLInventoryApp.Controllers
         public async Task<IActionResult> Block(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
-            var users = await _context.Users
+            await _context.Users
                 .Where(u => userIds.Contains(u.Id))
-                .ToListAsync();
-            foreach(var user in users)
-            {
-                user.IsBlocked = true;
-            }
-            await _context.SaveChangesAsync();
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.IsBlocked, true));
             return RedirectToAction("Users");
         }
         [HttpPost("Unblock")]
         public async Task<IActionResult> Unblock(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
-            var users = await _context.Users
+            await _context.Users
                 .Where(u => userIds.Contains(u.Id))
-                .ToListAsync();
-            foreach (var user in users)
-            {
-                user.IsBlocked = false;
-            }
-            await _context.SaveChangesAsync();
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.IsBlocked, false));
             return RedirectToAction("Users");
         }
         [HttpPost("Delete")]

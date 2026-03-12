@@ -70,16 +70,15 @@ namespace DLInventoryApp.Controllers
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             if (!isAdmin && inv.OwnerId != currentUserId) return NotFound();
-            var userId = (dto.UserId ?? "").Trim();
-            if (string.IsNullOrWhiteSpace(userId))
-                return BadRequest(new { ok = false, error = "UserId is required." });
-            var access = await _context.InventoryWriteAccesses
-                .SingleOrDefaultAsync(x => x.InventoryId == inventoryId && x.UserId == userId);
-            if (access != null)
-            {
-                _context.InventoryWriteAccesses.Remove(access);
-                await _context.SaveChangesAsync();
-            }
+            var userIds = (dto.UserIds ?? new List<string>())
+                .Select(id => id.Trim())
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .ToList();
+            if (userIds.Count == 0)
+                return BadRequest(new { ok = false, error = "UserIds is required." });
+            await _context.InventoryWriteAccesses
+                .Where(x => x.InventoryId == inventoryId && userIds.Contains(x.UserId))
+                .ExecuteDeleteAsync();
             return Ok(new { ok = true });
         }
         [HttpPost("Inventories/{inventoryId:guid}/Access/SetPublic")]

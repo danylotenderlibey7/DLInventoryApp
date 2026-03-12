@@ -393,7 +393,14 @@
 
             var row = createRowEl(data.element);
             ul.appendChild(row);
-
+            if (data && Array.isArray(data.versions)) {
+              data.versions.forEach(function (v) {
+                var existingRow = document.querySelector('li[data-row-id="' + v.id + '"]');
+                if (existingRow) {
+                  existingRow.dataset.version = v.version;
+                }
+              });
+            }
             var scroll = document.getElementById("cidElementsScroll");
             if (scroll) scroll.scrollTop = scroll.scrollHeight;
           } catch (e) {
@@ -403,46 +410,47 @@
       }
 
       async function persistReorder() {
-        if (!listEl) return;
+      if (!listEl) return;
 
-        var ids = [];
-        listEl.querySelectorAll('li[data-id]').forEach(function (li) {
-          ids.push(parseInt(li.getAttribute("data-id"), 10));
+      var ids = Array.from(listEl.querySelectorAll('li[data-id]'))
+        .map(function (li) { return parseInt(li.getAttribute("data-id"), 10); })
+        .filter(function (n) { return Number.isFinite(n); });
+
+      try {
+        var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "RequestVerificationToken": getToken()
+          },
+          body: JSON.stringify(ids)
         });
 
-        try {
-          var resp = await fetch(`/Inventories/${inventoryId}/CustomId/Reorder`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "RequestVerificationToken": getToken()
-            },
-            body: JSON.stringify(ids)
-          });
+        var text = await resp.text();
+        var data = null;
+        try { data = JSON.parse(text); } catch {}
 
-          var text = await resp.text();
-          var data = null;
-          try { data = JSON.parse(text); } catch {}
-
-          if (!resp.ok) {
-            console.error("Reorder failed:", resp.status, text);
-            return;
-          }
-
-          if (data && data.preview && previewEl) {
-            previewEl.textContent = data.preview;
-          }
-
-          if (data && data.versions) {
-            data.versions.forEach(function (v) {
-              var row = document.querySelector('li[data-row-id="' + v.id + '"]');
-              if (row) row.dataset.version = v.version;
-            });
-          }
-        } catch (e) {
-          console.error("persistReorder exception:", e);
+        if (!resp.ok) {
+          var msg = (data && (data.error || data.title)) ? (data.error || data.title) : `HTTP ${resp.status}`;
+          throw new Error(msg);
         }
+
+        if (data && data.preview && previewEl) {
+          previewEl.textContent = data.preview;
+        }
+
+        if (data && Array.isArray(data.versions)) {
+          data.versions.forEach(function (v) {
+            var row = document.querySelector('li[data-row-id="' + v.id + '"]');
+            if (row) {
+              row.dataset.version = v.version;
+            }
+          });
+        }
+      } catch (e) {
+        console.error(e);
       }
+    }
 
       async function deleteElement(id) {
         try {
@@ -489,8 +497,14 @@
 
             var data = await deleteElement(id);
             if (data && previewEl && data.preview) previewEl.textContent = data.preview;
-
-            await persistReorder();
+            if (data && Array.isArray(data.versions)) {
+              data.versions.forEach(function (v) {
+                var existingRow = document.querySelector('li[data-row-id="' + v.id + '"]');
+                if (existingRow) {
+                  existingRow.dataset.version = v.version;
+                }
+              });
+            }
           }
         });
       }

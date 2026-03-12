@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DLInventoryApp.Services.Tabs;
 using DLInventoryApp.ViewModels.Inventories.Pages;
-using DLInventoryApp.ViewModels.Inventories.Tabs.Access;
 using DLInventoryApp.ViewModels.Inventories.Inline;
 using DLInventoryApp.ViewModels.Inventories.Tabs.Settings.Dtos;
 using DLInventoryApp.ViewModels.Common.Pagination;
@@ -25,8 +24,6 @@ namespace DLInventoryApp.Controllers
         private readonly IAccessService _accessService;
         private readonly ITagService _tagService;
         private readonly ISearchService _searchService;
-        private readonly IMarkdownService _markdown;
-        private readonly ICustomIdGenerator _customIdGenerator;
         private readonly CustomIdTabBuilder _customIdTabBuilder;
         private readonly FieldsTabBuilder _fieldsTabBuilder;
         private readonly SettingsTabBuilder _settingsTabBuilder;
@@ -34,18 +31,14 @@ namespace DLInventoryApp.Controllers
         private readonly ChatTabBuilder _chatTabBuilder;
         private readonly ItemsTabBuilder _itemsTabBuilder;
         public InventoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-            ITagService tagService, IAccessService accessService, ISearchService searchService, IMarkdownService markdown,
-            ICustomIdGenerator customIdGenerator, CustomIdTabBuilder customIdTabBuilder, FieldsTabBuilder fieldsTabBuilder,
-            SettingsTabBuilder settingsTabBuilder, AccessTabBuilder accessTabBuilder, ChatTabBuilder chatTabBuilder,
-            ItemsTabBuilder itemsTabBuilder)
+            ITagService tagService, IAccessService accessService, ISearchService searchService, CustomIdTabBuilder customIdTabBuilder, FieldsTabBuilder fieldsTabBuilder,
+            SettingsTabBuilder settingsTabBuilder, AccessTabBuilder accessTabBuilder, ChatTabBuilder chatTabBuilder, ItemsTabBuilder itemsTabBuilder)
         {
             _context = context;
             _userManager = userManager;
             _tagService = tagService;
             _accessService = accessService;
             _searchService = searchService;
-            _markdown = markdown;
-            _customIdGenerator = customIdGenerator;
             _customIdTabBuilder = customIdTabBuilder;
             _fieldsTabBuilder = fieldsTabBuilder;
             _settingsTabBuilder = settingsTabBuilder;
@@ -374,11 +367,9 @@ namespace DLInventoryApp.Controllers
             await _context.Tags
                 .Where(t => !t.InventoryTags.Any())
                 .ExecuteDeleteAsync();
-            foreach (var inv in inventories)
-            {
-                await _searchService.RemoveInventoryAsync(inv.Id);
-                await _searchService.RemoveInventoryItemsAsync(inv.Id);
-            }
+            var deletedIds = inventories.Select(inv => inv.Id).ToList();
+            await _searchService.RemoveInventoryAsync(deletedIds);
+            await _searchService.RemoveInventoryItemsAsync(deletedIds);
             return RedirectToAction(nameof(My));
         }
         private static readonly HashSet<string> AllowedTabs = new(StringComparer.OrdinalIgnoreCase)
@@ -442,108 +433,6 @@ namespace DLInventoryApp.Controllers
                     break;
             }
             return View(inv);
-        }
-        [HttpPost("Inventories/{inventoryId:guid}/Settings/InlineUpdateField")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SettingsInlineUpdate(Guid inventoryId, [FromBody] InventorySettingsInlineUpdateDto dto)
-        {
-            var userId = _userManager.GetUserId(User);
-            if (userId == null) return Unauthorized();
-            var invBase = await _context.Inventories
-                .Where(x => x.Id == inventoryId)
-                .Select(x => new { x.Id, x.OwnerId })
-                .SingleOrDefaultAsync();
-            if (invBase == null) return NotFound();
-            var canManage = await _accessService.CanManageInventory(inventoryId, userId);
-            if (!canManage) return Forbid();
-            var field = (dto.Field ?? "").Trim().ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(field))
-                return BadRequest(new { ok = false, error = "Field is required." });
-            var entity = await _context.Inventories.SingleOrDefaultAsync(x => x.Id == inventoryId);
-            if (entity == null) return NotFound();
-            _context.Entry(entity).Property(x => x.Version).OriginalValue = dto.Version;
-            try
-            {
-                switch (field)
-                {
-                    case "title":
-                        {
-                            var v = (dto.Value?.ToString() ?? "").Trim();
-                            if (string.IsNullOrWhiteSpace(v)) return BadRequest(new { ok = false, error = "Title is required." });
-                            if (v.Length > 250) return BadRequest(new { ok = false, error = "Title is too long." });
-                            entity.Title = v;
-                            break;
-                        }
-                    case "description":
-                        {
-                            var v = (dto.Value?.ToString() ?? "");
-                            if (v.Length > 1000) return BadRequest(new { ok = false, error = "Description is too long." });
-                            entity.Description = v;
-                            break;
-                        }
-                    case "ispublic":
-                        {
-                            bool v;
-                            if (dto.Value is bool b) v = b;
-                            else
-                            {
-                                var s = (dto.Value?.ToString() ?? "").Trim().ToLowerInvariant();
-                                v = (s == "true" || s == "1" || s == "yes");
-                            }
-                            entity.IsPublic = v;
-                            break;
-                        }
-                    case "tags":
-                        {
-                            var raw = (dto.Value?.ToString() ?? "");
-                            var tags = raw
-                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                .Select(x => x.Trim().ToLowerInvariant())
-                                .Where(x => !string.IsNullOrWhiteSpace(x))
-                                .Distinct()
-                                .Take(30)
-                                .ToList();
-                            entity.UpdatedAt = DateTime.UtcNow;
-                            await _tagService.SyncInventoryTagsAsync(entity.Id, tags);
-                            await _context.SaveChangesAsync();
-                            await _searchService.IndexInventoryAsync(entity.Id);
-                            var normalized = string.Join(", ", tags);
-                            return Ok(new
-                            {
-                                ok = true,
-                                field = "tags",
-                                display = normalized,
-                                tags,
-                                updatedAt = (entity.UpdatedAt ?? entity.CreatedAt).ToString("yyyy-MM-dd HH:mm"),
-                                version = entity.Version
-                            });
-                        }
-                    default:
-                        return BadRequest(new { ok = false, error = "Unknown field." });
-                }
-                entity.UpdatedAt = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-                await _searchService.IndexInventoryAsync(entity.Id);
-                var display = field switch
-                {
-                    "title" => entity.Title,
-                    "description" => entity.Description,
-                    "ispublic" => entity.IsPublic ? "Yes" : "No",
-                    _ => ""
-                };
-                return Ok(new
-                {
-                    ok = true,
-                    field,
-                    display,
-                    updatedAt = (entity.UpdatedAt ?? entity.CreatedAt).ToString("yyyy-MM-dd HH:mm"),
-                    version = entity.Version
-                });
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Conflict(new { ok = false, error = "Concurrency conflict. Refresh the page." });
-            }
         }
         [HttpPost("Inventories/{inventoryId:guid}/Settings/InlineUpdate")]
         [ValidateAntiForgeryToken]

@@ -38,7 +38,8 @@ namespace DLInventoryApp.Controllers
             var canEditItems = await _accessService.CanEditItems(inventoryId, userId);
             if (!canEditItems) return NotFound();
             var inv = await _context.Inventories
-                .Where(inv => inv.Id == inventoryId)
+                .Where(i => i.Id == inventoryId)
+                .Select(i => new { i.Title })
                 .SingleOrDefaultAsync();
             if (inv == null) return NotFound();
             CustomIdResult? preview = null;
@@ -101,6 +102,7 @@ namespace DLInventoryApp.Controllers
                     .OrderBy(f => f.Order)
                     .Select(f => new { f.Id, f.Type })
                     .ToListAsync();
+                var incomingMap = req.Fields.ToDictionary(x => x.CustomFieldId);
                 int? sequenceNumber = null;
                 bool auto = string.IsNullOrWhiteSpace(req.CustomId);
                 int attempts = auto ? 3 : 1;
@@ -126,7 +128,7 @@ namespace DLInventoryApp.Controllers
                     _context.Items.Add(item);
                     foreach (var fm in fieldsMeta)
                     {
-                        var incoming = req.Fields.FirstOrDefault(x => x.CustomFieldId == fm.Id);
+                        incomingMap.TryGetValue(fm.Id, out var incoming);
                         _context.ItemFieldValues.Add(new ItemFieldValue
                         {
                             ItemId = item.Id,
@@ -151,8 +153,7 @@ namespace DLInventoryApp.Controllers
                             IsLikedByMe = false,
                             Cells = fieldsMeta.Select(fm =>
                             {
-                                var incoming = req.Fields.FirstOrDefault(x => x.CustomFieldId == fm.Id);
-                                if (incoming == null) return (string?)null;
+                                if (!incomingMap.TryGetValue(fm.Id, out var incoming)) return (string?)null;
                                 return fm.Type switch
                                 {
                                     CustomFieldType.SingleLineText => incoming.TextValue,
@@ -297,10 +298,10 @@ namespace DLInventoryApp.Controllers
             var dbValues = await _context.ItemFieldValues
                 .Where(v => v.ItemId == itemId)
                 .ToListAsync();
+            var dbMap = dbValues.ToDictionary(v => v.CustomFieldId);
             foreach (var f in vm.Fields)
             {
-                var db = dbValues.FirstOrDefault(v => v.CustomFieldId == f.CustomFieldId);
-                if (db == null)
+                if (!dbMap.TryGetValue(f.CustomFieldId, out var db))
                 {
                     db = new ItemFieldValue
                     {
@@ -308,7 +309,7 @@ namespace DLInventoryApp.Controllers
                         CustomFieldId = f.CustomFieldId
                     };
                     _context.ItemFieldValues.Add(db);
-                    dbValues.Add(db);
+                    dbMap[f.CustomFieldId] = db;
                 }
                 db.TextValue = f.TextValue;
                 db.NumberValue = f.NumberValue;
@@ -349,8 +350,8 @@ namespace DLInventoryApp.Controllers
                 .ToListAsync();
             _context.Items.RemoveRange(itemsToDelete);
             await _context.SaveChangesAsync();
-            foreach (var it in itemsToDelete)
-                await _searchService.RemoveItemAsync(it.Id);
+            var deletedIds = itemsToDelete.Select(it => it.Id).ToList();
+await _searchService.RemoveItemsAsync(deletedIds);
             return RedirectToAction("Details", "Inventories", new { id = inventoryId, tab = "items" });
         }
         private async Task FillCreateVmAsync(Guid inventoryId, CreateItemVm vm)
@@ -378,6 +379,7 @@ namespace DLInventoryApp.Controllers
             var values = await _context.ItemFieldValues
                 .Where(v => v.ItemId == itemId)
                 .ToListAsync();
+            var valuesMap = values.ToDictionary(v => v.CustomFieldId);
             var title = await _context.Inventories
                 .Where(inv => inv.Id == inventoryId)
                 .Select(inv => inv.Title)
@@ -388,7 +390,7 @@ namespace DLInventoryApp.Controllers
                 .ToListAsync();
             vm.Fields = fields.Select(f =>
             {
-                var val = values.SingleOrDefault(v => v.CustomFieldId == f.Id);
+                valuesMap.TryGetValue(f.Id, out var val);
                 return new FieldValueInputVm
                 {
                     CustomFieldId = f.Id,

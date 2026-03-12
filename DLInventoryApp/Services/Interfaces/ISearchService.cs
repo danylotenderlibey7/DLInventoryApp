@@ -7,10 +7,10 @@ namespace DLInventoryApp.Services.Interfaces
         Task<SearchResultVm> SearchAsync(string query, int inventoriesLimit = 5, int itemsLimit = 20); 
         Task ReindexAllAsync();
         Task IndexInventoryAsync(Guid inventoryId);
-        Task RemoveInventoryAsync(Guid inventoryId);
-        Task RemoveInventoryItemsAsync(Guid inventoryId);
+        Task RemoveInventoryAsync(List<Guid> inventoryId);
+        Task RemoveInventoryItemsAsync(List<Guid> inventoryId);
         Task ReindexInventoryItemsAsync(Guid inventoryId);
         Task IndexItemAsync(Guid itemId);
-        Task RemoveItemAsync(Guid itemId);
+        Task RemoveItemsAsync(List<Guid> itemIds);
     }
 }

@@ -226,17 +226,23 @@ namespace DLInventoryApp.Services
             writer.AddDocument(BuildInventoryDocument(inventory));
             writer.Commit();
         }
-        public Task RemoveInventoryAsync(Guid inventoryId)
+        public Task RemoveInventoryAsync(List<Guid> inventoryIds)
         {
             using var writer = OpenWriter();
-            writer.DeleteDocuments(new Term("Id", inventoryId.ToString()));
+            var terms = inventoryIds
+                .Select(id => new Term("Id", id.ToString()))
+                .ToArray();
+            writer.DeleteDocuments(terms);
             writer.Commit();
             return Task.CompletedTask;
         }
-        public Task RemoveInventoryItemsAsync(Guid inventoryId)
+        public Task RemoveInventoryItemsAsync(List<Guid> inventoryIds)
         {
             using var writer = OpenWriter();
-            writer.DeleteDocuments(new Term("InventoryId", inventoryId.ToString()));
+            var terms = inventoryIds
+                .Select(id => new Term("InventoryId", id.ToString()))
+                .ToArray();
+            writer.DeleteDocuments(terms);
             writer.Commit();
             return Task.CompletedTask;
         }
@@ -269,10 +275,13 @@ namespace DLInventoryApp.Services
             writer.AddDocument(BuildItemDocument(item));
             writer.Commit();
         }
-        public Task RemoveItemAsync(Guid itemId)
+        public Task RemoveItemsAsync(List<Guid> itemIds)
         {
             using var writer = OpenWriter();
-            writer.DeleteDocuments(new Term("InternalId", itemId.ToString()));
+            var terms = itemIds
+                .Select(id => new Term("InternalId", id.ToString()))
+                .ToArray();
+            writer.DeleteDocuments(terms);
             writer.Commit();
             return Task.CompletedTask;
         }

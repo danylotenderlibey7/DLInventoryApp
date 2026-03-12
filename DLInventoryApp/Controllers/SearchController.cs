@@ -1,5 +1,6 @@
 ﻿using DLInventoryApp.Services.Interfaces;
 using DLInventoryApp.ViewModels.Items.Search;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DLInventoryApp.Controllers
@@ -25,6 +26,7 @@ namespace DLInventoryApp.Controllers
             var vm = await _search.SearchAsync(query, inventoriesLimit: 5, itemsLimit: 5);
             return PartialView("_SearchSuggest", vm);
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> Reindex()
         {

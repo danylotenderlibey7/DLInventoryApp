@@ -89,7 +89,6 @@ namespace DLInventoryApp.Controllers
             };
             _context.DiscussionPosts.Add(post);
             await _context.SaveChangesAsync();
-            var authorName = User.Identity?.Name ?? "User";
             var dto = new DiscussionPostDto
             {
                 Id = post.Id,

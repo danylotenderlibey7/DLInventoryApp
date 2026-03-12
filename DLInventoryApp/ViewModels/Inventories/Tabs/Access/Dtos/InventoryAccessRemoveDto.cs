@@ -2,6 +2,6 @@
 {
     public class InventoryAccessRemoveDto
     {
-        public string? UserId { get; set; }
+        public List<string>? UserIds { get; set; }
     }
 }
