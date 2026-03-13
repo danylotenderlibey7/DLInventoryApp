@@ -12,7 +12,7 @@ namespace DLInventoryApp.Models
         [MaxLength(250)]
         public string Title { get; set; } = null!;
         [MaxLength(1000)]
-        public string Description { get; set; } = "";
+        public string? Description { get; set; } = "";
         public bool IsPublic { get; set; } = false;
         public int? CategoryId { get; set; }
         public Category? Category { get; set; }

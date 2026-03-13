@@ -23,7 +23,8 @@ namespace DLInventoryApp.Services.Tabs
                     Description = f.Description,
                     Type = f.Type,
                     Order = f.Order,
-                    ShowInTable = f.ShowInTable
+                    ShowInTable = f.ShowInTable,
+                    Version = f.Version
                 }).ToListAsync();
             return new InventoryFieldsVm
             {

@@ -25,7 +25,8 @@ namespace DLInventoryApp.Services.Tabs
                     Order = e.Order,
                     Type = e.Type,
                     Text = e.Text,
-                    Format = e.Format
+                    Format = e.Format,
+                    Version = e.Version
                 }).ToListAsync();
             string preview;
             try
