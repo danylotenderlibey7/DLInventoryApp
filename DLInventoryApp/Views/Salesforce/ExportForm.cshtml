@@ -1,0 +1,100 @@
+﻿@model DLInventoryApp.ViewModels.Salesforce.SalesforceExportVm
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Export to Salesforce";
+}
+
+<div class="sf-export-page">
+    <div class="sf-export-shell">
+        <div class="sf-export-card">
+            <div class="sf-export-head">
+@*                 <div class="sf-export-badge">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span>Salesforce Export</span>
+                </div> *@
+
+                <h1 class="sf-export-title">Export to Salesforce</h1>
+                <p class="sf-export-subtitle">
+                    Create a Salesforce Account with a linked Contact.
+                </p>
+            </div>
+
+            @if (TempData["StatusMessage"] != null)
+            {
+                <div class="sf-status-message">
+                    @TempData["StatusMessage"]
+                </div>
+            }
+
+            <div asp-validation-summary="ModelOnly" class="sf-error-summary"></div>
+
+            <form asp-controller="Salesforce"
+                  asp-action="ExportForm"
+                  method="post"
+                  class="sf-export-form">
+                @Html.AntiForgeryToken()
+
+                <div class="sf-fields-grid">
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="FirstName" class="auth-label"></label>
+                            <input asp-for="FirstName" class="auth-input sf-input" />
+                            <span asp-validation-for="FirstName" class="auth-field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="LastName" class="auth-label"></label>
+                            <input asp-for="LastName" class="auth-input sf-input" />
+                            <span asp-validation-for="LastName" class="auth-field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="Email" class="auth-label"></label>
+                            <input asp-for="Email" class="auth-input sf-input" />
+                            <span asp-validation-for="Email" class="auth-field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="Phone" class="auth-label"></label>
+                            <input asp-for="Phone" class="auth-input sf-input" />
+                            <span asp-validation-for="Phone" class="auth-field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="CompanyName" class="auth-label"></label>
+                            <input asp-for="CompanyName" class="auth-input sf-input" />
+                            <span asp-validation-for="CompanyName" class="auth-field-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="sf-field-card">
+                        <div class="auth-field">
+                            <label asp-for="JobTitle" class="auth-label"></label>
+                            <input asp-for="JobTitle" class="auth-input sf-input" />
+                            <span asp-validation-for="JobTitle" class="auth-field-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sf-submit-wrap">
+                    <button type="submit" class="app-btn app-btn-primary sf-submit-btn">
+                        <i class="bi bi-cloud-upload"></i>
+                        <span>Export to Salesforce</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

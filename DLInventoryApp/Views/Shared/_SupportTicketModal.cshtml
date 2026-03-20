@@ -1,0 +1,158 @@
+﻿@model DLInventoryApp.ViewModels.Support.SupportTicketVm
+
+@{
+    var inventoryIdValue = ViewContext.RouteData.Values["id"]?.ToString();
+
+    if (string.IsNullOrWhiteSpace(inventoryIdValue))
+    {
+        inventoryIdValue = Context.Request.Query["inventoryId"].ToString();
+    }
+}
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <button type="button"
+            class="support-help-fab"
+            data-bs-toggle="modal"
+            data-bs-target="#supportTicketModal"
+            aria-label="Create support ticket"
+            title="Create support ticket">
+        <i class="bi bi-question-lg"></i>
+    </button>
+
+    <div class="modal fade support-modal"
+         id="supportTicketModal"
+         tabindex="-1"
+         aria-labelledby="supportTicketModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered support-modal-dialog">
+            <div class="modal-content support-modal-content">
+
+                <form id="supportForm"
+                      asp-controller="Support"
+                      asp-action="CreateTicket"
+                      method="post"
+                      class="support-form">
+                    @Html.AntiForgeryToken()
+
+                    <div class="support-modal-header">
+                        <div class="support-modal-headline">
+                            <div class="support-modal-icon">
+                                <i class="bi bi-question-lg"></i>
+                            </div>
+
+                            <div class="support-modal-title-wrap">
+                                <h5 class="support-modal-title" id="supportTicketModalLabel">
+                                    Create support ticket
+                                </h5>
+                                <div class="support-modal-subtitle">
+                                    Describe the issue and choose its priority.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button"
+                                class="support-close-btn"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="support-modal-body">
+                        <div id="supportResult" class="support-result"></div>
+
+                        <input asp-for="CurrentUrl" type="hidden" id="supportCurrentUrl" />
+                        <input asp-for="InventoryId" type="hidden" value="@inventoryIdValue" />
+
+                        <div class="support-field support-field-full">
+                            <label asp-for="Summary" class="support-label">Summary</label>
+                            <textarea asp-for="Summary"
+                                      class="support-input support-textarea"
+                                      rows="5"
+                                      maxlength="1000"
+                                      placeholder="Describe the problem, what you expected, and what happened instead"></textarea>
+                            <div class="support-hint">
+                                Add a short but clear description so admins can reproduce the issue faster.
+                            </div>
+                            <span asp-validation-for="Summary" class="support-error"></span>
+                        </div>
+
+                        <div class="support-bottom-row">
+                            <div class="support-field support-field-priority">
+                                <label asp-for="Priority" class="support-label">Priority</label>
+                                <select asp-for="Priority" class="support-input support-select">
+                                    <option value="High">High</option>
+                                    <option value="Average">Average</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                                <span asp-validation-for="Priority" class="support-error"></span>
+                            </div>
+
+                            <div class="support-send-wrap">
+                                <button type="submit"
+                                        class="support-send-btn"
+                                        aria-label="Send ticket"
+                                        title="Send ticket">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    document.getElementById("supportForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const resultBox = document.getElementById("supportResult");
+
+        document.getElementById("supportCurrentUrl").value = window.location.href; // ← вот сюда
+
+        const formData = new FormData(form);
+
+        const response = await fetch(form.action, {
+            method: "POST",
+            body: formData
+        });
+
+        let data;
+        try {
+            data = await response.json();
+        } catch {
+            resultBox.style.display = "flex";
+            resultBox.className = "support-result support-result-error";
+            resultBox.textContent = "Something went wrong";
+            return;
+        }
+
+        resultBox.style.display = "flex";
+
+        if (data.ok) {
+            resultBox.className = "support-result support-result-success";
+            resultBox.textContent = "Support ticket sent";
+
+            form.reset();
+
+            setTimeout(() => {
+                const modalEl = document.getElementById("supportTicketModal");
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+
+                resultBox.style.display = "none";
+                resultBox.className = "support-result";
+                resultBox.textContent = "";
+            }, 3000);
+        } else {
+            resultBox.className = "support-result support-result-error";
+            resultBox.textContent = data.error ?? "Something went wrong";
+        }
+    });
+</script>

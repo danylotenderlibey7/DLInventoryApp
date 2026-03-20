@@ -76,108 +76,6 @@ namespace DLInventoryApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Guid inventoryId, CreateItemVm vm)
         {
-            var contentType = Request.ContentType ?? "";
-            var isJson = contentType.Contains("application/json", StringComparison.OrdinalIgnoreCase);
-            if (isJson)
-            {
-                var userId = _userManager.GetUserId(User);
-                if (userId == null) return Unauthorized();
-                var canEditItems = await _accessService.CanEditItems(inventoryId, userId);
-                if (!canEditItems) return Forbid();
-                InlineCreateItemRequest? req;
-                try
-                {
-                    req = await JsonSerializer.DeserializeAsync<InlineCreateItemRequest>(
-                        Request.Body,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                    );
-                }
-                catch
-                {
-                    return BadRequest(new { errors = new Dictionary<string, string> { ["_"] = "Invalid JSON" } });
-                }
-                req ??= new InlineCreateItemRequest();
-                var fieldsMeta = await _context.CustomFields
-                    .Where(f => f.InventoryId == inventoryId)
-                    .OrderBy(f => f.Order)
-                    .Select(f => new { f.Id, f.Type })
-                    .ToListAsync();
-                var incomingMap = req.Fields.ToDictionary(x => x.CustomFieldId);
-                int? sequenceNumber = null;
-                bool auto = string.IsNullOrWhiteSpace(req.CustomId);
-                int attempts = auto ? 3 : 1;
-                for (int i = 0; i < attempts; i++)
-                {
-                    sequenceNumber = null;
-                    var customId = (req.CustomId ?? "").Trim();
-                    if (auto)
-                    {
-                        var gen = await _customIdGenerator.GenerateAsync(inventoryId);
-                        customId = gen.CustomId;
-                        sequenceNumber = gen.SequenceNumber;
-                    }
-                    var item = new Item
-                    {
-                        Id = Guid.NewGuid(),
-                        InventoryId = inventoryId,
-                        CustomId = customId,
-                        CreatedById = userId,
-                        CreatedAt = DateTime.UtcNow,
-                        SequenceNumber = sequenceNumber
-                    };
-                    _context.Items.Add(item);
-                    foreach (var fm in fieldsMeta)
-                    {
-                        incomingMap.TryGetValue(fm.Id, out var incoming);
-                        _context.ItemFieldValues.Add(new ItemFieldValue
-                        {
-                            ItemId = item.Id,
-                            CustomFieldId = fm.Id,
-                            TextValue = incoming?.TextValue,
-                            NumberValue = incoming?.NumberValue,
-                            LinkValue = incoming?.LinkValue,
-                            BoolValue = incoming?.BoolValue
-                        });
-                    }
-                    try
-                    {
-                        await _context.SaveChangesAsync();
-                        await _searchService.IndexItemAsync(item.Id);
-                        var resp = new InlineCreateItemResponse
-                        {
-                            ItemId = item.Id,
-                            CustomId = item.CustomId,
-                            CreatedAt = item.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                            UpdatedAt = item.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
-                            LikesCount = 0,
-                            IsLikedByMe = false,
-                            Cells = fieldsMeta.Select(fm =>
-                            {
-                                if (!incomingMap.TryGetValue(fm.Id, out var incoming)) return (string?)null;
-                                return fm.Type switch
-                                {
-                                    CustomFieldType.SingleLineText => incoming.TextValue,
-                                    CustomFieldType.MultiLineText => incoming.TextValue,
-                                    CustomFieldType.DocumentLink => incoming.LinkValue,
-                                    CustomFieldType.Number => incoming.NumberValue?.ToString(),
-                                    CustomFieldType.Boolean => (incoming.BoolValue ?? false) ? "Yes" : "No",
-                                    _ => null
-                                };
-                            }).ToList()
-                        };
-                        return Ok(resp);
-                    }
-                    catch (DbUpdateException)
-                    {
-                        if (!auto)
-                            return BadRequest(new { errors = new Dictionary<string, string> { ["customId"] = "Custom ID already exists in this inventory." } });
-                        _context.ChangeTracker.Clear();
-                        if (i == attempts - 1)
-                            return BadRequest(new { errors = new Dictionary<string, string> { ["customId"] = "Failed to generate a unique Custom ID." } });
-                    }
-                }
-                return BadRequest(new { errors = new Dictionary<string, string> { ["customId"] = "Failed" } });
-            }
             var userIdForm = _userManager.GetUserId(User);
             if (userIdForm == null) return Challenge();
             var canEditItemsForm = await _accessService.CanEditItems(inventoryId, userIdForm);
@@ -351,7 +249,7 @@ namespace DLInventoryApp.Controllers
             _context.Items.RemoveRange(itemsToDelete);
             await _context.SaveChangesAsync();
             var deletedIds = itemsToDelete.Select(it => it.Id).ToList();
-await _searchService.RemoveItemsAsync(deletedIds);
+            await _searchService.RemoveItemsAsync(deletedIds);
             return RedirectToAction("Details", "Inventories", new { id = inventoryId, tab = "items" });
         }
         private async Task FillCreateVmAsync(Guid inventoryId, CreateItemVm vm)

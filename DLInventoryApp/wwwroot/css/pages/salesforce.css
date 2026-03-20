@@ -1,0 +1,238 @@
+﻿.profile-salesforce-btn {
+    margin-top: 14px;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sf-export-page {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 12px 16px;
+}
+
+.sf-export-shell {
+    width: 100%;
+    max-width: 1180px;
+    display: flex;
+    justify-content: center;
+}
+
+.sf-export-card {
+    width: 100%;
+    max-width: 1120px;
+    background: color-mix(in srgb, var(--card) 94%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px 20px;
+    box-shadow: none;
+    transition: none;
+    transform: none;
+}
+
+    .sf-export-card:hover {
+        box-shadow: none;
+        transform: none;
+    }
+
+.sf-export-head {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.sf-export-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--text-main);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.sf-export-title {
+    margin: 0;
+    font-size: 26px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.sf-export-subtitle {
+    margin: 8px auto 0;
+    max-width: 560px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+
+.sf-status-message {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--text-main);
+    font-size: 13px;
+}
+
+.sf-export-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sf-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 16px;
+}
+
+.sf-field-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    transition: none;
+    transform: none;
+    box-shadow: none;
+}
+
+    .sf-field-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .sf-field-card .auth-field {
+        margin: 0;
+    }
+
+    .sf-field-card .auth-label,
+    .sf-field-card label {
+        display: inline-block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+.sf-input {
+    min-height: 42px;
+    height: 42px;
+    border-radius: 10px;
+    transition: none;
+    transform: none;
+    box-shadow: none;
+}
+
+    .sf-input:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .sf-input:focus {
+        border-color: var(--border);
+        box-shadow: none;
+        outline: none;
+    }
+
+.sf-submit-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.sf-submit-btn {
+    min-width: 240px;
+    min-height: 46px;
+    border-radius: 12px;
+    padding: 0 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+    .sf-fields-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sf-export-card {
+        max-width: 860px;
+    }
+}
+
+@media (max-width: 700px) {
+    .sf-export-page {
+        padding: 10px 8px 18px;
+    }
+
+    .sf-export-card {
+        padding: 16px 14px;
+        border-radius: 16px;
+    }
+
+    .sf-export-title {
+        font-size: 22px;
+    }
+
+    .sf-export-subtitle {
+        font-size: 13px;
+    }
+
+    .sf-fields-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .sf-field-card {
+        padding: 12px;
+        border-radius: 14px;
+    }
+
+    .sf-submit-btn {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+.app-workspace .sf-export-page {
+    height: calc(100vh - 40px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.sf-export-shell {
+    align-items: center;
+}
+
+.sf-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #e0a4a4;
+    background: #fceaea;
+    color: #7a1f1f;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+    .sf-error i {
+        font-size: 16px;
+    }

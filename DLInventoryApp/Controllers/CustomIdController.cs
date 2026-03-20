@@ -160,11 +160,11 @@ namespace DLInventoryApp.Controllers
             if (userId == null) return Unauthorized();
             var invBase = await _context.Inventories
                 .Where(x => x.Id == inventoryId)
-                .Select(x => new { x.Id, x.OwnerId })
+                .Select(x => new { x.Id })
                 .SingleOrDefaultAsync();
             if (invBase == null) return NotFound();
             var canManage = await _accessService.CanManageInventory(inventoryId, userId);
-            if (!canManage) return Forbid();
+            if (!canManage) return NotFound();
             if (orderedIds == null || orderedIds.Count == 0)
                 return BadRequest(new { ok = false, error = "Empty reorder payload." });
             var elements = await _context.CustomIdElements

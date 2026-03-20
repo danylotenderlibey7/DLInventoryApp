@@ -56,6 +56,7 @@ namespace DLInventoryApp.Controllers
             return View(vm);
         }
         [HttpPost("Block")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Block(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
@@ -65,6 +66,7 @@ namespace DLInventoryApp.Controllers
             return RedirectToAction("Users");
         }
         [HttpPost("Unblock")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Unblock(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
@@ -74,6 +76,7 @@ namespace DLInventoryApp.Controllers
             return RedirectToAction("Users");
         }
         [HttpPost("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
@@ -87,6 +90,7 @@ namespace DLInventoryApp.Controllers
             return RedirectToAction("Users");
         }
         [HttpPost("AddAdmin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddAdmin(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");
@@ -104,6 +108,7 @@ namespace DLInventoryApp.Controllers
             return RedirectToAction("Users");
         }
         [HttpPost("RemoveAdmin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveAdmin(List<string> userIds)
         {
             if (userIds == null || userIds.Count == 0) return RedirectToAction("Users");

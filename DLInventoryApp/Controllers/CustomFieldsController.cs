@@ -34,8 +34,7 @@ namespace DLInventoryApp.Controllers
                 .Where(inv => inv.Id == inventoryId && inv.OwnerId == userId)
                 .Select(inv => inv.Title)
                 .SingleOrDefaultAsync();
-            if (title == null)
-                return NotFound();
+            if (title == null) return NotFound();
             var fields = await _context.CustomFields
                 .Where(f => f.InventoryId == inventoryId)
                 .Select(f => new CustomFieldColumnVm
@@ -58,75 +57,69 @@ namespace DLInventoryApp.Controllers
             };
             return View(vm);
         }
-        [HttpGet("Create")]
-        public async Task<IActionResult> Create(Guid inventoryId)
-        {
-            var userId = _userManager.GetUserId(User);
-            var inv = await _context.Inventories
-                .Where(inv => inv.Id == inventoryId)
-                .SingleOrDefaultAsync();
-            if (inv == null)
-                return NotFound();
-            if (inv.OwnerId != userId)
-                return NotFound();
-            var vm = new CreateCustomFieldVm
-            {
-                InventoryId = inventoryId,
-                InventoryTitle = inv.Title
-            };
-            return View(vm);
-        }
-        [HttpPost("Create")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Guid inventoryId, CreateCustomFieldVm vm)
-        {
-            if (inventoryId != vm.InventoryId)
-                return NotFound();
-            if (!ModelState.IsValid)
-                return View(vm);
-            var userId = _userManager.GetUserId(User);
-            var inv = await _context.Inventories
-                .Where(x => x.Id == inventoryId)
-                .SingleOrDefaultAsync();
-            if (inv == null)
-                return NotFound();
-            if (inv.OwnerId != userId)
-                return NotFound();
-            vm.InventoryTitle = inv.Title;
-            var sameTypeCount = await _context.CustomFields
-                .Where(f => f.InventoryId == inventoryId && f.Type == vm.Type)
-                .CountAsync();
-            if (sameTypeCount >= 3)
-            {
-                ModelState.AddModelError(nameof(vm.Type), "You can create up to 3 fields of this type in one inventory.");
-                return View(vm);
-            }
-            var maxOrderOrNull = await _context.CustomFields
-                .Where(f => f.InventoryId == inventoryId)
-                .MaxAsync(f => (int?)f.Order);
-            var nextOrder = (maxOrderOrNull ?? -1) + 1;
-            var field = new CustomField
-            {
-                InventoryId = inventoryId,
-                Name = (vm.Name ?? string.Empty).Trim(),
-                Description = string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim(),
-                Type = vm.Type,
-                Order = nextOrder,
-                ShowInTable = vm.ShowInTable
-            };
-            _context.CustomFields.Add(field);
-            try
-            {
-                await _context.SaveChangesAsync(); 
-                await _searchService.ReindexInventoryItemsAsync(inventoryId);
-            }
-            catch (DbUpdateException)
-            {
-                ModelState.AddModelError(nameof(vm.Name), "Field name already exists in this inventory.");
-                return View(vm);
-            }
-            return RedirectToAction("Index", new { inventoryId });
-        }
+        //[HttpGet("Create")]
+        //public async Task<IActionResult> Create(Guid inventoryId)
+        //{
+        //    var userId = _userManager.GetUserId(User);
+        //    var inv = await _context.Inventories
+        //        .Where(inv => inv.Id == inventoryId)
+        //        .SingleOrDefaultAsync();
+        //    if (inv == null) return NotFound();
+        //    if (inv.OwnerId != userId) return NotFound();
+        //    var vm = new CreateCustomFieldVm
+        //    {
+        //        InventoryId = inventoryId,
+        //        InventoryTitle = inv.Title
+        //    };
+        //    return View(vm);
+        //}
+        //[HttpPost("Create")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Create(Guid inventoryId, CreateCustomFieldVm vm)
+        //{
+        //    if (inventoryId != vm.InventoryId) return NotFound();
+        //    if (!ModelState.IsValid) return View(vm);
+        //    var userId = _userManager.GetUserId(User);
+        //    var inv = await _context.Inventories
+        //        .Where(x => x.Id == inventoryId)
+        //        .SingleOrDefaultAsync();
+        //    if (inv == null) return NotFound();
+        //    if (inv.OwnerId != userId) return NotFound();
+        //    vm.InventoryTitle = inv.Title;
+        //    var sameTypeCount = await _context.CustomFields
+        //        .Where(f => f.InventoryId == inventoryId && f.Type == vm.Type)
+        //        .CountAsync();
+        //    if (sameTypeCount >= 3)
+        //    {
+        //        ModelState.AddModelError(nameof(vm.Type), "You can create up to 3 fields of this type in one inventory.");
+        //        return View(vm);
+        //    }
+        //    var maxOrderOrNull = await _context.CustomFields
+        //        .Where(f => f.InventoryId == inventoryId)
+        //        .MaxAsync(f => (int?)f.Order);
+        //    var nextOrder = (maxOrderOrNull ?? -1) + 1;
+        //    var field = new CustomField
+        //    {
+        //        InventoryId = inventoryId,
+        //        Name = (vm.Name ?? string.Empty).Trim(),
+        //        Description = string.IsNullOrWhiteSpace(vm.Description) ? null : vm.Description.Trim(),
+        //        Type = vm.Type,
+        //        Order = nextOrder,
+        //        ShowInTable = vm.ShowInTable
+        //    };
+        //    _context.CustomFields.Add(field);
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync(); 
+        //        await _searchService.ReindexInventoryItemsAsync(inventoryId);
+        //    }
+        //    catch (DbUpdateException)
+        //    {
+        //        ModelState.AddModelError(nameof(vm.Name), "Field name already exists in this inventory.");
+        //        return View(vm);
+        //    }
+        //    return RedirectToAction("Index", new { inventoryId });
+        //}
         [HttpPost("Add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(Guid inventoryId)

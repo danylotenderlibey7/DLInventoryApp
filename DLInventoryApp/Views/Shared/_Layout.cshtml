@@ -19,7 +19,10 @@
     <link rel="stylesheet" href="~/css/pages/inventories.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/items.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/profile.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/salesforce.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/pages/settings.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages/support.css" asp-append-version="true" />
+
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
@@ -231,7 +234,7 @@
                 @RenderBody()
             </div>
         </main>
-
+        @await Html.PartialAsync("_SupportTicketModal", new DLInventoryApp.ViewModels.Support.SupportTicketVm())
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -392,6 +395,14 @@
             const currentLang = "@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName";
             syncLangButtons(currentLang);
         })();
+        const supportModal = document.getElementById("supportTicketModal");
+           const supportCurrentUrl = document.getElementById("supportCurrentUrl");
+
+           supportModal?.addEventListener("show.bs.modal", () => {
+               if (supportCurrentUrl) {
+                   supportCurrentUrl.value = window.location.href;
+               }
+           });
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

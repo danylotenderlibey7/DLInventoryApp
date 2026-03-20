@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using DLInventoryApp.Services.Options;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;

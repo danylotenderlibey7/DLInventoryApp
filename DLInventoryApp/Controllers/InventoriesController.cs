@@ -89,9 +89,9 @@ namespace DLInventoryApp.Controllers
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
                     CategoryName = inv.Category != null ? inv.Category.Name : null,
-                    Tags = inv.InventoryTags
-                    .Select(it => it.Tag.Name)
-                    .ToList()
+                    //Tags = inv.InventoryTags
+                    //.Select(it => it.Tag.Name)
+                    //.ToList()
                 })
                 .Skip(skip)
                 .Take(pageSize)
@@ -142,9 +142,9 @@ namespace DLInventoryApp.Controllers
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
                     CategoryName = inv.Category != null ? inv.Category.Name : null,
-                    Tags = inv.InventoryTags
-                        .Select(it => it.Tag.Name)
-                        .ToList()
+                    //Tags = inv.InventoryTags
+                    //    .Select(it => it.Tag.Name)
+                    //    .ToList()
                 })
                 .Skip(ownedSkip)
                 .Take(pageSize)
@@ -170,9 +170,9 @@ namespace DLInventoryApp.Controllers
                     UpdatedAt = inv.UpdatedAt,
                     ItemsCount = inv.Items.Count(),
                     CategoryName = inv.Category != null ? inv.Category.Name : null,
-                    Tags = inv.InventoryTags
-                        .Select(it => it.Tag.Name)
-                        .ToList()
+                    //Tags = inv.InventoryTags
+                    //    .Select(it => it.Tag.Name)
+                    //    .ToList()
                 })
                 .Skip(sharedSkip)
                 .Take(pageSize)

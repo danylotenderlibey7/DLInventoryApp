@@ -54,8 +54,7 @@ namespace DLInventoryApp.Controllers
                         AuthorName = p.Author != null ? p.Author.UserName! : "Deleted User",
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt
-                    })
-                    .ToListAsync();
+                    }).ToListAsync();
             foreach (var p in posts)
             {
                 p.Html = _markdown.ToSafeHtml(p.Text);

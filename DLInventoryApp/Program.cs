@@ -10,6 +10,7 @@ using DLInventoryApp.Hubs;
 using DLInventoryApp.Services.Tabs;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using DLInventoryApp.Services.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddLocalization(options =>
@@ -69,6 +70,11 @@ builder.Services.AddScoped<ISearchService, LuceneSearchService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Authentication:Brevo"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<IMarkdownService, MarkdownService>();
+builder.Services.Configure<SalesforceSettings>(builder.Configuration.GetSection("Salesforce"));
+builder.Services.AddHttpClient<SalesforceService>();
+builder.Services.Configure<OneDriveOptions>(builder.Configuration.GetSection("OneDrive"));
+builder.Services.AddHttpClient<IOneDriveService, OneDriveService>();
+builder.Services.AddScoped<ISupportService, SupportService>();
 
 var app = builder.Build();
 var supportedCultures = new[]

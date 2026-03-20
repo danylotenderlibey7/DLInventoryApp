@@ -1,4 +1,4 @@
-﻿namespace DLInventoryApp.Services
+﻿namespace DLInventoryApp.Services.Options
 {
     public class EmailSettings
     {
