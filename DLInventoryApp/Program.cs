@@ -71,7 +71,7 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Auth
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddSingleton<IMarkdownService, MarkdownService>();
 builder.Services.Configure<SalesforceSettings>(builder.Configuration.GetSection("Salesforce"));
-builder.Services.AddHttpClient<SalesforceService>();
+builder.Services.AddHttpClient<ISalesforceService, SalesforceService>();
 builder.Services.Configure<OneDriveOptions>(builder.Configuration.GetSection("OneDrive"));
 builder.Services.AddHttpClient<IOneDriveService, OneDriveService>();
 builder.Services.AddScoped<ISupportService, SupportService>();
