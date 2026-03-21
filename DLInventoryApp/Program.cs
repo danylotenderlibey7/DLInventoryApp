@@ -63,6 +63,8 @@ builder.Services.AddScoped<SettingsTabBuilder>();
 builder.Services.AddScoped<AccessTabBuilder>();
 builder.Services.AddScoped<ChatTabBuilder>();
 builder.Services.AddScoped<ItemsTabBuilder>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<OdooTabBuilder>();
 builder.Services.AddScoped<IAccessService, AccessService>();
 builder.Services.AddScoped<ITagService, TagService>();
 builder.Services.AddScoped<ILikeService, ItemLikeService>();

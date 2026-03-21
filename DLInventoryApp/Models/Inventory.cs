@@ -28,5 +28,7 @@ namespace DLInventoryApp.Models
         public List<InventoryTag> InventoryTags { get; set; } = new();
         public List<DiscussionPost> DiscussionPosts { get; set; } = new();
         public List<InventoryCustomIdElement> CustomIdElements { get; set; } = new();
+        [MaxLength(128)]
+        public string? ApiToken { get; set; }
     }
 }

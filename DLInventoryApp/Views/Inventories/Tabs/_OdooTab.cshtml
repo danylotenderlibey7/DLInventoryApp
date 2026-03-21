@@ -1,0 +1,112 @@
+﻿@model DLInventoryApp.ViewModels.Inventories.Tabs.Odoo.OdooTabVm
+
+@if (!Model.CanManage)
+{
+    <p class="page-subtitle">Only the inventory owner can manage Odoo integration.</p>
+    return;
+}
+
+<div class="odoo-tab">
+
+    <div class="odoo-header">
+        <div class="odoo-header-icon">
+            <i class="bi bi-box-arrow-in-down-right"></i>
+        </div>
+        <div>
+            <h2 class="odoo-header-title">Odoo Integration</h2>
+            <p class="odoo-header-sub">Connect this inventory to your Odoo instance via API token</p>
+        </div>
+    </div>
+
+    <div class="odoo-card">
+        <div class="odoo-card-head">
+            <span class="odoo-card-title">
+                API Token
+            </span>
+            @if (Model.ApiToken != null)
+            {
+                <span class="odoo-card-note">
+                    <i class="bi bi-shield-lock" style="color: var(--accent);"></i>
+                    Keep this token secret
+                </span>
+            }
+        </div>
+
+        <div class="odoo-card-body">
+            @if (Model.ApiToken != null)
+            {
+                <div class="odoo-field-row">
+                    <span class="odoo-field-label">Token</span>
+                    <div class="odoo-field-control">
+                        <input class="odoo-input"
+                               id="apiTokenInput"
+                               value="@Model.ApiToken"
+                               readonly />
+                        <button class="odoo-copy-btn"
+                                type="button"
+                                title="Copy token"
+                                onclick="copyOdooToken()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="odoo-divider"></div>
+
+                <div class="odoo-actions">
+                    <form method="post"
+                          asp-action="GenerateApiToken"
+                          asp-controller="Inventories"
+                          asp-route-inventoryId="@Model.InventoryId"
+                          style="margin: 0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="app-btn odoo-btn-accent">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                    </form>
+                    <span class="odoo-warn-note">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Regenerating will break the existing Odoo connection
+                    </span>
+                </div>
+            }
+            else
+            {
+                <div class="odoo-empty">
+                    <div class="odoo-empty-icon">
+                        <i class="bi bi-key"></i>
+                    </div>
+                    <p class="odoo-empty-title">No token generated yet</p>
+                    <p class="odoo-empty-sub">Generate an API token to allow Odoo to import data from this inventory</p>
+                    <form method="post"
+                          asp-action="GenerateApiToken"
+                          asp-controller="Inventories"
+                          asp-route-inventoryId="@Model.InventoryId"
+                          style="margin: 4px 0 0;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="app-btn odoo-btn-accent">
+                            <i class="bi bi-key"></i>
+                            Generate Token
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function copyOdooToken() {
+        const input = document.getElementById('apiTokenInput');
+        const btn = input.closest('.odoo-field-control').querySelector('.odoo-copy-btn');
+        navigator.clipboard.writeText(input.value).then(() => {
+            btn.classList.add('copied');
+            btn.innerHTML = '<i class="bi bi-check2"></i>';
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = '<i class="bi bi-clipboard"></i>';
+            }, 1800);
+        });
+    }
+</script>

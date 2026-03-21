@@ -32,8 +32,16 @@
             @LocalizerShared["Fields"]
         </a>
 
-        <a class="@TabClass("access")"
-           asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="access">
-            @LocalizerShared["Access"]
-        </a>
+        @if (Model.CanManageInventory)
+        {
+            <a class="@TabClass("access")"
+               asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="access">
+                @LocalizerShared["Access"]
+            </a>
+
+            <a class="@TabClass("odoo")"
+               asp-action="Details" asp-route-id="@Model.InventoryId" asp-route-tab="odoo">
+                Odoo
+            </a>
+        }
 </div>

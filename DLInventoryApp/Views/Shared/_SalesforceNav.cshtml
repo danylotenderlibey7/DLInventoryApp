@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<DLInventoryApp.Models.ApplicationUser> SignInManager
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.UserResource> LocalizerU
+
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+
+<div class="manage-nav-card">
+    <div class="manage-nav-head">
+        <div class="manage-nav-title">@LocalizerU["Account"]</div>
+        <div class="manage-nav-subtitle">@LocalizerU["ManageProfileSecurity"]</div>
+    </div>
+    <nav class="manage-nav-list">
+        <a class="manage-nav-link"
+           asp-area="Identity"
+           asp-page="/Account/Manage/Index">
+            <i class="bi bi-person-circle"></i>
+            <span>@LocalizerU["Profile"]</span>
+        </a>
+        <a class="manage-nav-link"
+           asp-area="Identity"
+           asp-page="/Account/Manage/Email">
+            <i class="bi bi-envelope"></i>
+            <span>Email</span>
+        </a>
+        <a class="manage-nav-link"
+           asp-area="Identity"
+           asp-page="/Account/Manage/ChangePassword">
+            <i class="bi bi-key"></i>
+            <span>@LocalizerU["Password"]</span>
+        </a>
+        @if (hasExternalLogins)
+        {
+            <a class="manage-nav-link"
+               asp-area="Identity"
+               asp-page="/Account/Manage/ExternalLogins">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>@LocalizerU["ExternalLogins"]</span>
+            </a>
+        }
+        <a class="manage-nav-link active"
+           asp-controller="Salesforce"
+           asp-action="ExportForm">
+            <i class="bi bi-cloud-upload"></i>
+            <span>Export to Salesforce</span>
+        </a>
+    </nav>
+</div>

@@ -30,9 +30,11 @@ namespace DLInventoryApp.Controllers
         private readonly AccessTabBuilder _accessTabBuilder;
         private readonly ChatTabBuilder _chatTabBuilder;
         private readonly ItemsTabBuilder _itemsTabBuilder;
+        private readonly OdooTabBuilder _odooTabBuilder;
         public InventoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
             ITagService tagService, IAccessService accessService, ISearchService searchService, CustomIdTabBuilder customIdTabBuilder, FieldsTabBuilder fieldsTabBuilder,
-            SettingsTabBuilder settingsTabBuilder, AccessTabBuilder accessTabBuilder, ChatTabBuilder chatTabBuilder, ItemsTabBuilder itemsTabBuilder)
+            SettingsTabBuilder settingsTabBuilder, AccessTabBuilder accessTabBuilder, 
+            ChatTabBuilder chatTabBuilder, ItemsTabBuilder itemsTabBuilder, OdooTabBuilder odooTabBuilder)
         {
             _context = context;
             _userManager = userManager;
@@ -45,6 +47,7 @@ namespace DLInventoryApp.Controllers
             _accessTabBuilder = accessTabBuilder;
             _chatTabBuilder = chatTabBuilder;
             _itemsTabBuilder = itemsTabBuilder;
+            _odooTabBuilder = odooTabBuilder;
         }
         [AllowAnonymous]
         public async Task<IActionResult> Index(string? tag, string view = "latest", int page = 1, int pageSize = 6)
@@ -374,7 +377,7 @@ namespace DLInventoryApp.Controllers
         }
         private static readonly HashSet<string> AllowedTabs = new(StringComparer.OrdinalIgnoreCase)
         {
-            "items", "chat", "settings", "customid", "fields", "access"
+            "items", "chat", "settings", "customid", "fields", "access", "odoo"
         };
         [AllowAnonymous]
         public async Task<IActionResult> Details(Guid id, string tab = "items")
@@ -430,6 +433,9 @@ namespace DLInventoryApp.Controllers
                     if (userId == null) return Challenge();
                     if (!canManageInventory) return NotFound();
                     inv.Accesses = await _accessTabBuilder.BuildAsync(id, invBase.Title);
+                    break;
+                case "odoo":
+                    inv.Odoo = await _odooTabBuilder.BuildAsync(id, invBase.Title, canManageInventory);
                     break;
             }
             return View(inv);
@@ -510,6 +516,23 @@ namespace DLInventoryApp.Controllers
                 version = inv.Version,
                 updatedAt = inv.UpdatedAt?.ToString("yyyy-MM-dd HH:mm")
             });
+        }
+        [HttpPost("Inventories/{inventoryId:guid}/GenerateApiToken")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateApiToken(Guid inventoryId)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId == null) return Challenge();
+            var canManage = await _accessService.CanManageInventory(inventoryId, userId);
+            if (!canManage) return Forbid();
+            var inventory = await _context.Inventories.FindAsync(inventoryId);
+            if (inventory == null) return NotFound();
+            var token = Convert.ToBase64String(
+                    System.Security.Cryptography.RandomNumberGenerator.GetBytes(48))
+                .Replace("+", "-").Replace("/", "_").Replace("=", "");
+            inventory.ApiToken = token;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id = inventoryId, tab = "odoo" });
         }
     }
 }

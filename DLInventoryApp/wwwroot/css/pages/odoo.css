@@ -1,0 +1,306 @@
+﻿.odoo-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.odoo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.odoo-header-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--border));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 20px;
+}
+
+.odoo-header-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-main);
+    letter-spacing: -0.01em;
+}
+
+.odoo-header-sub {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.odoo-card {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    overflow: hidden;
+}
+
+.odoo-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+}
+
+.odoo-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .odoo-card-title i {
+        font-size: 16px;
+        color: var(--accent);
+    }
+
+.odoo-card-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.odoo-card-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.odoo-field-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 10px 16px;
+    align-items: center;
+}
+
+.odoo-field-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.odoo-field-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.odoo-input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    color: var(--text-main);
+    font-size: 13px;
+    font-family: var(--font-mono, monospace);
+    outline: none;
+    transition: border-color .15s;
+}
+
+    .odoo-input:focus {
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    }
+
+.odoo-copy-btn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+    font-size: 15px;
+}
+
+    .odoo-copy-btn:hover {
+        background: color-mix(in srgb, var(--accent) 18%, transparent);
+        border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+    }
+
+    .odoo-copy-btn.copied {
+        color: #166534;
+        border-color: #abefc6;
+        background: #ecfdf3;
+    }
+
+.odoo-btn-accent {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 0 18px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter .15s;
+}
+
+    .odoo-btn-accent:hover {
+        filter: brightness(.92);
+        color: #fff;
+    }
+
+.odoo-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.odoo-empty-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--accent) 30%, var(--border));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--accent);
+    opacity: .7;
+}
+
+.odoo-empty-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.odoo-empty-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 320px;
+}
+
+.odoo-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.odoo-warn-note {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+    .odoo-warn-note i {
+        color: #b45309;
+        font-size: 13px;
+    }
+
+.odoo-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+}
+
+@media (max-width: 700px) {
+    .odoo-header {
+        padding-bottom: 12px;
+    }
+
+    .odoo-header-title {
+        font-size: 18px;
+    }
+
+    .odoo-card-head {
+        padding: 12px 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .odoo-card-body {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .odoo-field-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .odoo-input {
+        font-size: 12px;
+        height: 40px;
+    }
+
+    .odoo-copy-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .odoo-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .odoo-btn-accent {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .odoo-empty {
+        padding: 22px 14px;
+    }
+}
+
+@media (max-width: 420px) {
+    .odoo-header-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 17px;
+        border-radius: 10px;
+    }
+
+    .odoo-header-title {
+        font-size: 16px;
+    }
+
+    .odoo-card {
+        border-radius: 14px;
+    }
+}

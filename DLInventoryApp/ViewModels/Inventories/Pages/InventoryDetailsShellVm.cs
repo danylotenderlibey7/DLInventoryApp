@@ -2,6 +2,7 @@
 using DLInventoryApp.ViewModels.CustomId;
 using DLInventoryApp.ViewModels.Discussions;
 using DLInventoryApp.ViewModels.Inventories.Tabs.Access;
+using DLInventoryApp.ViewModels.Inventories.Tabs.Odoo;
 using DLInventoryApp.ViewModels.Inventories.Tabs.Settings;
 using DLInventoryApp.ViewModels.Items.Tabs;
 
@@ -20,5 +21,6 @@ namespace DLInventoryApp.ViewModels.Inventories.Pages
         public InventorySettingsVm? Settings { get; set; }
         public InventoryFieldsVm? Fields { get; set; }
         public InventoryAccessVm? Accesses { get; set; }
+        public OdooTabVm? Odoo { get; set; }
     }
 }
