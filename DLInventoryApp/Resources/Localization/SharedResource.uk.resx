@@ -258,4 +258,31 @@
   <data name="Private" xml:space="preserve">
     <value>Приватний</value>
   </data>
+  <data name="CreateSupportTicket" xml:space="preserve">
+    <value>Створити запит на підтримку</value>
+  </data>
+  <data name="DescribeIssueChoosePriority" xml:space="preserve">
+    <value>Опишіть проблему та виберіть її пріоритет</value>
+  </data>
+  <data name="DescribeProblemExpectedHappenedInstead" xml:space="preserve">
+    <value>Опишіть проблему, чого ви очікували, і що сталося замість цього</value>
+  </data>
+  <data name="AddShortClearDescriptionAdminsReproduceIssue" xml:space="preserve">
+    <value>Додайте короткий, але чіткий опис, щоб адміністратори могли швидше відтворити проблему</value>
+  </data>
+  <data name="High" xml:space="preserve">
+    <value>Високий</value>
+  </data>
+  <data name="Average" xml:space="preserve">
+    <value>Середній</value>
+  </data>
+  <data name="Low" xml:space="preserve">
+    <value>Низький</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Короткий зміст</value>
+  </data>
+  <data name="Priority" xml:space="preserve">
+    <value>Пріоритет</value>
+  </data>
 </root>

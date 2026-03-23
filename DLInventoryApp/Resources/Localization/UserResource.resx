@@ -132,6 +132,9 @@
   <data name="CheckCurrentEmailETC" xml:space="preserve">
     <value>Check your current email, send verification, or change it.</value>
   </data>
+  <data name="CompanyName" xml:space="preserve">
+    <value>Company Name</value>
+  </data>
   <data name="Confirmed" xml:space="preserve">
     <value>Confirmed</value>
   </data>
@@ -140,6 +143,9 @@
   </data>
   <data name="ConnectRemoveExternalETC" xml:space="preserve">
     <value>Connect or remove external authentication providers.</value>
+  </data>
+  <data name="CreateSalesforceAccountLinkedContact" xml:space="preserve">
+    <value>Create a Salesforce Account with a linked Contact</value>
   </data>
   <data name="CurrentEmail" xml:space="preserve">
     <value>Current email</value>
@@ -150,8 +156,20 @@
   <data name="EnterNewEmail" xml:space="preserve">
     <value>Enter new email</value>
   </data>
+  <data name="ExportSalesforce" xml:space="preserve">
+    <value>Export to Salesforce</value>
+  </data>
   <data name="ExternalLogins" xml:space="preserve">
     <value>External logins</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>First Name</value>
+  </data>
+  <data name="JobTitle" xml:space="preserve">
+    <value>JobTitle</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>Last Name</value>
   </data>
   <data name="ManageEmail" xml:space="preserve">
     <value>Manage Email</value>
@@ -167,6 +185,9 @@
   </data>
   <data name="Password" xml:space="preserve">
     <value>Password</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Phone</value>
   </data>
   <data name="PleaseConfirmYourNewPassword" xml:space="preserve">
     <value>Please confirm your new password.</value>

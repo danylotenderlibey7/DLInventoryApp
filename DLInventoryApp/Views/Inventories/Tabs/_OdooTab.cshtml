@@ -1,8 +1,10 @@
 ﻿@model DLInventoryApp.ViewModels.Inventories.Tabs.Odoo.OdooTabVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @if (!Model.CanManage)
 {
-    <p class="page-subtitle">Only the inventory owner can manage Odoo integration.</p>
+    <p class="page-subtitle"> @LocalizerInv["OnlyInventoryOwnerCanManageOdoo"]</p>
     return;
 }
 
@@ -13,21 +15,21 @@
             <i class="bi bi-box-arrow-in-down-right"></i>
         </div>
         <div>
-            <h2 class="odoo-header-title">Odoo Integration</h2>
-            <p class="odoo-header-sub">Connect this inventory to your Odoo instance via API token</p>
+            <h2 class="odoo-header-title"> @LocalizerInv["OdooIntegration"]</h2>
+            <p class="odoo-header-sub">@LocalizerInv["ConnectInventoryOdooAPI"]</p>
         </div>
     </div>
 
     <div class="odoo-card">
         <div class="odoo-card-head">
             <span class="odoo-card-title">
-                API Token
+                @LocalizerInv["APIToken"]
             </span>
             @if (Model.ApiToken != null)
             {
                 <span class="odoo-card-note">
                     <i class="bi bi-shield-lock" style="color: var(--accent);"></i>
-                    Keep this token secret
+                    @LocalizerInv["KeepTokenSecret"]
                 </span>
             }
         </div>
@@ -36,7 +38,7 @@
             @if (Model.ApiToken != null)
             {
                 <div class="odoo-field-row">
-                    <span class="odoo-field-label">Token</span>
+                    <span class="odoo-field-label">@LocalizerInv["APIToken"]</span>
                     <div class="odoo-field-control">
                         <input class="odoo-input"
                                id="apiTokenInput"
@@ -66,7 +68,7 @@
                     </form>
                     <span class="odoo-warn-note">
                         <i class="bi bi-exclamation-triangle"></i>
-                        Regenerating will break the existing Odoo connection
+                        @LocalizerInv["RegeneratingWillBreakExistingOdooConnection"]
                     </span>
                 </div>
             }
@@ -76,8 +78,8 @@
                     <div class="odoo-empty-icon">
                         <i class="bi bi-key"></i>
                     </div>
-                    <p class="odoo-empty-title">No token generated yet</p>
-                    <p class="odoo-empty-sub">Generate an API token to allow Odoo to import data from this inventory</p>
+                    <p class="odoo-empty-title">@LocalizerInv["NoTokenGeneratedYet"]</p>
+                    <p class="odoo-empty-sub">@LocalizerInv["GenerateAPITokenAllowOdooImportData"]</p>
                     <form method="post"
                           asp-action="GenerateApiToken"
                           asp-controller="Inventories"
@@ -86,7 +88,7 @@
                         @Html.AntiForgeryToken()
                         <button type="submit" class="app-btn odoo-btn-accent">
                             <i class="bi bi-key"></i>
-                            Generate Token
+                            @LocalizerInv["GenerateToken"]
                         </button>
                     </form>
                 </div>

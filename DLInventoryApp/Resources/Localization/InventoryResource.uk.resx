@@ -204,4 +204,31 @@
   <data name="UpdateInventorySettingsAndMetadata" xml:space="preserve">
     <value>Оновлення налаштувань інвентарю та метаданих</value>
   </data>
+  <data name="OnlyInventoryOwnerCanManageOdoo" xml:space="preserve">
+    <value>Тільки власник інвентарю може керувати Odoo</value>
+  </data>
+  <data name="OdooIntegration" xml:space="preserve">
+    <value>Інтеграція Odoo</value>
+  </data>
+  <data name="ConnectInventoryOdooAPI" xml:space="preserve">
+    <value>Підключіть цей інвентар до вашого екземпляра Odoo за допомогою токена API</value>
+  </data>
+  <data name="APIToken" xml:space="preserve">
+    <value>Токен API</value>
+  </data>
+  <data name="KeepTokenSecret" xml:space="preserve">
+    <value>Тримайте цей токен у таємниці</value>
+  </data>
+  <data name="RegeneratingWillBreakExistingOdooConnection" xml:space="preserve">
+    <value>Регенерація розірве існуюче з'єднання Odoo</value>
+  </data>
+  <data name="NoTokenGeneratedYet" xml:space="preserve">
+    <value>Токен ще не згенеровано</value>
+  </data>
+  <data name="GenerateAPITokenAllowOdooImportData" xml:space="preserve">
+    <value>Згенеруйте токен API, щоб дозволити Odoo імпортувати дані з цього інвентарю</value>
+  </data>
+  <data name="GenerateToken" xml:space="preserve">
+    <value>Згенерувати токен</value>
+  </data>
 </root>

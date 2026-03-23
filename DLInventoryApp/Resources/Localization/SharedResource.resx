@@ -260,4 +260,31 @@
   <data name="Private" xml:space="preserve">
     <value>Private</value>
   </data>
+  <data name="CreateSupportTicket" xml:space="preserve">
+    <value>Create support ticket</value>
+  </data>
+  <data name="DescribeIssueChoosePriority" xml:space="preserve">
+    <value>Describe the issue and choose its priority</value>
+  </data>
+  <data name="DescribeProblemExpectedHappenedInstead" xml:space="preserve">
+    <value>Describe the problem, what you expected, and what happened instead</value>
+  </data>
+  <data name="AddShortClearDescriptionAdminsReproduceIssue" xml:space="preserve">
+    <value>Add a short but clear description so admins can reproduce the issue faster</value>
+  </data>
+  <data name="High" xml:space="preserve">
+    <value>High</value>
+  </data>
+  <data name="Average" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="Low" xml:space="preserve">
+    <value>Low</value>
+  </data>
+  <data name="Summary" xml:space="preserve">
+    <value>Summary</value>
+  </data>
+  <data name="Priority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
 </root>

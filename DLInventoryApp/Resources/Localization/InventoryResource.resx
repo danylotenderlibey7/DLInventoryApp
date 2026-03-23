@@ -217,4 +217,31 @@
   <data name="UpdateInventorySettingsAndMetadata" xml:space="preserve">
     <value>Update inventory settings and metadata</value>
   </data>
+  <data name="OnlyInventoryOwnerCanManageOdoo" xml:space="preserve">
+    <value>Only the inventory owner can manage Odoo</value>
+  </data>
+  <data name="OdooIntegration" xml:space="preserve">
+    <value>Odoo Integration</value>
+  </data>
+  <data name="ConnectInventoryOdooAPI" xml:space="preserve">
+    <value>Connect this inventory to your Odoo instance via API token</value>
+  </data>
+  <data name="APIToken" xml:space="preserve">
+    <value>API Token</value>
+  </data>
+  <data name="KeepTokenSecret" xml:space="preserve">
+    <value>Keep this token secret</value>
+  </data>
+  <data name="RegeneratingWillBreakExistingOdooConnection" xml:space="preserve">
+    <value>Regenerating will break the existing Odoo connection</value>
+  </data>
+  <data name="NoTokenGeneratedYet" xml:space="preserve">
+    <value>No token generated yet</value>
+  </data>
+  <data name="GenerateAPITokenAllowOdooImportData" xml:space="preserve">
+    <value>Generate an API token to allow Odoo to import data from this inventory</value>
+  </data>
+  <data name="GenerateToken" xml:space="preserve">
+    <value>Generate Token</value>
+  </data>
 </root>

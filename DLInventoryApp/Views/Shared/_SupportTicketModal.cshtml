@@ -1,4 +1,6 @@
 ﻿@model DLInventoryApp.ViewModels.Support.SupportTicketVm
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.SharedResource> LocalizerShared
+@inject Microsoft.Extensions.Localization.IStringLocalizer<DLInventoryApp.Localization.InventoryResource> LocalizerInv
 
 @{
     var inventoryIdValue = ViewContext.RouteData.Values["id"]?.ToString();
@@ -43,10 +45,10 @@
 
                             <div class="support-modal-title-wrap">
                                 <h5 class="support-modal-title" id="supportTicketModalLabel">
-                                    Create support ticket
+                                    @LocalizerShared["CreateSupportTicket"]
                                 </h5>
                                 <div class="support-modal-subtitle">
-                                    Describe the issue and choose its priority.
+                                    @LocalizerShared["DescribeIssueChoosePriority"]
                                 </div>
                             </div>
                         </div>
@@ -66,25 +68,25 @@
                         <input asp-for="InventoryId" type="hidden" value="@inventoryIdValue" />
 
                         <div class="support-field support-field-full">
-                            <label asp-for="Summary" class="support-label">Summary</label>
+                            <label asp-for="Summary" class="support-label">@LocalizerShared["Summary"]</label>
                             <textarea asp-for="Summary"
                                       class="support-input support-textarea"
                                       rows="5"
                                       maxlength="1000"
-                                      placeholder="Describe the problem, what you expected, and what happened instead"></textarea>
+                                      placeholder="@LocalizerShared["DescribeProblemExpectedHappenedInstead"]"></textarea>
                             <div class="support-hint">
-                                Add a short but clear description so admins can reproduce the issue faster.
+                                @LocalizerShared["AddShortClearDescriptionAdminsReproduceIssue"]
                             </div>
                             <span asp-validation-for="Summary" class="support-error"></span>
                         </div>
 
                         <div class="support-bottom-row">
                             <div class="support-field support-field-priority">
-                                <label asp-for="Priority" class="support-label">Priority</label>
+                                <label asp-for="Priority" class="support-label">@LocalizerShared["Priority"]</label>
                                 <select asp-for="Priority" class="support-input support-select">
-                                    <option value="High">High</option>
-                                    <option value="Average">Average</option>
-                                    <option value="Low">Low</option>
+                                    <option value="High">@LocalizerShared["High"]</option>
+                                    <option value="Average">@LocalizerShared["Average"]</option>
+                                    <option value="Low">@LocalizerShared["Low"]</option>
                                 </select>
                                 <span asp-validation-for="Priority" class="support-error"></span>
                             </div>
@@ -114,7 +116,7 @@
         const form = this;
         const resultBox = document.getElementById("supportResult");
 
-        document.getElementById("supportCurrentUrl").value = window.location.href; // ← вот сюда
+        document.getElementById("supportCurrentUrl").value = window.location.href;
 
         const formData = new FormData(form);
 

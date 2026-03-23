@@ -21,15 +21,12 @@ namespace DLInventoryApp.Services.Tabs
                 .Select(i => new { i.ApiToken })
                 .SingleOrDefaultAsync();
             var request = _httpContextAccessor.HttpContext!.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
             return new OdooTabVm
             {
                 InventoryId = inventoryId,
                 InventoryTitle = title,
                 ApiToken = inventory?.ApiToken,
-                CanManage = canManage,
-                ApiEndpointUrl = inventory?.ApiToken != null
-                    ? $"{baseUrl}/api/inventory/{inventory.ApiToken}/results" : string.Empty
+                CanManage = canManage
             };
         }
     }
